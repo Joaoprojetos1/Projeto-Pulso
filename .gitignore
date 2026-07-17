@@ -7,6 +7,8 @@ build/
 *.log
 .expo/
 .DS_Store
+.pgdata/
+.pgdata-test/
 
 # dado real de cliente NUNCA entra
 fixtures/real/

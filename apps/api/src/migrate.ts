@@ -1,0 +1,53 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { createSql, type Sql } from './db';
+
+/**
+ * Aplica o schema.sql uma única vez, registrado em `schema_migrations`.
+ * Migração é append-only: mudança de schema vira um arquivo novo, nunca
+ * edição do já aplicado.
+ */
+const MIGRATIONS: Array<[name: string, file: string]> = [
+  ['0001_schema', 'schema.sql'],
+];
+
+export async function migrate(sql: Sql): Promise<string[]> {
+  await sql`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      name       TEXT PRIMARY KEY,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`;
+
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const applied: string[] = [];
+
+  for (const [name, file] of MIGRATIONS) {
+    const [exists] = await sql`SELECT 1 FROM schema_migrations WHERE name = ${name}`;
+    if (exists) continue;
+
+    const ddl = readFileSync(path.join(here, '..', file), 'utf8');
+    await sql.begin(async (tx) => {
+      await tx.unsafe(ddl);
+      await tx`INSERT INTO schema_migrations (name) VALUES (${name})`;
+    });
+    applied.push(name);
+  }
+
+  return applied;
+}
+
+// execução direta: `pnpm migrate`
+const runDirectly = process.argv[1]?.replace(/\\/g, '/').endsWith('src/migrate.ts');
+if (runDirectly) {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    console.error('Defina DATABASE_URL antes de migrar (veja .env.example).');
+    process.exit(1);
+  }
+  const sql = createSql(url);
+  const applied = await migrate(sql);
+  console.log(applied.length ? `Migrações aplicadas: ${applied.join(', ')}` : 'Nada a migrar.');
+  await sql.end();
+}
