@@ -141,6 +141,33 @@
     display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
     font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 
+  /* ---------- app no celular (QR) ---------- */
+  .qrcard{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:18px 20px;margin:0 0 26px}
+  @media(max-width:560px){.qrcard{grid-template-columns:1fr;justify-items:center;text-align:center}}
+  .qrcard img{width:150px;height:150px;border-radius:10px;border:1px solid var(--border);background:#fff}
+  .qrcard h3{margin:0 0 6px;font-family:var(--display);font-weight:700;font-size:15.5px}
+  .qrcard p{margin:0 0 6px;font-size:13.5px;color:var(--muted)}
+  .qrcard .passo b{color:var(--text)}
+  .qrcard .aviso{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--alerta);margin-top:6px}
+
+  /* ---------- diário do intensivo ---------- */
+  .dias{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+  details.dia{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  details.dia summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 18px}
+  details.dia summary::-webkit-details-marker{display:none}
+  details.dia summary:focus-visible{outline:2px solid var(--vivo);outline-offset:-2px}
+  .dia .dnum{font-family:var(--mono);font-size:11px;color:var(--vivo);background:rgba(35,200,131,.12);border-radius:8px;padding:4px 8px;white-space:nowrap}
+  .dia .dtit{flex:1;font-family:var(--display);font-weight:600;font-size:14.5px}
+  .dia .dresumo{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .dia .seta-d{color:var(--muted);transition:transform .2s ease}
+  details.dia[open] .seta-d{transform:rotate(90deg)}
+  .dia .dcorpo{padding:2px 18px 16px;border-top:1px dashed var(--border)}
+  .dia .dcorpo ul{margin:10px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .dia .dcorpo li{display:flex;gap:9px;font-size:13.5px;line-height:1.5}
+  .dia .dcorpo li .ok{color:var(--ok);font-weight:700;flex:0 0 auto}
+
   @media (prefers-reduced-motion: no-preference){
     .logo .beat{stroke-dasharray:520;stroke-dashoffset:520;animation:draw 1.8s ease-out .2s forwards}
     @keyframes draw{to{stroke-dashoffset:0}}
@@ -181,6 +208,46 @@
       <h3>Do alicerce para o que o cliente vê e paga</h3>
       <p>Próximos blocos: a conversa do app respondendo de verdade, o site com a venda, e a leitura do arquivo real da clínica (assim que o modelo do especialista chegar).</p>
     </div>
+  </div>
+
+  <h2 class="sec">Veja o app no seu celular</h2>
+  <p class="seclead">O aplicativo já abre no telefone pelo Expo Go — escaneie o código abaixo.</p>
+  <div class="qrcard">
+    <img src="data:image/png;base64,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" alt="Código QR para abrir o Pulso no Expo Go" width="150" height="150">
+    <div>
+      <h3>Como abrir</h3>
+      <p class="passo"><b>Android:</b> abra o aplicativo <b>Expo Go</b> e toque em "Scan QR code" — a câmera comum não funciona.</p>
+      <p class="passo"><b>iPhone:</b> aponte a câmera normal e toque na notificação que aparece.</p>
+      <p class="passo">A primeira carga leva até um minuto. O app abre com a clínica de demonstração (dados fictícios).</p>
+      <div class="aviso">Funciona enquanto o app estiver ligado no computador do projeto</div>
+    </div>
+  </div>
+
+  <h2 class="sec">Diário do intensivo</h2>
+  <p class="seclead">Um cartão por dia de trabalho. Clique no dia para abrir e ver o que foi entregue.</p>
+  <div class="dias">
+
+    <details class="dia" open>
+      <summary>
+        <span class="dnum">DIA 1</span>
+        <span class="dtit">Quinta, 17 de julho — a fundação inteira</span>
+        <span class="dresumo tnum">8 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span>Projeto criado no GitHub, com as regras do produto e as proteções de dados de cliente desde o primeiro commit</span></li>
+          <li><span class="ok">✓</span><span>Motor de cálculo montado e travado com 29 testes — incluindo o cenário que define o produto: a empresa que vende cada vez mais e mesmo assim quebra</span></li>
+          <li><span class="ok">✓</span><span>Duas clínicas fictícias de teste: a saudável fica em silêncio, a "tesoura" dispara os alarmes certos (caixa zera dia 29/07)</span></li>
+          <li><span class="ok">✓</span><span>Servidor de pé: recebe os dados, guarda com segurança, chama o motor e responde o painel — testado de ponta a ponta com banco de dados real</span></li>
+          <li><span class="ok">✓</span><span>A voz da IA: avisos em linguagem simples, com um fiscal em código contra número inventado e texto reserva que nunca deixa o alerta mudo</span></li>
+          <li><span class="ok">✓</span><span>Aplicativo com as seis telas da marca, rodando no celular via Expo Go</span></li>
+          <li><span class="ok">✓</span><span>Esta página de acompanhamento, com o mapa completo das 42 tarefas</span></li>
+          <li><span class="ok">✓</span><span>Fim do dia: 65 testes automáticos passando</span></li>
+        </ul>
+      </div>
+    </details>
+
   </div>
 
   <h2 class="sec">O mapa completo</h2>
