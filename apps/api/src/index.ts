@@ -31,4 +31,6 @@ if (!alertWriter) {
 
 const app = buildApp(sql, { logger: true, alertWriter });
 const port = Number(process.env.PORT ?? 3000);
-await app.listen({ port, host: '127.0.0.1' });
+// HOST=0.0.0.0 deixa o celular (Expo Go) acessar a API pela rede local
+const host = process.env.HOST ?? '127.0.0.1';
+await app.listen({ port, host });

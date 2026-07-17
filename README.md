@@ -37,7 +37,17 @@ pnpm typecheck
 Para subir o servidor localmente:
 
 ```bash
-cd apps/api
-pnpm db          # sobe um Postgres local (nada para instalar)
-pnpm dev         # sobe a API em http://localhost:3000
+pnpm db          # terminal 1: sobe um Postgres local (nada para instalar)
+pnpm api         # terminal 2: sobe a API em http://localhost:3000
+pnpm seed        # (uma vez) cria as clínicas de demonstração
 ```
+
+## Vendo o app no celular
+
+1. Instale o **Expo Go** no telefone (App Store / Play Store).
+2. No computador: `pnpm app` — vai aparecer um código QR no terminal.
+3. Aponte a câmera do celular para o código (mesma rede Wi-Fi).
+
+O app abre com a clínica de demonstração mesmo sem o servidor ligado.
+Com servidor + seed rodando (e `HOST=0.0.0.0` na API), ele busca os dados
+de verdade. Se o QR não conectar (firewall), use `pnpm app -- --tunnel`.

@@ -38,6 +38,13 @@ export function registerCompanies(app: FastifyInstance, sql: Sql) {
     },
   );
 
+  app.get('/companies', async () => {
+    const rows = await sql`
+      SELECT id, name, cnpj, niche, declared_fixed_cost_cents, created_at
+      FROM companies ORDER BY created_at LIMIT 100`;
+    return { companies: rows.map((r) => toCompanyJson(r as unknown as CompanyRow)) };
+  });
+
   app.get<{ Params: { id: string } }>(
     '/companies/:id',
     { schema: { params: companyParamsSchema } },

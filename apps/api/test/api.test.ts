@@ -170,6 +170,13 @@ describe('fluxo completo: clínica saudável', () => {
 });
 
 describe('bordas', () => {
+  it('lista de empresas: o app usa isto para encontrar a clínica', async () => {
+    const res = await app.inject({ method: 'GET', url: '/companies' });
+    expect(res.statusCode).toBe(200);
+    const nomes = res.json().companies.map((c: { name: string }) => c.name);
+    expect(nomes).toContain('Clínica Horizonte');
+  });
+
   it('empresa inexistente: 404 com mensagem clara', async () => {
     const res = await app.inject({
       method: 'GET',
