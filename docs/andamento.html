@@ -25,6 +25,7 @@
     --text:var(--tinta);
     --muted:var(--cinza);
     --border:var(--linha);
+    --ok:#158556;
     --shadow:0 20px 44px -28px rgba(19,34,31,.42);
 
     --display:"Sora","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -33,26 +34,23 @@
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#0B2420;
-      --surface:#123029;
-      --surface-2:#0F2A24;
-      --brand:#0B2420;
-      --brand-ink:var(--papel);
-      --text:#EAF1EC;
-      --muted:#9FB8AF;
-      --border:#26463F;
+      --bg:#0B2420; --surface:#123029; --surface-2:#0F2A24;
+      --brand:#0B2420; --brand-ink:var(--papel); --text:#EAF1EC;
+      --muted:#9FB8AF; --border:#26463F; --ok:#5FE0A6;
       --shadow:0 22px 48px -30px rgba(0,0,0,.65);
     }
   }
   :root[data-theme="light"]{
     --bg:var(--papel); --surface:var(--branco); --surface-2:#FBFAF6;
     --brand:var(--mata); --brand-ink:var(--papel); --text:var(--tinta);
-    --muted:var(--cinza); --border:var(--linha); --shadow:0 20px 44px -28px rgba(19,34,31,.42);
+    --muted:var(--cinza); --border:var(--linha); --ok:#158556;
+    --shadow:0 20px 44px -28px rgba(19,34,31,.42);
   }
   :root[data-theme="dark"]{
     --bg:#0B2420; --surface:#123029; --surface-2:#0F2A24;
     --brand:#0B2420; --brand-ink:var(--papel); --text:#EAF1EC;
-    --muted:#9FB8AF; --border:#26463F; --shadow:0 22px 48px -30px rgba(0,0,0,.65);
+    --muted:#9FB8AF; --border:#26463F; --ok:#5FE0A6;
+    --shadow:0 22px 48px -30px rgba(0,0,0,.65);
   }
 
   *{box-sizing:border-box}
@@ -67,82 +65,68 @@
   /* ---------- cabeçalho ---------- */
   header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
   .logo{height:34px;width:auto;color:var(--text)}
-  .logo .beat{stroke:var(--vivo)}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 
-  /* ---------- resumo (herói contido) ---------- */
+  /* ---------- resumo ---------- */
   .hero{
     background:var(--brand);color:var(--brand-ink);border-radius:20px;
     padding:clamp(24px,4vw,36px);box-shadow:var(--shadow);margin-bottom:14px;
   }
   .hero .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--vivo);margin:0 0 10px}
-  .hero h1{font-family:var(--display);font-weight:800;letter-spacing:-.025em;font-size:clamp(24px,4.4vw,36px);margin:0 0 6px;text-wrap:balance;line-height:1.12}
-  .hero p{margin:0;color:#CFE0D8;max-width:56ch}
-  :root[data-theme="light"] .hero p, .hero p{color:#CFE0D8}
+  .hero h1{font-family:var(--display);font-weight:800;letter-spacing:-.025em;font-size:clamp(23px,4.2vw,34px);margin:0 0 8px;text-wrap:balance;line-height:1.14}
+  .hero p{margin:0;color:#CFE0D8;max-width:60ch}
 
-  .stat{display:flex;align-items:baseline;gap:12px;margin:20px 0 14px}
-  .stat b{font-family:var(--display);font-weight:800;font-size:clamp(38px,8vw,58px);line-height:1;letter-spacing:-.03em}
-  .stat span{font-size:14px;color:#BFD2CB;max-width:24ch}
+  .stat{display:flex;align-items:baseline;gap:12px;margin:20px 0 12px;flex-wrap:wrap}
+  .stat b{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,50px);line-height:1;letter-spacing:-.03em}
+  .stat b span{font-size:.48em;color:#BFD2CB;font-weight:600}
+  .stat .leg{font-size:14px;color:#BFD2CB;max-width:30ch}
 
-  /* barra de 7 segmentos */
-  .track{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px}
-  .seg{height:9px;border-radius:6px;background:rgba(255,255,255,.14)}
-  .seg.done{background:var(--vivo)}
-  .seg.now{background:var(--alerta)}
+  .barra{height:10px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden}
+  .barra .fill{height:100%;width:43%;border-radius:6px;background:linear-gradient(90deg,var(--vivo),#7FE0B4)}
+  .hero .obs{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#9FB8AF;margin-top:8px}
 
-  /* ---------- foco atual ---------- */
+  /* ---------- foco ---------- */
   .focus{
     display:flex;gap:14px;align-items:flex-start;
     background:var(--surface);border:1px solid var(--border);border-left:5px solid var(--alerta);
-    border-radius:14px;padding:16px 18px;margin:18px 0 30px;
+    border-radius:14px;padding:16px 18px;margin:18px 0 26px;
   }
   .focus .fi{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--alerta);margin:2px 0 4px}
   .focus h3{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:-.01em}
   .focus p{margin:0;color:var(--muted);font-size:14px}
   .pulse-dot{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--alerta);margin-top:5px}
 
-  /* ---------- seção ---------- */
   h2.sec{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;margin:8px 0 4px}
   p.seclead{margin:0 0 18px;color:var(--muted);font-size:14px}
 
-  /* ---------- linha do tempo ---------- */
-  .steps{display:flex;flex-direction:column;gap:10px}
-  .step{
-    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
-    background:var(--surface);border:1px solid var(--border);border-radius:14px;
-    padding:16px 18px;border-left:5px solid var(--border);
-  }
-  .step.s-done{border-left-color:var(--vivo)}
-  .step.s-now{border-left-color:var(--alerta)}
-  .step.s-wait{border-left-color:var(--cinza)}
-  .step .num{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:2px;min-width:42px}
-  .step h4{margin:0 0 3px;font-family:var(--display);font-weight:600;font-size:15.5px;letter-spacing:-.01em}
-  .step p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5;max-width:60ch}
-  .step .deliver{margin-top:7px;font-size:12.5px;color:var(--text)}
-  .step .deliver span{color:var(--muted)}
+  /* ---------- grupos de trabalho ---------- */
+  .grupos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.grupos{grid-template-columns:1fr}}
+  .grupo{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;break-inside:avoid}
+  .ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .ghead h3{margin:0;font-family:var(--display);font-weight:700;font-size:15.5px;letter-spacing:-.01em}
+  .gcount{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+  .gcount.zero{color:var(--muted)}
+  .gcount.full{color:var(--ok)}
+  .tarefas{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .tarefas li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.45}
+  .tarefas .ic{flex:0 0 16px;width:16px;height:16px;border-radius:50%;margin-top:2px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .t-done .ic{background:rgba(35,200,131,.16);color:var(--ok)}
+  .t-now .ic{background:rgba(227,154,38,.18);color:var(--alerta)}
+  .t-todo .ic{background:transparent;border:1.5px solid var(--border);color:transparent}
+  .t-todo{color:var(--muted)}
+  .t-now .tx b{color:var(--alerta);font-weight:600}
+  .tx{flex:1}
 
-  .pill{
-    font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
-    padding:5px 10px;border-radius:999px;white-space:nowrap;border:1px solid transparent;
-  }
-  .pill.done{background:rgba(35,200,131,.14);color:#0F9A66;border-color:rgba(35,200,131,.32)}
-  :root[data-theme="dark"] .pill.done{color:#5FE0A6}
-  @media (prefers-color-scheme: dark){.pill.done{color:#5FE0A6}}
-  .pill.now{background:rgba(227,154,38,.16);color:#B87813;border-color:rgba(227,154,38,.36)}
-  @media (prefers-color-scheme: dark){.pill.now{color:#F0B457}}
-  :root[data-theme="dark"] .pill.now{color:#F0B457}
-  .pill.wait,.pill.todo{background:transparent;color:var(--muted);border-color:var(--border)}
-
-  /* ---------- entregue / acompanhar ---------- */
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  /* ---------- números / acompanhar ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
   @media (max-width:640px){.grid2{grid-template-columns:1fr}}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
   .card h3{margin:0 0 10px;font-family:var(--display);font-weight:700;font-size:15px}
   .card ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px}
   .card li{font-size:13.5px;color:var(--text);display:flex;gap:9px;align-items:flex-start}
-  .card li .tick{color:var(--vivo);flex:0 0 auto;font-weight:700}
-  .card li b{font-weight:700}
-  .card a{color:inherit}
+  .card li .seta{color:var(--vivo);flex:0 0 auto;font-weight:700}
   .metricrow{display:flex;gap:22px;flex-wrap:wrap;margin-top:2px}
   .metric b{display:block;font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em}
   .metric span{font-size:12px;color:var(--muted)}
@@ -160,11 +144,8 @@
   @media (prefers-reduced-motion: no-preference){
     .logo .beat{stroke-dasharray:520;stroke-dashoffset:520;animation:draw 1.8s ease-out .2s forwards}
     @keyframes draw{to{stroke-dashoffset:0}}
-    .seg.done,.seg.now{transform-origin:left;animation:grow .7s ease-out both}
-    .seg.done:nth-child(1){animation-delay:.15s}
-    .seg.done:nth-child(2){animation-delay:.30s}
-    .seg.now:nth-child(3){animation-delay:.45s}
-    @keyframes grow{from{transform:scaleX(.05);opacity:.4}to{transform:scaleX(1);opacity:1}}
+    .barra .fill{transform-origin:left;animation:grow 1s ease-out .3s both}
+    @keyframes grow{from{transform:scaleX(.04)}to{transform:scaleX(1)}}
   }
 </style>
 
@@ -173,144 +154,153 @@
   <header class="top">
     <svg class="logo" viewBox="0 0 520 120" role="img" aria-label="Pulso" xmlns="http://www.w3.org/2000/svg">
       <text x="0" y="86" font-family="Sora, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">pu</text>
-      <path class="beat" d="M118 86 L150 86 L163 40 L178 96 L190 66 L204 86 L236 86" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="beat" d="M118 86 L150 86 L163 40 L178 96 L190 66 L204 86 L236 86" fill="none" stroke="#23C883" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
       <text x="240" y="86" font-family="Sora, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">so</text>
       <circle cx="236" cy="86" r="7" fill="#23C883"/>
     </svg>
-    <div class="eyebrow">Andamento do projeto</div>
+    <div class="eyebrow">Andamento do projeto · intensivo</div>
   </header>
 
   <section class="hero">
-    <p class="k">Onde estamos hoje</p>
-    <h1>O aplicativo existe — e roda no seu celular.</h1>
-    <p>As seis telas do Pulso estão de pé: entrada, boas-vindas, painel com o cartão de caixa e a linha de pulso, o alerta com a seção "de onde vem esse número", a conversa e a conta. Tudo com a marca que você aprovou, buscando os dados do servidor.</p>
+    <p class="k">Onde estamos</p>
+    <h1>A fundação está pronta. O produto está só começando.</h1>
+    <p>Estamos num intensivo de aproximadamente duas semanas. Os primeiros dias foram para o alicerce — o motor de cálculo, o servidor, a voz da IA e as telas do app. É o que sustenta todo o resto. E o resto é muito: dados reais, conversa inteligente, WhatsApp, site, venda e o piloto com clínica de verdade.</p>
 
     <div class="stat">
-      <b class="tnum">5<span style="font-size:.5em;color:#BFD2CB;font-weight:600"> / 7</span></b>
-      <span>etapas concluídas. Faltam o site e o arquivo real do especialista.</span>
+      <b class="tnum">18<span> / 42 tarefas</span></b>
+      <span class="leg">concluídas até agora. Cada área abaixo mostra o que está feito e o que falta.</span>
     </div>
-    <div class="track" aria-hidden="true">
-      <div class="seg done"></div>
-      <div class="seg done"></div>
-      <div class="seg now"></div>
-      <div class="seg done"></div>
-      <div class="seg done"></div>
-      <div class="seg done"></div>
-      <div class="seg"></div>
-    </div>
+    <div class="barra" role="img" aria-label="43% concluído"><div class="fill"></div></div>
+    <p class="obs">≈ 43% · fundação concluída · corpo do produto em construção</p>
   </section>
 
   <div class="focus">
     <div class="pulse-dot" aria-hidden="true"></div>
     <div>
-      <div class="fi">Sua vez</div>
-      <h3>Abra o Pulso no seu celular</h3>
-      <p>Com o Expo Go instalado, um comando no computador (<span style="font-family:var(--mono)">pnpm app</span>) mostra um código QR. Aponte a câmera e o app abre no seu telefone — funciona até com o servidor desligado, usando a clínica de demonstração.</p>
+      <div class="fi">Frentes da vez</div>
+      <h3>Do alicerce para o que o cliente vê e paga</h3>
+      <p>Próximos blocos: a conversa do app respondendo de verdade, o site com a venda, e a leitura do arquivo real da clínica (assim que o modelo do especialista chegar).</p>
     </div>
   </div>
 
-  <h2 class="sec">O caminho completo</h2>
-  <p class="seclead">As sete etapas do projeto, na ordem. Verde é feito, laranja é o que está em andamento.</p>
+  <h2 class="sec">O mapa completo</h2>
+  <p class="seclead">Nove frentes de trabalho, abertas tarefa por tarefa. Verde é feito e testado; laranja é o que está em andamento ou esperando alguém; vazio é o que ainda vem.</p>
 
-  <div class="steps">
+  <div class="grupos">
 
-    <div class="step s-done">
-      <div class="num tnum">Etapa 0</div>
-      <div>
-        <h4>Fundação do projeto</h4>
-        <p>Repositório criado no GitHub, com as regras do projeto escritas e a proteção de dados de cliente ativada desde o primeiro dia.</p>
-        <div class="deliver"><span>Entregue:</span> repositório organizado e seguro.</div>
-      </div>
-      <div class="pill done">Concluído</div>
+    <div class="grupo">
+      <div class="ghead"><h3>1 · Motor de cálculo</h3><span class="gcount tnum">5 de 7</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Estrutura e regras do projeto no GitHub</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Indicadores financeiros calculados em código</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Previsão de quando o caixa zera, pelo atraso real dos clientes</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Regras de alerta: caixa, efeito tesoura, concentração, queda de receita</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">29 testes automáticos travando os cálculos</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Auditoria das fórmulas pelo especialista</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Indicadores restantes da lista (ponto de equilíbrio, inadimplência, ano contra ano)</span></li>
+      </ul>
     </div>
 
-    <div class="step s-done">
-      <div class="num tnum">Etapa 1</div>
-      <div>
-        <h4>O motor de cálculo (o "cérebro")</h4>
-        <p>A parte que calcula os números que importam: saldo, prazos de recebimento e pagamento, margem, e o principal — a previsão de quando o caixa zera. Tudo conferido por 29 testes automáticos, incluindo o cenário-chave: empresa vendendo mais, mas ficando sem dinheiro.</p>
-        <div class="deliver"><span>Entregue:</span> cálculos prontos, testados e auditáveis pelo especialista.</div>
-      </div>
-      <div class="pill done">Concluído</div>
+    <div class="grupo">
+      <div class="ghead"><h3>2 · Clínicas de teste</h3><span class="gcount full tnum">3 de 3</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica saudável fictícia — fica em silêncio</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica "tesoura" fictícia — dispara os alarmes certos</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Testes que travam esse comportamento</span></li>
+      </ul>
     </div>
 
-    <div class="step s-now">
-      <div class="num tnum">Etapa 2</div>
-      <div>
-        <h4>Leitor dos arquivos do cliente</h4>
-        <p>As clínicas de teste estão prontas — uma saudável e uma "no vermelho" — e os alertas dispararam exatamente como deviam. A leitura do arquivo real espera o modelo de exportação do especialista chegar, para não inventar o formato.</p>
-        <div class="deliver"><span>A entregar:</span> importação de dados confiável, que avisa se o arquivo vier errado.</div>
-      </div>
-      <div class="pill now">Meio caminho</div>
+    <div class="grupo">
+      <div class="ghead"><h3>3 · Leitura de dados reais</h3><span class="gcount zero tnum">0 de 4</span></div>
+      <ul class="tarefas">
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Aguardando</b> o arquivo modelo do sistema da clínica (especialista)</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Leitor tolerante a arquivo bagunçado</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Testes com arquivos errados de propósito</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Envio do arquivo pelo aplicativo</span></li>
+      </ul>
     </div>
 
-    <div class="step s-done">
-      <div class="num tnum">Etapa 3</div>
-      <div>
-        <h4>Servidor (onde tudo funciona)</h4>
-        <p>O "cofre" está de pé: recebe os dados da clínica, guarda com segurança, chama o motor de cálculo e responde com o painel e os alertas. Se o mesmo arquivo for enviado duas vezes, nada duplica. Testado de ponta a ponta com as duas clínicas fictícias.</p>
-        <div class="deliver"><span>Entregue:</span> as quatro portas do plano funcionando — cadastro, dados, cálculo e painel.</div>
-      </div>
-      <div class="pill done">Concluído</div>
+    <div class="grupo">
+      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">4 de 7</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Banco de dados com histórico completo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">As quatro portas: cadastro, dados, cálculo e painel</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Proteção contra arquivo duplicado</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Testes de ponta a ponta com banco de verdade</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Login e controle de acesso</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Servidor na nuvem (hoje roda só no computador)</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Backup e monitoramento</span></li>
+      </ul>
     </div>
 
-    <div class="step s-done">
-      <div class="num tnum">Etapa 4</div>
-      <div>
-        <h4>A inteligência artificial (as mensagens)</h4>
-        <p>Pronta. A IA recebe só os números já calculados e escreve o aviso em linguagem de gente. Um "fiscal" em código confere cada número do texto contra os dados — número inventado não passa. E se a IA falhar, um texto padrão assume: o alerta nunca fica mudo e nunca mente.</p>
-        <div class="deliver"><span>Entregue:</span> alertas em linguagem humana, com garantia contra número inventado.</div>
-      </div>
-      <div class="pill done">Concluído</div>
+    <div class="grupo">
+      <div class="ghead"><h3>5 · A voz (IA)</h3><span class="gcount tnum">3 de 6</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">IA escreve os avisos só com números já calculados</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Fiscal em código contra número inventado</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Texto reserva — o alerta nunca fica mudo</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Chave da IA em produção</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Conversa do app respondendo de verdade</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Revisão dos textos pelo especialista</span></li>
+      </ul>
     </div>
 
-    <div class="step s-done">
-      <div class="num tnum">Etapa 5</div>
-      <div>
-        <h4>O aplicativo (celular)</h4>
-        <p>As seis telas prontas com a marca Pulso: entrada, boas-vindas, painel (cartão de caixa com a linha de pulso, indicadores e alertas), o detalhe do alerta com "de onde vem esse número" aberto, a conversa e a conta. Se o servidor estiver desligado, uma clínica de demonstração assume — sempre rotulada. A conversa ainda responde com texto provisório; ela fica esperta numa próxima rodada.</p>
-        <div class="deliver"><span>Entregue:</span> app navegável no seu telefone, via Expo Go.</div>
-      </div>
-      <div class="pill done">Concluído</div>
+    <div class="grupo">
+      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">3 de 7</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">As seis telas com a marca Pulso</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">"De onde vem esse número" aberto em todo alerta</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Modo demonstração rotulado</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Ícone e tela de abertura com a marca</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Login de verdade</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Notificações — o aviso que chega sozinho no celular</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Publicação nas lojas (App Store / Google Play)</span></li>
+      </ul>
     </div>
 
-    <div class="step s-wait">
-      <div class="num tnum">Etapa 6</div>
-      <div>
-        <h4>Site e cobrança</h4>
-        <p>A página de vendas e o pagamento (Pix, boleto, cartão). Feito por último, quando o produto já estiver de pé.</p>
-        <div class="deliver"><span>A entregar:</span> venda e assinatura funcionando.</div>
-      </div>
-      <div class="pill todo">A fazer</div>
+    <div class="grupo">
+      <div class="ghead"><h3>7 · WhatsApp</h3><span class="gcount zero tnum">0 de 2</span></div>
+      <ul class="tarefas">
+        <li class="t-todo"><span class="ic"></span><span class="tx">Chatbot do Pulso no WhatsApp</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Alertas chegando pelo WhatsApp</span></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <div class="ghead"><h3>8 · Site e venda</h3><span class="gcount zero tnum">0 de 3</span></div>
+      <ul class="tarefas">
+        <li class="t-todo"><span class="ic"></span><span class="tx">Página de vendas</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Pagamento: Pix, boleto e cartão</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Ligação do pagamento com o servidor</span></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <div class="ghead"><h3>9 · Piloto com clínica real</h3><span class="gcount zero tnum">0 de 3</span></div>
+      <ul class="tarefas">
+        <li class="t-todo"><span class="ic"></span><span class="tx">Primeira clínica de verdade usando</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Métricas do piloto: alerta aberto? ação tomada?</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Ajustes com o retorno do especialista</span></li>
+      </ul>
     </div>
 
   </div>
 
-  <h2 class="sec" style="margin-top:34px">O que já está de pé</h2>
   <div class="grid2">
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
+        <div class="metric"><b class="tnum">18</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">24</b><span>pela frente</span></div>
         <div class="metric"><b class="tnum">65</b><span>testes passando</span></div>
-        <div class="metric"><b class="tnum">5</b><span>etapas concluídas</span></div>
-        <div class="metric"><b class="tnum">100%</b><span>dos cálculos testados</span></div>
       </div>
-      <ul style="margin-top:16px">
-        <li><span class="tick">✓</span> Previsão de quando o caixa zera</li>
-        <li><span class="tick">✓</span> Alerta do "efeito tesoura" (vender mais e quebrar)</li>
-        <li><span class="tick">✓</span> Prazos de recebimento e pagamento reais</li>
-        <li><span class="tick">✓</span> Duas clínicas de teste: a saudável fica em silêncio, a "no vermelho" dispara os alarmes certos</li>
-        <li><span class="tick">✓</span> Servidor completo: recebe dados, calcula e devolve o painel com alertas</li>
-        <li><span class="tick">✓</span> A voz do Pulso: avisos em linguagem simples, com fiscal contra número inventado</li>
-        <li><span class="tick">✓</span> Aplicativo com as seis telas, rodando no celular via Expo Go</li>
-      </ul>
     </div>
     <div class="card">
       <h3>Como acompanhar</h3>
       <ul>
-        <li><span class="tick">→</span> <b>Esta página:</b> atualizo a cada avanço. É o jeito mais rápido de ver o todo.</li>
-        <li><span class="tick">→</span> <b>GitHub:</b> o histórico detalhado de tudo, com data e explicação em português.</li>
-        <li><span class="tick">→</span> <b>Expo Go</b> (já instalado): rode <span style="font-family:var(--mono)">pnpm app</span> no computador e aponte a câmera para o código QR — o Pulso abre no seu celular.</li>
+        <li><span class="seta">→</span> <b>Esta página:</b> atualizada a cada avanço, sempre no mesmo link.</li>
+        <li><span class="seta">→</span> <b>GitHub:</b> o histórico detalhado, com data e explicação.</li>
+        <li><span class="seta">→</span> <b>Expo Go:</b> o app já abre no celular escaneando um código QR.</li>
       </ul>
     </div>
   </div>
