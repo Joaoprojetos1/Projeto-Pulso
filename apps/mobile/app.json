@@ -8,9 +8,6 @@
     "scheme": "pulso",
     "userInterfaceStyle": "light",
     "backgroundColor": "#F6F4EE",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0E2E2A",
@@ -36,8 +33,7 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }
