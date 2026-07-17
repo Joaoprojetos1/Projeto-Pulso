@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@pulso/core": ["../packages/core/src/index.ts"]
+    }
+  },
+  "include": ["*.ts"],
+  "exclude": ["vitest.config.ts"]
+}

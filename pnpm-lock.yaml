@@ -8,6 +8,18 @@ importers:
 
   .: {}
 
+  fixtures:
+    devDependencies:
+      '@pulso/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9
+
   packages/core:
     devDependencies:
       tsup:
