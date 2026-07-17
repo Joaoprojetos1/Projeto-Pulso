@@ -68,3 +68,26 @@ export async function fetchCompanies(): Promise<Array<{ id: string; name: string
 export async function fetchDashboard(companyId: string): Promise<DashboardJson> {
   return getJson<DashboardJson>(`/companies/${companyId}/dashboard`);
 }
+
+export interface ChatTurnJson {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export async function sendChat(companyId: string, messages: ChatTurnJson[]): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+  try {
+    const res = await fetch(`${apiBase()}/companies/${companyId}/chat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ messages }),
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
+    const body = (await res.json()) as { reply: string };
+    return body.reply;
+  } finally {
+    clearTimeout(timer);
+  }
+}

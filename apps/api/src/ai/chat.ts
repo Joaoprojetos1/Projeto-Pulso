@@ -1,0 +1,154 @@
+/**
+ * A conversa do Pulso.
+ *
+ * Mesmas regras duras da voz dos alertas:
+ * - O modelo recebe APENAS o snapshot de indicadores + alertas (números
+ *   já calculados pelo core) e o perfil da empresa. Lançamentos e
+ *   extratos NUNCA entram no prompt.
+ * - O modelo não calcula. Se a resposta pede um número que não está no
+ *   contexto, ele diz que não tem — e o fiscal (grounding) garante isso
+ *   em código: resposta com número inventado é descartada.
+ * - Se o modelo falhar ou inventar, entra uma resposta segura
+ *   determinística. A conversa nunca mente.
+ */
+
+import Anthropic from '@anthropic-ai/sdk';
+
+import { checkGroundingDeep } from './grounding';
+import type { CompanyProfile } from './writer';
+
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatContext {
+  profile: CompanyProfile;
+  asOf: string | null;
+  /** payload do snapshot: { indicator_key: { value, unit, inputs, ... } } */
+  indicators: unknown;
+  /** alertas do snapshot: ruleKey, severity, facts e textos. */
+  alerts: unknown;
+}
+
+export interface ChatReply {
+  text: string;
+  modelVersion: string;
+}
+
+/** Interface do modelo — dublê nos testes, Anthropic em produção. */
+export interface ChatModel {
+  reply(prompt: { system: string; turns: ChatTurn[] }): Promise<ChatReply>;
+}
+
+export const CHAT_FALLBACK_VERSION = 'chat-fallback-v1';
+
+/** Sem chave de IA configurada: a conversa avisa com honestidade. */
+export const NO_MODEL_REPLY =
+  'A conversa inteligente ainda não está ligada neste ambiente. ' +
+  'Os seus alertas e indicadores continuam no painel — e assim que a conversa for ativada, eu respondo por aqui.';
+
+/** Resposta reprovada no fiscal ou erro do modelo: seguro > esperto. */
+export const SAFE_REPLY =
+  'Essa resposta pedia um número que eu não tenho aqui com segurança, e eu prefiro não inventar. ' +
+  'Dá uma olhada no painel — os números de lá são calculados e conferidos. Quer perguntar de outro jeito?';
+
+/** Sem snapshot calculado ainda. */
+export const NO_DATA_REPLY =
+  'Ainda não tenho os números da sua clínica por aqui. Assim que os dados entrarem e o primeiro cálculo rodar, eu respondo com tudo aberto.';
+
+const SYSTEM_BASE = `Você é o Pulso, o monitor de caixa de pequenas clínicas brasileiras, conversando com o DONO da clínica — não com um CFO.
+
+Você recebe abaixo um retrato JÁ CALCULADO do negócio (indicadores e alertas). Seu trabalho é interpretar e orientar — nunca calcular.
+
+REGRAS INEGOCIÁVEIS:
+1. Use APENAS números presentes no retrato abaixo. Se a pergunta pede um número que não está lá, diga com honestidade que não tem esse número e aponte o painel.
+2. NÃO faça contas — nem soma, nem diferença, nem regra de três. Você pode apenas FORMATAR (centavos como reais, proporção como percentual, data por extenso).
+3. Você pode dar orientação prática e qualitativa (ex.: negociar prazo com fornecedor, rever prazo de convênio, antecipar recebível citando que custa juros) — sem prometer resultado e sem aconselhamento jurídico ou de investimento.
+4. Português do Brasil, tom de conversa, SEM jargão: "você está recebendo 46 dias depois de atender", nunca "seu DSO está em 46".
+5. Respostas CURTAS: um parágrafo, ou até 3 itens numerados. O detalhe está no painel.
+6. Se o assunto fugir do financeiro da clínica, redirecione com gentileza.`;
+
+export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[]) {
+  const retrato = JSON.stringify({
+    empresa: { nome: ctx.profile.name, nicho: ctx.profile.niche },
+    dataDoRetrato: ctx.asOf,
+    indicadores: ctx.indicators,
+    alertas: ctx.alerts,
+  });
+
+  return {
+    system: `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}`,
+    turns: sanitizeTurns(turns),
+  };
+}
+
+/** A conversa precisa começar em turno do usuário e alternar corretamente. */
+function sanitizeTurns(turns: ChatTurn[]): ChatTurn[] {
+  const recent = turns.slice(-12);
+  const firstUser = recent.findIndex((t) => t.role === 'user');
+  return firstUser === -1 ? [] : recent.slice(firstUser);
+}
+
+export async function askPulso(
+  model: ChatModel | null,
+  ctx: ChatContext,
+  turns: ChatTurn[],
+): Promise<ChatReply> {
+  if (!model) return { text: NO_MODEL_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
+
+  const prompt = buildChatPrompt(ctx, turns);
+  if (prompt.turns.length === 0) {
+    return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
+  }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let out: ChatReply;
+    try {
+      out = await model.reply(prompt);
+    } catch {
+      return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
+    }
+
+    // o fiscal: números da resposta têm que existir no retrato
+    const grounded = checkGroundingDeep(out.text, {
+      indicators: ctx.indicators,
+      alerts: ctx.alerts,
+      asOf: ctx.asOf,
+    });
+    if (grounded.ok) return out;
+  }
+
+  return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
+}
+
+// ---------------------------------------------------------------
+// Implementação real — Anthropic
+// ---------------------------------------------------------------
+
+export class AnthropicChatModel implements ChatModel {
+  private client: Anthropic;
+  private model: string;
+
+  constructor(opts: { apiKey?: string; model?: string } = {}) {
+    this.client = new Anthropic(opts.apiKey ? { apiKey: opts.apiKey } : undefined);
+    this.model = opts.model ?? process.env.PULSO_AI_MODEL ?? 'claude-opus-4-8';
+  }
+
+  async reply(prompt: { system: string; turns: ChatTurn[] }): Promise<ChatReply> {
+    const res = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 700,
+      system: prompt.system,
+      messages: prompt.turns.map((t) => ({ role: t.role, content: t.content })),
+    });
+
+    if (res.stop_reason === 'refusal') {
+      throw new Error('Modelo recusou a solicitação.');
+    }
+
+    const text = res.content.find((b) => b.type === 'text')?.text ?? '';
+    if (!text.trim()) throw new Error('Resposta vazia do modelo.');
+    return { text, modelVersion: res.model };
+  }
+}

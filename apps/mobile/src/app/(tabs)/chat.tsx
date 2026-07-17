@@ -1,7 +1,7 @@
 /**
- * Conversa. A interface está pronta; o cérebro (respostas de verdade,
- * ligadas ao servidor) entra numa próxima etapa — e o app diz isso com
- * todas as letras, em vez de fingir.
+ * Conversa. Com o servidor no ar, as respostas vêm da IA do Pulso —
+ * que só usa números já calculados e passa pelo fiscal contra número
+ * inventado. Em modo demonstração, o app avisa com todas as letras.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { sendChat, type ChatTurnJson } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -27,13 +28,17 @@ interface Mensagem {
   texto: string;
 }
 
-const RESPOSTA_PADRAO =
-  'Boa pergunta! Esta conversa ainda está em construção — em breve eu respondo de verdade, ' +
-  'usando os números da sua clínica. Enquanto isso, os alertas do painel já saem na hora certa.';
+const RESPOSTA_DEMO =
+  'No modo demonstração eu ainda não converso de verdade — isso acontece com o servidor ligado. ' +
+  'Explore o painel: o alerta vermelho mostra exatamente de onde vem cada número.';
+
+const RESPOSTA_ERRO =
+  'Não consegui falar com o servidor agora. Tente de novo em instantes — seus alertas continuam no painel.';
 
 export default function Chat() {
-  const { dashboard } = usePulso();
+  const { dashboard, fonte } = usePulso();
   const [texto, setTexto] = useState('');
+  const [pensando, setPensando] = useState(false);
   const [mensagens, setMensagens] = useState<Mensagem[]>([
     {
       id: 'boas-vindas',
@@ -45,16 +50,40 @@ export default function Chat() {
   ]);
   const lista = useRef<FlatList<Mensagem>>(null);
 
-  function enviar() {
-    const limpo = texto.trim();
-    if (!limpo) return;
-    setMensagens((atual) => [
-      ...atual,
-      { id: `v-${Date.now()}`, de: 'voce', texto: limpo },
-      { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_PADRAO },
-    ]);
-    setTexto('');
+  function rolar() {
     setTimeout(() => lista.current?.scrollToEnd({ animated: true }), 60);
+  }
+
+  async function enviar() {
+    const limpo = texto.trim();
+    if (!limpo || pensando) return;
+    setTexto('');
+
+    const minhas: Mensagem[] = [...mensagens, { id: `v-${Date.now()}`, de: 'voce', texto: limpo }];
+    setMensagens(minhas);
+    rolar();
+
+    // modo demonstração: resposta local honesta, sem fingir IA
+    if (fonte !== 'servidor' || !dashboard) {
+      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_DEMO }]);
+      rolar();
+      return;
+    }
+
+    setPensando(true);
+    try {
+      // histórico no formato do servidor (sem a mensagem de boas-vindas)
+      const turns: ChatTurnJson[] = minhas
+        .filter((m) => m.id !== 'boas-vindas')
+        .map((m) => ({ role: m.de === 'voce' ? 'user' : 'assistant', content: m.texto }));
+      const resposta = await sendChat(dashboard.company.id, turns);
+      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: resposta }]);
+    } catch {
+      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_ERRO }]);
+    } finally {
+      setPensando(false);
+      rolar();
+    }
   }
 
   return (
@@ -79,6 +108,8 @@ export default function Chat() {
             </View>
           )}
         />
+
+        {pensando && <Text style={styles.digitando}>O Pulso está pensando…</Text>}
 
         <View style={styles.entrada}>
           <TextInput
@@ -129,6 +160,13 @@ const styles = StyleSheet.create({
   },
   msgTextoVoce: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.papel },
   msgTextoPulso: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.tinta },
+  digitando: {
+    fontFamily: fonts.corpo,
+    fontSize: 12,
+    color: colors.cinza,
+    paddingHorizontal: 18,
+    paddingBottom: 4,
+  },
 
   entrada: {
     flexDirection: 'row',

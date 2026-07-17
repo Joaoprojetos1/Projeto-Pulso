@@ -203,6 +203,18 @@ describe('bordas', () => {
     expect(res.json().alerts[0].ruleKey).toBe('all_clear');
   });
 
+  it('chat sem modelo de IA: responde o aviso honesto (nunca finge)', async () => {
+    const companies = await app.inject({ method: 'GET', url: '/companies' });
+    const id = companies.json().companies[0].id as string;
+    const res = await app.inject({
+      method: 'POST',
+      url: `/companies/${id}/chat`,
+      payload: { messages: [{ role: 'user', content: 'Como está meu caixa?' }] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().reply).toMatch(/ainda não está ligada/);
+  });
+
   it('lançamento com dinheiro quebrado (float) é rejeitado na porta', async () => {
     const created = await app.inject({
       method: 'POST',

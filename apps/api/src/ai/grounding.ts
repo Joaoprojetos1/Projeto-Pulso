@@ -42,17 +42,29 @@ function addNumberVariants(allowed: Set<number>, n: number) {
 
 /** Conjunto de números que PODEM aparecer no texto, derivado de facts. */
 export function allowedNumbersFrom(facts: AlertFact['facts']): Set<number> {
-  const allowed = new Set<number>();
-  for (const value of Object.values(facts)) {
-    if (value === null || value === undefined) continue;
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      addNumberVariants(allowed, value);
-    } else if (typeof value === 'string' && ISO_DATE.test(value)) {
-      const [y, m, d] = value.split('-').map(Number);
-      allowed.add(y!);
-      allowed.add(m!);
-      allowed.add(d!);
-    }
+  return collectAllowedNumbers(facts);
+}
+
+/**
+ * Varre QUALQUER estrutura (objeto, array, valor) e coleta os números
+ * permitidos. Usado pelo chat, que trabalha com o snapshot inteiro de
+ * indicadores em vez de um único `facts`.
+ */
+export function collectAllowedNumbers(
+  value: unknown,
+  allowed: Set<number> = new Set(),
+): Set<number> {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    addNumberVariants(allowed, value);
+  } else if (typeof value === 'string' && ISO_DATE.test(value)) {
+    const [y, m, d] = value.split('-').map(Number);
+    allowed.add(y!);
+    allowed.add(m!);
+    allowed.add(d!);
+  } else if (Array.isArray(value)) {
+    for (const v of value) collectAllowedNumbers(v, allowed);
+  } else if (value !== null && typeof value === 'object') {
+    for (const v of Object.values(value)) collectAllowedNumbers(v, allowed);
   }
   return allowed;
 }
@@ -75,7 +87,21 @@ export interface GroundingResult {
 }
 
 export function checkGrounding(text: string, facts: AlertFact['facts']): GroundingResult {
-  const allowed = allowedNumbersFrom(facts);
+  return checkAgainstAllowed(text, allowedNumbersFrom(facts));
+}
+
+/**
+ * Versão do chat: confere o texto contra QUALQUER contexto (snapshot de
+ * indicadores + alertas). Inteiros pequenos (0 a 12) são liberados —
+ * enumerações do tipo "3 caminhos" não são números financeiros.
+ */
+export function checkGroundingDeep(text: string, context: unknown): GroundingResult {
+  const allowed = collectAllowedNumbers(context);
+  for (let i = 0; i <= 12; i++) allowed.add(i);
+  return checkAgainstAllowed(text, allowed);
+}
+
+function checkAgainstAllowed(text: string, allowed: Set<number>): GroundingResult {
   const offending = extractNumbers(text).filter((n) => {
     for (const a of allowed) if (Math.abs(a - n) < EPS) return false;
     return true;
