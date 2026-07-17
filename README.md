@@ -6,7 +6,8 @@ O sinal vital do seu negócio. O Pulso avisa o dono da pequena empresa
 App + chatbot WhatsApp para controle financeiro de PMEs. MVP focado em
 clínicas médicas.
 
-📊 **[Andamento do projeto](docs/andamento.html)** — status visual das etapas.
+📊 **[Andamento do projeto](https://joaoprojetos1.github.io/Projeto-Pulso/)** — o mapa
+visual das tarefas, público, sempre atualizado.
 
 ## Como o projeto é organizado
 
