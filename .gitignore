@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+*.log
+.expo/
+.DS_Store
+
+# dado real de cliente NUNCA entra
+fixtures/real/
+*.ofx
+*.csv
+!fixtures/*.csv
