@@ -6,3 +6,6 @@ packages:
 allowBuilds:
   '@embedded-postgres/windows-x64': true
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@anthropic-ai/sdk@0.112.1'

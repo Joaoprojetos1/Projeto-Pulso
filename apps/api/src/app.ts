@@ -1,18 +1,25 @@
 import fastify from 'fastify';
 
+import type { AlertWriterModel } from './ai/writer';
 import type { Sql } from './db';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
 import { registerSnapshots } from './routes/snapshots';
 
-export function buildApp(sql: Sql, opts: { logger?: boolean } = {}) {
+export interface AppOptions {
+  logger?: boolean;
+  /** Sem writer (null), os alertas usam o texto padrão determinístico. */
+  alertWriter?: AlertWriterModel | null;
+}
+
+export function buildApp(sql: Sql, opts: AppOptions = {}) {
   const app = fastify({ logger: opts.logger ?? false });
 
   app.get('/health', async () => ({ ok: true }));
 
   registerCompanies(app, sql);
   registerData(app, sql);
-  registerSnapshots(app, sql);
+  registerSnapshots(app, sql, opts.alertWriter ?? null);
 
   return app;
 }

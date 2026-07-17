@@ -2,6 +2,7 @@ import { computeAll, CORE_VERSION, evaluate } from '@pulso/core';
 import type { CompanySnapshot } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
+import { writeAlert, type AlertWriterModel } from '../ai/writer';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 
@@ -50,7 +51,11 @@ async function loadCompanySnapshot(
   };
 }
 
-export function registerSnapshots(app: FastifyInstance, sql: Sql) {
+export function registerSnapshots(
+  app: FastifyInstance,
+  sql: Sql,
+  alertWriter: AlertWriterModel | null = null,
+) {
   app.post<{ Params: { id: string }; Body: { asOf?: string } | undefined }>(
     '/companies/:id/snapshots',
     {
@@ -73,6 +78,13 @@ export function registerSnapshots(app: FastifyInstance, sql: Sql) {
       const indicators = computeAll(snap);
       const alerts = evaluate(indicators);
 
+      // a voz do Pulso: a IA (ou o template) redige a partir dos facts —
+      // e de NADA além dos facts
+      const profile = { name: company.name, niche: company.niche };
+      const written = await Promise.all(
+        alerts.map(async (a) => ({ alert: a, text: await writeAlert(alertWriter, a, profile) })),
+      );
+
       const snapshotId = await sql.begin(async (tx) => {
         const [s] = await tx`
           INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload)
@@ -85,15 +97,29 @@ export function registerSnapshots(app: FastifyInstance, sql: Sql) {
 
         // recalcular o mesmo dia substitui os alertas daquele dia
         await tx`DELETE FROM alerts WHERE snapshot_id = ${s.id}`;
-        for (const a of alerts) {
+        for (const { alert: a, text } of written) {
           await tx`
-            INSERT INTO alerts (company_id, snapshot_id, rule_key, severity, facts)
-            VALUES (${company.id}, ${s.id}, ${a.ruleKey}, ${a.severity}, ${tx.json(a.facts as never)})`;
+            INSERT INTO alerts (company_id, snapshot_id, rule_key, severity, facts,
+                                text_title, text_body, model_version)
+            VALUES (${company.id}, ${s.id}, ${a.ruleKey}, ${a.severity}, ${tx.json(a.facts as never)},
+                    ${text.title}, ${text.body}, ${text.modelVersion})`;
         }
         return s.id as string;
       });
 
-      return reply.code(201).send({ snapshotId, asOf, coreVersion: CORE_VERSION, alerts });
+      return reply.code(201).send({
+        snapshotId,
+        asOf,
+        coreVersion: CORE_VERSION,
+        alerts: written.map(({ alert: a, text }) => ({
+          ruleKey: a.ruleKey,
+          severity: a.severity,
+          facts: a.facts,
+          textTitle: text.title,
+          textBody: text.body,
+          modelVersion: text.modelVersion,
+        })),
+      });
     },
   );
 

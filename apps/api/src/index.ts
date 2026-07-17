@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
+import { AnthropicAlertWriter } from './ai/writer';
 import { buildApp } from './app';
 import { createSql } from './db';
 import { migrate } from './migrate';
@@ -22,6 +23,12 @@ const sql = createSql(url);
 const applied = await migrate(sql);
 if (applied.length) console.log(`Migrações aplicadas: ${applied.join(', ')}`);
 
-const app = buildApp(sql, { logger: true });
+// com ANTHROPIC_API_KEY a IA redige os alertas; sem ela, entra o texto padrão
+const alertWriter = process.env.ANTHROPIC_API_KEY ? new AnthropicAlertWriter() : null;
+if (!alertWriter) {
+  console.log('ANTHROPIC_API_KEY ausente: alertas usarão o texto padrão (sem IA).');
+}
+
+const app = buildApp(sql, { logger: true, alertWriter });
 const port = Number(process.env.PORT ?? 3000);
 await app.listen({ port, host: '127.0.0.1' });

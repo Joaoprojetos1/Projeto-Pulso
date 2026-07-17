@@ -119,6 +119,9 @@ describe('fluxo completo: clínica da tesoura', () => {
     expect(runway).toBeDefined();
     expect(runway.severity).toBe('critical');
     expect(runway.facts.zeroOn).toBe('2026-07-29');
+    // sem chave de IA nos testes, o texto padrão assume — o alerta nunca fica mudo
+    expect(runway.textTitle).toMatch(/29 de julho/);
+    expect(runway.modelVersion).toBe('template-v1');
   });
 
   it('dashboard: devolve o último snapshot com o pior alerta primeiro', async () => {
