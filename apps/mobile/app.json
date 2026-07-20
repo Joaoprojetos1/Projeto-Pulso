@@ -16,7 +16,10 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "output": "static",
@@ -35,6 +38,17 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c7918238-0c95-4109-b774-5eb7f55e61c9"
+      }
+    },
+    "owner": "joaoprojetos25",
+    "updates": {
+      "url": "https://u.expo.dev/c7918238-0c95-4109-b774-5eb7f55e61c9"
+    },
+    "ios": {}
   }
 }
