@@ -8,24 +8,24 @@
 
 ---
 
-## ⭐ PRÓXIMO PASSO IMEDIATO: publicar a atualização OTA da Fase A
+## ✅ Fase A publicada pelo ar (20/07)
 
-As melhorias da Fase A (itens 1, 3, 5 — ver abaixo) já estão **commitadas** mas
-**ainda não foram publicadas "pelo ar"** para o app instalado. São JS puro, então
-podem ir por OTA (sem novo APK).
+As melhorias da Fase A (itens 1, 3, 5) foram publicadas por **OTA** para o app
+instalado (branch `preview`, update group `bd4d9c88-…`). O app se atualiza
+sozinho na próxima abertura. Não precisou de APK novo.
 
-**Como publicar** (de `apps/mobile`, precisa estar logado na Expo ou ter um
-EXPO_TOKEN da conta `joaoprojetos25`):
-
-```
-npx eas-cli update --branch preview --message "Fase A: cold-start, estado vazio, pulso animado"
-```
-
-Depois disso, o app instalado se atualiza sozinho na próxima abertura.
-
-> Login na Expo: `npx eas-cli login`, OU gerar um access token em
-> expo.dev/settings/access-tokens e usar `$env:EXPO_TOKEN='...'` antes do comando.
+> Para publicar OTA de novo: de `apps/mobile`, com login na Expo
+> (`npx eas-cli login`) ou `$env:EXPO_TOKEN='...'` (token de
+> expo.dev/settings/access-tokens, conta `joaoprojetos25`):
+> `npx eas-cli update --branch preview --message "..."`.
 > (Regra: o João cola a chave; o Claude não digita chaves secretas.)
+
+## ⭐ PRÓXIMO PASSO: Fase B — notificação push
+
+O coração da promessa: o aviso chegar sozinho no celular. Exige módulo nativo
+(expo-notifications) → **precisa de APK novo** (não vai por OTA). Fazer junto com
+o item 4 adiado da Fase A (**manter logado** / async-storage), que também só entra
+com APK novo.
 
 ---
 
