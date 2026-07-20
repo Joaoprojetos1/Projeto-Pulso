@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulso × Oliveira Alves — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Objektiv VF e Myriad Pro são licenciadas: web usa substitutas próximas.
+     Josefin Sans (geométrica fina, ~Objektiv) + Figtree (humanista neutra, ~Myriad). -->
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* --- herdado da Oliveira Alves (estrutura) --- */
+    --oa-escuro:#37373F;   /* cinza escuro institucional — o dark do sistema */
+    --oa-claro:#838993;    /* cinza claro — secundário */
+    --oa-tinta:#2A2A31;    /* texto forte */
+    --papel:#F5F4F2;       /* papel neutro, mais frio que o anterior — alinha à OA */
+    --branco:#FFFFFF;
+    --linha:#E0DEDA;
+
+    /* --- exclusivo do Pulso (vida + sinal) --- */
+    --vivo:#23C883;        /* verde-vivo: o pulso. Único ponto de cor viva. */
+    --vivo-escuro:#158556;
+    --alerta:#E39A26;      /* severidade média */
+    --critico:#D8503F;     /* severidade crítica — raríssimo */
+
+    --display:"Josefin Sans",sans-serif;   /* ~Objektiv VF */
+    --body:"Figtree",sans-serif;           /* ~Myriad Pro */
+    --mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--papel);color:var(--oa-tinta);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px 120px}
+
+  /* hairline: assinatura visual da OA */
+  .hr{border:0;border-top:1px solid var(--oa-claro);opacity:.4;margin:0}
+
+  h2.sec{font-family:var(--display);font-weight:600;font-size:clamp(20px,3vw,27px);letter-spacing:.02em;margin:76px 0 4px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--oa-claro)}
+  p.sub{color:#6A6E76;margin:14px 0 26px;max-width:64ch}
+
+  /* ---------- HERO: lockup de endosso ---------- */
+  .hero{background:var(--oa-escuro);border-radius:2px;padding:clamp(48px,8vw,96px) clamp(28px,6vw,72px);color:var(--papel);margin-top:24px;position:relative;overflow:hidden}
+  .hero .kicker{color:var(--vivo)}
+  .lockup{display:flex;align-items:center;gap:26px;margin:30px 0 8px;flex-wrap:wrap}
+  .lockup .pulso-wm{width:min(320px,70%)}
+  .lockup .divider{width:1px;height:64px;background:rgba(245,244,242,.25)}
+  .lockup .oa-endorse{display:flex;flex-direction:column;gap:8px}
+  .lockup .oa-endorse .by{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#9A9FA8}
+  .hero .claim{font-family:var(--display);font-weight:300;font-size:clamp(17px,2.5vw,22px);color:#C7C9CE;margin-top:30px;max-width:38ch;line-height:1.5;letter-spacing:.01em}
+  .hero .claim b{color:var(--papel);font-weight:600}
+  .hero .claim .g{color:var(--vivo)}
+
+  @media(prefers-reduced-motion:no-preference){
+    .beat{stroke-dasharray:600;stroke-dashoffset:600;animation:beat 2s ease-out .3s forwards}
+    @keyframes beat{to{stroke-dashoffset:0}}
+  }
+
+  /* ---------- estratégia ---------- */
+  .strat{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:2px;overflow:hidden;margin-top:8px}
+  @media(max-width:680px){.strat{grid-template-columns:1fr}}
+  .strat > div{background:var(--branco);padding:24px}
+  .strat h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:.02em;margin-bottom:10px}
+  .strat .from{color:var(--oa-claro)}
+  .strat .keep{color:var(--vivo-escuro)}
+  .strat ul{list-style:none;font-size:14px}
+  .strat li{padding:6px 0 6px 18px;position:relative;color:#5A5E66}
+  .strat li::before{content:"—";position:absolute;left:0;color:var(--oa-claro)}
+  .strat.keepbox li::before{color:var(--vivo)}
+
+  /* ---------- paleta ---------- */
+  .pal{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:760px){.pal{grid-template-columns:repeat(2,1fr)}}
+  .grp-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--oa-claro);margin:26px 0 12px;grid-column:1/-1}
+  .sw{border:1px solid var(--linha);border-radius:2px;overflow:hidden;background:var(--branco)}
+  .sw .c{height:80px}
+  .sw .i{padding:9px 11px}
+  .sw .n{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.01em}
+  .sw .h{font-family:var(--mono);font-size:10.5px;color:var(--oa-claro)}
+  .sw .u{font-size:11px;color:#6A6E76;margin-top:3px;line-height:1.35}
+
+  /* ---------- tipografia ---------- */
+  .type{background:var(--branco);border:1px solid var(--linha);border-radius:2px;padding:26px}
+  .type .row{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--linha)}
+  .type .row:last-child{border-bottom:0}
+  @media(max-width:640px){.type .row{grid-template-columns:1fr;gap:6px}}
+  .type .lab{font-family:var(--mono);font-size:10.5px;color:var(--oa-claro);letter-spacing:.08em;text-transform:uppercase}
+  .type .lab small{display:block;text-transform:none;letter-spacing:0;color:#9A9FA8;margin-top:3px;font-size:10px}
+  .t-disp{font-family:var(--display);font-weight:600;font-size:clamp(24px,4vw,36px);letter-spacing:.02em}
+  .t-thin{font-family:var(--display);font-weight:300;font-size:clamp(22px,3.5vw,30px);letter-spacing:.04em}
+  .t-num{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,32px);font-variant-numeric:tabular-nums}
+  .t-body{font-size:16px;max-width:52ch;color:#4A4E56}
+  .t-mono{font-family:var(--mono);font-size:12.5px;color:var(--oa-claro)}
+
+  /* ---------- logo lockups ---------- */
+  .vars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.vars{grid-template-columns:1fr}}
+  .var{border:1px solid var(--linha);border-radius:2px;aspect-ratio:1.5;display:flex;align-items:center;justify-content:center;padding:24px}
+  .var.d{background:var(--oa-escuro)}
+  .var.l{background:var(--branco)}
+  .varcap{font-family:var(--mono);font-size:10px;color:var(--oa-claro);text-align:center;margin-top:7px;letter-spacing:.04em}
+
+  /* ---------- app ---------- */
+  .phones{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  @media(max-width:860px){.phones{grid-template-columns:1fr;max-width:340px;margin:0 auto}}
+  .phone{background:var(--oa-escuro);border-radius:32px;padding:9px;box-shadow:0 24px 50px -28px rgba(55,55,63,.55)}
+  .scr{background:var(--papel);border-radius:24px;overflow:hidden;font-size:13px}
+  .phcap{font-family:var(--mono);font-size:10px;color:var(--oa-claro);text-align:center;margin-top:9px;letter-spacing:.04em}
+
+  .ah{display:flex;align-items:center;justify-content:space-between;padding:15px 15px 8px}
+  .avatar{width:27px;height:27px;border-radius:50%;background:var(--oa-escuro);color:var(--vivo);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:12px}
+
+  .cash{margin:8px 13px;background:var(--oa-escuro);border-radius:14px;padding:17px 15px;color:var(--papel)}
+  .cash .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#9A9FA8}
+  .cash .v{font-family:var(--display);font-weight:700;font-size:29px;letter-spacing:.01em;margin:3px 0 4px;font-variant-numeric:tabular-nums}
+  .cash .d{font-size:11.5px;color:#C7C9CE}
+  .cash .d b{color:var(--vivo);font-weight:600}
+  .cash svg{width:100%;margin-top:9px;display:block}
+
+  .chips{display:flex;gap:7px;padding:9px 13px}
+  .chip{background:var(--branco);border:1px solid var(--linha);border-radius:10px;padding:8px 10px;flex:1}
+  .chip .cl{font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--oa-claro)}
+  .chip .cv{font-family:var(--display);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;margin-top:2px}
+  .chip .cv.ok{color:var(--vivo-escuro)} .chip .cv.warn{color:var(--alerta)}
+
+  .al{margin:2px 13px 15px;display:flex;flex-direction:column;gap:7px}
+  .a{background:var(--branco);border:1px solid var(--linha);border-radius:12px;padding:11px;display:grid;grid-template-columns:6px 1fr;gap:10px}
+  .a .bar{border-radius:3px}
+  .a.crit .bar{background:var(--critico)} .a.warn .bar{background:var(--alerta)} .a.ok .bar{background:var(--vivo)}
+  .a h5{font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.01em;margin-bottom:2px}
+  .a p{font-size:11.5px;color:#6A6E76;line-height:1.4}
+
+  .alert-full{padding:17px 15px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;background:#FBEAE7;color:var(--critico);border:1px solid var(--critico);border-radius:6px;padding:3px 8px;margin-bottom:12px}
+  .alert-full h3{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:.01em;line-height:1.32;margin-bottom:8px}
+  .alert-full h3 b{color:var(--critico)}
+  .alert-full .why{background:var(--branco);border:1px solid var(--linha);border-radius:12px;padding:11px;margin:12px 0}
+  .wl{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--oa-claro);margin-bottom:6px}
+  .krow{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px dashed var(--linha)}
+  .krow:last-child{border-bottom:0}
+  .krow b{font-variant-numeric:tabular-nums;font-family:var(--display);font-weight:600}
+  .krow b.bad{color:var(--critico)}
+  .cta{display:block;text-align:center;background:var(--oa-escuro);color:var(--papel);font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.02em;border-radius:10px;padding:12px;margin-top:9px;text-decoration:none}
+  .cta.g{background:var(--vivo);color:var(--oa-escuro)}
+
+  .note{background:var(--branco);border:1px solid var(--linha);border-left:3px solid var(--vivo);border-radius:2px;padding:16px 18px;margin-top:22px;font-size:14px;color:#5A5E66}
+  .note b{color:var(--oa-tinta)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="kicker">Design System · fusão de marca</div>
+    <div class="lockup">
+      <!-- Pulso wordmark -->
+      <svg class="pulso-wm" viewBox="0 0 460 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pulso">
+        <text x="0" y="80" font-family="Josefin Sans, sans-serif" font-weight="600" font-size="82" letter-spacing="1" fill="#F5F4F2">pu</text>
+        <path class="beat" d="M120 80 L150 80 L162 40 L176 92 L188 64 L200 80 L228 80" fill="none" stroke="#23C883" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="232" y="80" font-family="Josefin Sans, sans-serif" font-weight="600" font-size="82" letter-spacing="1" fill="#F5F4F2">so</text>
+      </svg>
+      <div class="divider"></div>
+      <div class="oa-endorse">
+        <span class="by">uma empresa</span>
+        <!-- monograma OA aproximado (vetor oficial vem do manual) -->
+        <svg width="86" height="52" viewBox="0 0 130 78" xmlns="http://www.w3.org/2000/svg" aria-label="Oliveira Alves">
+          <circle cx="34" cy="39" r="30" fill="none" stroke="#F5F4F2" stroke-width="2.2"/>
+          <path d="M56 66 L82 14 M64 66 L90 14 M96 66 L96 20" fill="none" stroke="#F5F4F2" stroke-width="2.2" stroke-linecap="round"/>
+          <text x="4" y="76" font-family="Josefin Sans" font-weight="300" font-size="9" letter-spacing="3" fill="#9A9FA8">OLIVEIRA ALVES</text>
+        </svg>
+      </div>
+    </div>
+    <p class="claim">A sobriedade da <b>Oliveira Alves</b>, com <span class="g">pulso</span>. A casa dá a credibilidade — o produto dá o sinal de vida.</p>
+    <svg class="beat" style="position:absolute;right:-30px;bottom:-6px;width:420px;opacity:.08" viewBox="0 0 420 120" aria-hidden="true"><path d="M0 70 L110 70 L138 18 L170 118 L200 54 L228 70 L420 70" fill="none" stroke="#23C883" stroke-width="5"/></svg>
+  </div>
+
+  <!-- ESTRATÉGIA -->
+  <h2 class="sec">A regra da fusão</h2>
+  <p class="sub">Mesclar não é apagar. O Pulso herda o esqueleto sóbrio da Oliveira Alves e acrescenta a única coisa que uma marca de consultoria não precisa ter, mas um produto financeiro precisa: sinal de vida legível.</p>
+  <div class="strat">
+    <div>
+      <h3 class="from">Herdado da Oliveira Alves</h3>
+      <ul>
+        <li>Cinza escuro #37373F como o dark do sistema</li>
+        <li>Linha fina, muito respiro, zero exagero</li>
+        <li>Tipografia geométrica (Objektiv → Josefin no web)</li>
+        <li>Monograma OA como endossante ("uma empresa Oliveira Alves")</li>
+        <li>Hairlines como divisores</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="keep">Exclusivo do Pulso</h3>
+      <ul class="keepbox" style="list-style:none">
+        <li>Verde-vivo #23C883 — o pulso, único ponto de cor</li>
+        <li>Cores de severidade (atenção, crítico)</li>
+        <li>A linha de batimento no "l" e no gráfico de caixa</li>
+        <li>Números tabulares com peso — número é o produto</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note"><b>Por que o verde e o vermelho ficam:</b> não é estética, é usabilidade. O dono precisa distinguir "tudo bem" de "seu caixa zera em setembro" num relance. Cinza sobre cinza — a linguagem da OA — não faz esse trabalho num app de alerta. A cor aqui é função, não enfeite.</div>
+
+  <!-- PALETA -->
+  <h2 class="sec">Cores</h2>
+  <div class="pal">
+    <div class="grp-label">Estrutura — herdada da Oliveira Alves</div>
+    <div class="sw"><div class="c" style="background:#37373F"></div><div class="i"><div class="n">OA Escuro</div><div class="h">#37373F</div><div class="u">Primário, fundos, botão</div></div></div>
+    <div class="sw"><div class="c" style="background:#838993"></div><div class="i"><div class="n">OA Claro</div><div class="h">#838993</div><div class="u">Secundário, rótulos</div></div></div>
+    <div class="sw"><div class="c" style="background:#F5F4F2"></div><div class="i"><div class="n">Papel</div><div class="h">#F5F4F2</div><div class="u">Fundo do app</div></div></div>
+    <div class="sw"><div class="c" style="background:#2A2A31"></div><div class="i"><div class="n">Tinta</div><div class="h">#2A2A31</div><div class="u">Texto</div></div></div>
+
+    <div class="grp-label">Vida e sinal — exclusivo do Pulso</div>
+    <div class="sw"><div class="c" style="background:#23C883"></div><div class="i"><div class="n">Verde-vivo</div><div class="h">#23C883</div><div class="u">O pulso. Positivo, saudável</div></div></div>
+    <div class="sw"><div class="c" style="background:#158556"></div><div class="i"><div class="n">Verde escuro</div><div class="h">#158556</div><div class="u">Texto positivo sobre claro</div></div></div>
+    <div class="sw"><div class="c" style="background:#E39A26"></div><div class="i"><div class="n">Atenção</div><div class="h">#E39A26</div><div class="u">Severidade média</div></div></div>
+    <div class="sw"><div class="c" style="background:#D8503F"></div><div class="i"><div class="n">Crítico</div><div class="h">#D8503F</div><div class="u">Risco de caixa. Raríssimo</div></div></div>
+  </div>
+
+  <!-- TIPOGRAFIA -->
+  <h2 class="sec">Tipografia</h2>
+  <p class="sub">A OA usa Objektiv VF (títulos) e Myriad Pro (apoio) — ambas licenciadas. Para a marca oficial, comprar as licenças; no web, substitutas próximas: Josefin Sans (geométrica fina) e Figtree (humanista neutra).</p>
+  <div class="type">
+    <div class="row"><span class="lab">Display 600<small>Josefin → Objektiv</small></span><span class="t-disp">Seu caixa tem pulso</span></div>
+    <div class="row"><span class="lab">Display Thin 300<small>títulos institucionais, herança OA</small></span><span class="t-thin">Oliveira Alves</span></div>
+    <div class="row"><span class="lab">Números 700<small>tabular-nums</small></span><span class="t-num">R$ 48.230,00 · 34 dias</span></div>
+    <div class="row"><span class="lab">Corpo<small>Figtree → Myriad</small></span><span class="t-body">Você deu mais prazo aos clientes este mês, mas seguiu pagando à vista. Se o ritmo continuar, faltará caixa em setembro.</span></div>
+    <div class="row"><span class="lab">Dados<small>IBM Plex Mono</small></span><span class="t-mono">ATUALIZADO 14 JUL · FONTE: EXTRATO SEMANAL</span></div>
+  </div>
+
+  <!-- LOGO -->
+  <h2 class="sec">Assinaturas</h2>
+  <p class="sub">O Pulso mantém wordmark próprio; a Oliveira Alves aparece como endossante, seguindo a regra do manual OA de o símbolo ser parte integrante do layout — nunca colado ao lado da marca.</p>
+  <div class="vars">
+    <div>
+      <div class="var l">
+        <svg viewBox="0 0 460 110" width="90%" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="80" font-family="Josefin Sans" font-weight="600" font-size="82" letter-spacing="1" fill="#2A2A31">pu</text>
+          <path d="M120 80 L150 80 L162 40 L176 92 L188 64 L200 80 L228 80" fill="none" stroke="#23C883" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="232" y="80" font-family="Josefin Sans" font-weight="600" font-size="82" letter-spacing="1" fill="#2A2A31">so</text>
+        </svg>
+      </div>
+      <div class="varcap">Wordmark · fundo claro</div>
+    </div>
+    <div>
+      <div class="var d">
+        <svg viewBox="0 0 130 78" width="42%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="130" height="78" fill="none"/>
+          <path d="M18 62 L38 62 L48 30 L62 88 L72 46 L82 62 L100 62" fill="none" stroke="#23C883" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="varcap">Ícone do app · batimento</div>
+    </div>
+    <div>
+      <div class="var d">
+        <svg viewBox="0 0 130 92" width="52%" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="34" cy="39" r="30" fill="none" stroke="#F5F4F2" stroke-width="2.4"/>
+          <path d="M56 66 L82 14 M64 66 L90 14 M96 66 L96 20" fill="none" stroke="#F5F4F2" stroke-width="2.4" stroke-linecap="round"/>
+          <text x="14" y="86" font-family="Josefin Sans" font-weight="300" font-size="9" letter-spacing="3" fill="#9A9FA8">OLIVEIRA ALVES</text>
+        </svg>
+      </div>
+      <div class="varcap">Endossante OA (aprox.)</div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <h2 class="sec">O app com a fusão</h2>
+  <p class="sub">Estrutura cinza-OA, sinal verde-Pulso. Repara: a interface inteira é sóbria — o verde só aparece onde há vida, o vermelho só onde há risco.</p>
+  <div class="phones">
+
+    <div>
+      <div class="phone"><div class="scr">
+        <div class="ah">
+          <svg viewBox="0 0 460 110" style="width:82px" xmlns="http://www.w3.org/2000/svg">
+            <text x="0" y="80" font-family="Josefin Sans" font-weight="600" font-size="82" letter-spacing="1" fill="#2A2A31">pu</text>
+            <path d="M120 80 L150 80 L162 40 L176 92 L188 64 L200 80 L228 80" fill="none" stroke="#23C883" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="232" y="80" font-family="Josefin Sans" font-weight="600" font-size="82" letter-spacing="1" fill="#2A2A31">so</text>
+          </svg>
+          <div class="avatar">C</div>
+        </div>
+        <div class="cash">
+          <div class="l">Caixa projetado · 30 dias</div>
+          <div class="v">R$ 48.230</div>
+          <div class="d">Pulso <b>saudável</b> · há 2 dias</div>
+          <svg viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg"><path d="M0 36 L70 34 L94 14 L118 50 L138 26 L162 36 L300 32" fill="none" stroke="#23C883" stroke-width="3" stroke-linecap="round"/><circle cx="300" cy="32" r="3.5" fill="#23C883"/></svg>
+        </div>
+        <div class="chips">
+          <div class="chip"><div class="cl">Ciclo</div><div class="cv warn">34d</div></div>
+          <div class="chip"><div class="cl">Margem</div><div class="cv ok">31%</div></div>
+          <div class="chip"><div class="cl">Receita</div><div class="cv ok">+8%</div></div>
+        </div>
+        <div class="al">
+          <div class="a warn"><div class="bar"></div><div><h5>Ciclo de caixa subindo</h5><p>Você recebe 12 dias mais tarde que em maio.</p></div></div>
+          <div class="a ok"><div class="bar"></div><div><h5>Semana tranquila</h5><p>Nada relevante mudou nos seus números.</p></div></div>
+        </div>
+      </div></div>
+      <div class="phcap">01 · Dashboard</div>
+    </div>
+
+    <div>
+      <div class="phone"><div class="scr">
+        <div class="alert-full">
+          <span class="badge" style="background:#FBEAE7">Alerta crítico</span>
+          <h3>No ritmo atual, seu caixa zera em <b>18 de setembro</b>.</h3>
+          <p style="font-size:12px;color:#6A6E76">Você deu mais prazo aos clientes, mas seguiu pagando à vista.</p>
+          <div class="why">
+            <div class="wl">De onde vem esse número</div>
+            <div class="krow"><span>Recebimento médio</span><b class="bad">46 dias ↑</b></div>
+            <div class="krow"><span>Pagamento médio</span><b>12 dias</b></div>
+            <div class="krow"><span>Ciclo de caixa</span><b class="bad">34 dias</b></div>
+            <div class="krow"><span>Caixa hoje</span><b>R$ 61.400</b></div>
+          </div>
+          <a class="cta g" href="#">O que eu faço?</a>
+          <a class="cta" href="#">Ver a conta completa</a>
+        </div>
+      </div></div>
+      <div class="phcap">02 · Alerta</div>
+    </div>
+
+    <div>
+      <div class="phone"><div class="scr">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
+          <div style="align-self:flex-end;background:#37373F;color:#F5F4F2;border-radius:12px;border-bottom-right-radius:3px;padding:9px 11px;font-size:12px;max-width:85%">O que faço pra não zerar o caixa?</div>
+          <div style="align-self:flex-start;background:#fff;border:1px solid #E0DEDA;border-radius:12px;border-bottom-left-radius:3px;padding:9px 11px;font-size:12px;max-width:88%;line-height:1.45">
+            Três caminhos:<br><br><b style="color:#158556">1.</b> Antecipe os R$ 28 mil a receber de agosto.<br><b style="color:#158556">2.</b> Negocie 30 dias com seus 2 maiores fornecedores.<br><b style="color:#158556">3.</b> Reduza o prazo de novos clientes.<br><br>Só o item 2 empurra o risco de <span style="color:#D8503F;font-weight:600">18/set</span> para novembro.</div>
+        </div>
+        <div style="margin:2px 13px 15px;display:flex;gap:7px">
+          <div style="flex:1;background:#fff;border:1px solid #E0DEDA;border-radius:11px;padding:9px 11px;font-size:11.5px;color:#838993">Pergunte sobre seu negócio…</div>
+          <div style="width:36px;height:36px;border-radius:11px;background:#23C883;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12 L20 12 M13 5 L20 12 L13 19" stroke="#37373F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div></div>
+      <div class="phcap">03 · Conversa</div>
+    </div>
+
+  </div>
+
+  <hr class="hr" style="margin-top:60px">
+  <p style="font-family:var(--mono);font-size:10.5px;color:var(--oa-claro);letter-spacing:.06em;text-transform:uppercase;margin-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <span>Pulso × Oliveira Alves</span><span>Fusão v1</span><span>Julho 2026</span>
+  </p>
+
+</div>
+</body>
+</html>

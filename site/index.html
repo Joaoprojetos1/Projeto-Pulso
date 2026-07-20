@@ -10,59 +10,59 @@
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  /* ---------- Marca (tokens do CLAUDE.md) ---------- */
+  /* ---------- Marca Pulso × Oliveira Alves (fonte: packages/tokens) ---------- */
   :root {
-    --mata:   #0E2E2A;
-    --vivo:   #23C883;
-    --papel:  #F6F4EE;
-    --tinta:  #13221F;
-    --cinza:  #5F6F6B;
+    --mata:   #37373F;   /* escuro do sistema (herdado da Oliveira Alves) */
+    --vivo:   #23C883;   /* o pulso, positivo — único ponto de cor viva */
+    --papel:  #F5F4F2;
+    --tinta:  #2A2A31;
+    --cinza:  #838993;
     --alerta: #E39A26;
     --critico:#D8503F;
 
     /* tema claro (papel é o fundo primário da marca) */
     --bg:      var(--papel);
     --surface: #FFFFFF;
-    --surface-2: #FBFAF5;
+    --surface-2: #FBFAF9;
     --ink:     var(--tinta);
     --muted:   var(--cinza);
     --heading: var(--mata);
-    --line:    rgba(14, 46, 42, .12);
-    --line-2:  rgba(14, 46, 42, .07);
+    --line:    rgba(55, 55, 63, .12);
+    --line-2:  rgba(55, 55, 63, .07);
     --pulse:   var(--vivo);
-    --pulse-ink: #0B7A4E;      /* vivo mais escuro, legível sobre papel */
-    --shadow:  0 1px 2px rgba(14,46,42,.05), 0 12px 32px -12px rgba(14,46,42,.16);
-    --f-display: 'Sora', 'Segoe UI', system-ui, sans-serif;
+    --pulse-ink: #158556;      /* vivo mais escuro, legível sobre papel */
+    --shadow:  0 1px 2px rgba(42,42,49,.05), 0 12px 32px -12px rgba(42,42,49,.18);
+    --f-display: 'Josefin Sans', 'Segoe UI', system-ui, sans-serif;
     --f-body:    'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --f-mono:    'IBM Plex Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:      var(--mata);
-      --surface: #123A33;
-      --surface-2: #0F332D;
-      --ink:     #E9F1EC;
-      --muted:   #9FB4AE;
-      --heading: #F1F6F1;
-      --line:    rgba(233, 241, 236, .13);
-      --line-2:  rgba(233, 241, 236, .07);
+      --surface: #3E3E47;
+      --surface-2: #2E2E36;
+      --ink:     #ECEBEF;
+      --muted:   #A6A6AE;
+      --heading: #F4F4F6;
+      --line:    rgba(236, 235, 239, .13);
+      --line-2:  rgba(236, 235, 239, .07);
       --pulse-ink: #4FE0A3;
       --shadow:  0 1px 2px rgba(0,0,0,.28), 0 18px 44px -16px rgba(0,0,0,.55);
     }
   }
   /* o toggle do leitor vence a preferência do sistema, nos dois sentidos */
   :root[data-theme="light"] {
-    --bg: var(--papel); --surface:#FFFFFF; --surface-2:#FBFAF5; --ink:var(--tinta);
-    --muted:var(--cinza); --heading:var(--mata); --line:rgba(14,46,42,.12);
-    --line-2:rgba(14,46,42,.07); --pulse-ink:#0B7A4E;
-    --shadow:0 1px 2px rgba(14,46,42,.05),0 12px 32px -12px rgba(14,46,42,.16);
+    --bg: var(--papel); --surface:#FFFFFF; --surface-2:#FBFAF9; --ink:var(--tinta);
+    --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12);
+    --line-2:rgba(55,55,63,.07); --pulse-ink:#158556;
+    --shadow:0 1px 2px rgba(42,42,49,.05),0 12px 32px -12px rgba(42,42,49,.18);
   }
   :root[data-theme="dark"] {
-    --bg:var(--mata); --surface:#123A33; --surface-2:#0F332D; --ink:#E9F1EC;
-    --muted:#9FB4AE; --heading:#F1F6F1; --line:rgba(233,241,236,.13);
-    --line-2:rgba(233,241,236,.07); --pulse-ink:#4FE0A3;
+    --bg:var(--mata); --surface:#3E3E47; --surface-2:#2E2E36; --ink:#ECEBEF;
+    --muted:#A6A6AE; --heading:#F4F4F6; --line:rgba(236,235,239,.13);
+    --line-2:rgba(236,235,239,.07); --pulse-ink:#4FE0A3;
     --shadow:0 1px 2px rgba(0,0,0,.28),0 18px 44px -16px rgba(0,0,0,.55);
   }
 
@@ -218,7 +218,7 @@
   /* confiança */
   .trust { background: var(--mata); color: #E9F1EC; border-radius: 22px; padding: clamp(2.2rem, 5vw, 3.4rem); position: relative; overflow: hidden; }
   .trust h2 { color: #F1F6F1; }
-  .trust .prose { color: #B7C9C2; max-width: 56ch; }
+  .trust .prose { color: #C2C4CA; max-width: 56ch; }
   .trust .eyebrow { color: #4FE0A3; }
   .trust .eyebrow::before { background: #4FE0A3; }
   .trust-pulse { position: absolute; right: -40px; bottom: -20px; width: 320px; opacity: .16; pointer-events: none; }

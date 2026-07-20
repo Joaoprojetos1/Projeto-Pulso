@@ -4,7 +4,7 @@ import {
   Figtree_600SemiBold,
 } from '@expo-google-fonts/figtree';
 import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
-import { Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold } from '@expo-google-fonts/sora';
+import { JosefinSans_600SemiBold, JosefinSans_700Bold } from '@expo-google-fonts/josefin-sans';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -18,9 +18,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Sora_600SemiBold,
-    Sora_700Bold,
-    Sora_800ExtraBold,
+    JosefinSans_600SemiBold,
+    JosefinSans_700Bold,
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,
