@@ -9,7 +9,18 @@ import postgres from 'postgres';
  * dinheiro em silêncio.
  */
 export function createSql(url: string) {
+  // Bancos gerenciados (Neon e afins) exigem conexão TLS; o Postgres local de
+  // dev/teste roda sem. Liga o SSL quando o host não é a própria máquina.
+  let isLocal = false;
+  try {
+    const host = new URL(url).hostname;
+    isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  } catch {
+    isLocal = false;
+  }
+
   return postgres(url, {
+    ssl: isLocal ? false : 'require',
     types: {
       bigint: {
         to: 20,

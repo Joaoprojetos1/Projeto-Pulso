@@ -48,16 +48,32 @@ function apiBase(): string {
   return `http://${host}:3000`;
 }
 
-async function getJson<T>(path: string): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
-  try {
-    const res = await fetch(`${apiBase()}${path}`, { signal: controller.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
-    return (await res.json()) as T;
-  } finally {
-    clearTimeout(timer);
+/**
+ * Busca com um toque de paciência. Servidor gratuito (Render) hiberna quando
+ * ninguém usa; a primeira visita pode levar ~30-50s pra acordar. Então tenta
+ * rápido (8s, caso comum já acordado) e, se falhar, tenta de novo dando 60s.
+ */
+async function fetchWithWake(url: string, init?: RequestInit): Promise<Response> {
+  const timeouts = [8000, 60000];
+  let lastErr: unknown;
+  for (const ms of timeouts) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } catch (err) {
+      lastErr = err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  throw lastErr;
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const res = await fetchWithWake(`${apiBase()}${path}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
+  return (await res.json()) as T;
 }
 
 export async function fetchCompanies(): Promise<Array<{ id: string; name: string }>> {
@@ -75,19 +91,12 @@ export interface ChatTurnJson {
 }
 
 export async function sendChat(companyId: string, messages: ChatTurnJson[]): Promise<string> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
-  try {
-    const res = await fetch(`${apiBase()}/companies/${companyId}/chat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ messages }),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
-    const body = (await res.json()) as { reply: string };
-    return body.reply;
-  } finally {
-    clearTimeout(timer);
-  }
+  const res = await fetchWithWake(`${apiBase()}/companies/${companyId}/chat`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
+  const body = (await res.json()) as { reply: string };
+  return body.reply;
 }

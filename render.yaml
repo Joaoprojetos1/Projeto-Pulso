@@ -1,0 +1,27 @@
+# Receita que o Render segue para subir a API do Pulso.
+# O banco de dados fica no Neon (grátis, à parte) — a string de conexão dele
+# entra na variável DATABASE_URL abaixo.
+#
+# Passo a passo humano (com prints) está em DEPLOY.md.
+services:
+  - type: web
+    name: pulso-api
+    runtime: node
+    plan: free
+    # Instala só o que a API precisa (pula o app Expo, que é pesado) e compila o core.
+    buildCommand: corepack enable && pnpm install --prod=false --filter "@pulso/api..." && pnpm --filter @pulso/core build
+    startCommand: pnpm --filter @pulso/api start
+    # O Render checa esta rota para saber se o servidor subiu.
+    healthCheckPath: /health
+    envVars:
+      # 0.0.0.0 deixa o servidor aceitar visitas de fora (na sua máquina é 127.0.0.1).
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_VERSION
+        value: "22"
+      # Cole aqui a string de conexão do Neon (o Render pede na primeira vez).
+      - key: DATABASE_URL
+        sync: false
+      # Opcional: chave da Anthropic. Sem ela, os alertas usam o texto padrão.
+      - key: ANTHROPIC_API_KEY
+        sync: false
