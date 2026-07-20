@@ -4,7 +4,12 @@ Assistente financeiro para pequenas empresas brasileiras. Recebe dados
 financeiros, calcula indicadores e usa IA para interpretar e alertar o dono
 antes do caixa acabar.
 
-Público do MVP: clínicas médicas (nicho único). Não generalizar.
+**Foco de vendas:** pequenas empresas, começando pelas clínicas (é onde o time
+prospecta). Mas a **comunicação do produto (app e site) é GERAL** — fala com
+qualquer dono de pequeno negócio, sem termos específicos de setor (nada de
+"convênio", "paciente", "clínica" no texto). Sem nicho travado; visão de longo
+prazo é PMEs em geral. Fórmula/indicador específico de setor só entra validado
+pelo especialista.
 
 ## Regras inegociáveis
 
@@ -96,12 +101,12 @@ segundo nicho · cobrança dentro do app (venda acontece no site)
 
 ## Tokens da marca
 
-Marca **Pulso × Oliveira Alves**. Fonte única de verdade:
+Marca **Pulso** (própria, se sustenta sozinha). Fonte única de verdade:
 `packages/tokens/src/index.ts` — ver `packages/tokens/DESIGN.md` e o board
 `packages/tokens/design-system.html`. App e site derivam dali; nunca escreva hex
 cru na UI, use o nome semântico.
 
-Cores: escuro do sistema `#37373F` (estrutura, herdado da Oliveira Alves) ·
+Cores: escuro do sistema `#37373F` (estrutura sóbria) ·
 vivo `#23C883` (o pulso, positivo — único ponto de cor viva) · papel `#F5F4F2`
 (fundo) · tinta `#2A2A31` (texto) · cinza `#838993` (secundário) · linha
 `#E0DEDA` · alerta `#E39A26` · crítico `#D8503F`
@@ -110,13 +115,13 @@ O crítico só aparece em risco real de caixa. Vermelho abundante vira ruído. A
 viva e as de severidade são função (o dono precisa distinguir "tudo bem" de "seu
 caixa zera" num relance), não estética — não remover em nome da sobriedade.
 
-Fontes: no manual da Oliveira Alves as oficiais são licenciadas (Objektiv VF /
-Myriad Pro — comprar para uso oficial). Substitutas: **Josefin Sans** (títulos,
+Fontes: as oficiais de títulos são licenciadas (comprar para uso oficial).
+Substitutas em uso: **Josefin Sans** (títulos,
 geométrica fina) · Figtree (corpo) · IBM Plex Mono (rótulos, datas). Números com
 `tabular-nums`.
 
 ## Voz do produto
 
-Fala com o dono da clínica, não com um CFO. "Você está recebendo 46 dias
-depois de atender" — nunca "seu DSO está em 46". Sem jargão, sem
+Fala com o dono do negócio, não com um CFO. "Você está recebendo 46 dias
+depois de vender" — nunca "seu DSO está em 46". Sem jargão, sem
 condescendência, com data e número concretos.

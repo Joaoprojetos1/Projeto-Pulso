@@ -1,7 +1,7 @@
 {
   "name": "@pulso/tokens",
   "version": "0.1.0",
-  "description": "Design tokens do Pulso × Oliveira Alves. Fonte única de verdade da marca. Ver DESIGN.md e design-system.html.",
+  "description": "Design tokens do Pulso. Fonte única de verdade da marca. Ver DESIGN.md e design-system.html.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

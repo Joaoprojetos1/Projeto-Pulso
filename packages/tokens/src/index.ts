@@ -1,13 +1,13 @@
 /**
- * Pulso × Oliveira Alves — design tokens.
+ * Pulso — design tokens.
  * Fonte ÚNICA de verdade. App, site e docs derivam daqui.
  *
- * Regra da fusão: estrutura herdada da Oliveira Alves (cinzas sóbrios),
- * cor viva e sinais exclusivos do Pulso (função, não decoração).
+ * Regra da fusão: estrutura sóbria (cinzas neutros) + cor viva e sinais
+ * exclusivos do Pulso (função, não decoração).
  */
 
 export const color = {
-  // --- estrutura: herdado da Oliveira Alves ---
+  // --- estrutura: cinzas sóbrios ---
   oaEscuro: '#37373F', // dark do sistema: fundos, botão primário, ícone
   oaClaro: '#838993', // secundário, rótulos
   tinta: '#2A2A31', // texto forte
@@ -46,8 +46,8 @@ export const severityColor = {
 } as const;
 
 export const font = {
-  // Objektiv VF e Myriad Pro são licenciadas (manual OA). Comprar para uso
-  // oficial. Substitutas web abaixo mantêm o caráter.
+  // As fontes oficiais de títulos são licenciadas — comprar para uso oficial.
+  // As substitutas web abaixo mantêm o caráter.
   display: 'Josefin Sans', // ~Objektiv VF — títulos, wordmark
   body: 'Figtree', // ~Myriad Pro — corpo
   mono: 'IBM Plex Mono', // rótulos, dados, datas

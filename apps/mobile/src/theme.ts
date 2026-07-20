@@ -1,5 +1,5 @@
 /**
- * Tema do app — marca Pulso × Oliveira Alves.
+ * Tema do app — marca Pulso.
  *
  * A fonte da verdade dos tokens é `@pulso/tokens` (ver packages/tokens/DESIGN.md
  * e o board em packages/tokens/design-system.html). Aqui os valores são
@@ -10,13 +10,13 @@
  *
  * O app é burro: zero lógica financeira. Isto aqui é só aparência.
  *
- * Fontes: no manual da Oliveira Alves as oficiais são licenciadas (Objektiv VF /
- * Myriad Pro). No app usamos as substitutas próximas: Josefin Sans (geométrica
- * fina, ~Objektiv) para títulos e Figtree para o corpo.
+ * Fontes: as oficiais de títulos são licenciadas (comprar para uso oficial). No
+ * app usamos as substitutas próximas: Josefin Sans (geométrica fina) para
+ * títulos e Figtree para o corpo.
  */
 
 export const colors = {
-  mata: '#37373F', // escuro do sistema (herdado da Oliveira Alves; era o verde-mata)
+  mata: '#37373F', // escuro do sistema (era o verde-mata)
   vivo: '#23C883', // o pulso, positivo — único ponto de cor viva
   papel: '#F5F4F2', // fundo do app
   tinta: '#2A2A31', // texto forte

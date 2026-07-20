@@ -52,7 +52,7 @@ export default function Login() {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="voce@suaclinica.com.br"
+            placeholder="voce@suaempresa.com.br"
             placeholderTextColor={colors.cinza}
             autoCapitalize="none"
             keyboardType="email-address"

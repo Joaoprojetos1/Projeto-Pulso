@@ -108,7 +108,7 @@ export const DEMO_DASHBOARD: DashboardJson = {
       },
       textTitle: 'Você vende mais, mas o dinheiro demora a chegar',
       textBody:
-        'Sua receita cresceu 14% e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com convênios e fornecedores.',
+        'Sua receita cresceu 14% e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com clientes e fornecedores.',
     },
     {
       ruleKey: 'concentration',

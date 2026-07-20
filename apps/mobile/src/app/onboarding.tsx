@@ -1,5 +1,5 @@
 /**
- * Onboarding: conectar os dados da clínica.
+ * Onboarding: conectar os dados do negócio.
  * O envio do arquivo real depende do modelo de exportação do sistema da
  * clínica (a caminho). Até lá, a demonstração mostra o produto vivo.
  */
@@ -23,7 +23,7 @@ export default function Onboarding() {
         <View style={styles.miolo}>
           <Text style={styles.titulo}>Vamos ligar o monitor no seu caixa</Text>
           <Text style={styles.corpo}>
-            O Pulso lê os lançamentos do sistema da sua clínica — contas a receber, a pagar e o
+            O Pulso lê os lançamentos do sistema do seu negócio — contas a receber, a pagar e o
             saldo — e passa a vigiar seu caixa todos os dias.
           </Text>
 
@@ -41,8 +41,8 @@ export default function Onboarding() {
             <Text style={styles.cartaoTexto}>
               O envio de arquivo abre em breve.{' '}
               {fonte === 'servidor'
-                ? `Por ora, você está vendo os dados de ${dashboard?.company.name ?? 'sua clínica'} direto do servidor.`
-                : 'Por ora, explore com a clínica de demonstração — dados 100% fictícios.'}
+                ? `Por ora, você está vendo os dados de ${dashboard?.company.name ?? 'seu negócio'} direto do servidor.`
+                : 'Por ora, explore com a empresa de demonstração — dados 100% fictícios.'}
             </Text>
           </View>
         </View>

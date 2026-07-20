@@ -20,7 +20,7 @@ export default function Conta() {
         <Text style={styles.titulo}>Conta</Text>
 
         <View style={styles.cartao}>
-          <Text style={styles.rotulo}>CLÍNICA</Text>
+          <Text style={styles.rotulo}>NEGÓCIO</Text>
           <Text style={styles.nome}>{dashboard?.company.name ?? '—'}</Text>
           <Text style={styles.detalhe}>
             {fonte === 'demo' ? 'Modo demonstração · dados fictícios' : 'Conectada ao servidor do Pulso'}
@@ -39,7 +39,7 @@ export default function Conta() {
         <View style={styles.cartao}>
           <Text style={styles.rotulo}>SEUS DADOS</Text>
           <Text style={styles.detalhe}>
-            Os lançamentos da clínica ficam guardados no servidor do Pulso, protegidos e usados só
+            Os lançamentos do seu negócio ficam guardados no servidor do Pulso, protegidos e usados só
             para calcular seus indicadores. Nenhum dado seu treina IA nem é compartilhado.
           </Text>
         </View>
