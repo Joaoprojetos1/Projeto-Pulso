@@ -20,12 +20,31 @@ sozinho na próxima abertura. Não precisou de APK novo.
 > `npx eas-cli update --branch preview --message "..."`.
 > (Regra: o João cola a chave; o Claude não digita chaves secretas.)
 
-## ⭐ PRÓXIMO PASSO: Fase B — notificação push
+## ✅ Fase B — notificação push (código pronto, 20/07)
 
-O coração da promessa: o aviso chegar sozinho no celular. Exige módulo nativo
-(expo-notifications) → **precisa de APK novo** (não vai por OTA). Fazer junto com
-o item 4 adiado da Fase A (**manter logado** / async-storage), que também só entra
-com APK novo.
+O coração da promessa: o aviso chega sozinho no celular. **Código feito e testado**
+(48 testes na API). Junto foi o "manter logado" (async-storage). Como usa módulos
+nativos (expo-notifications, expo-device, async-storage), **precisou de APK novo**.
+
+Faltam 2 coisas para funcionar de ponta a ponta (independentes entre si):
+
+1. **Redeploy da API no Render** — o push desse código NÃO disparou o deploy
+   automático (a rota `/companies/:id/devices` ainda respondia 404 em produção).
+   **Fazer manual:** dashboard.render.com → serviço **pulso-api** → **Manual Deploy**
+   → **"Deploy latest commit"**. A migração `0002_devices` (tabela dos aparelhos)
+   roda sozinha na subida. Conferir depois: a rota deve responder **400** (token
+   inválido) em vez de 404. _Investigar se vale ligar autoDeploy no render.yaml._
+
+2. **Instalar o APK novo** no celular — build EAS disparado 20/07
+   (id `1a8ffd91-d060-4e26-9853-706742e6a844`, conta joaoprojetos25). Ver/baixar em
+   expo.dev/accounts/joaoprojetos25/projects/pulso/builds. Só o APK novo tem push
+   (OTA não serve para módulo nativo).
+
+**Testar no celular** (depois dos 2 acima): abrir o app (ele pede permissão de
+notificação e registra o aparelho) → no PC, disparar
+`POST https://pulso-api-9byl.onrender.com/companies/<id>/push-test`
+(id da Clínica Horizonte = `5e330c08-9a71-4f9e-9e0a-5f909f01d099`). A notificação
+deve chegar. O disparo real também acontece ao criar um snapshot com alerta sério.
 
 ---
 
