@@ -5,7 +5,7 @@
  */
 
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -22,10 +22,30 @@ import { PulsoLogo } from '@/components/logo';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
+// O servidor no plano grátis "dorme"; a 1ª visita leva ~30-50s pra acordar.
+// Em vez de uma bolinha girando (parece travado), a mensagem evolui.
+const MENSAGENS_CARREGANDO = [
+  'Ligando o monitor…',
+  'Acordando o servidor — o primeiro acesso demora um pouco…',
+  'Quase lá, buscando seus números…',
+];
+
 export default function Login() {
   const { carregar, carregando } = usePulso();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [msg, setMsg] = useState(0);
+
+  useEffect(() => {
+    if (!carregando) {
+      setMsg(0);
+      return;
+    }
+    const t = setInterval(() => {
+      setMsg((i) => Math.min(i + 1, MENSAGENS_CARREGANDO.length - 1));
+    }, 4500);
+    return () => clearInterval(t);
+  }, [carregando]);
 
   async function entrar() {
     await carregar();
@@ -74,15 +94,22 @@ export default function Login() {
             disabled={carregando}
           >
             {carregando ? (
-              <ActivityIndicator color={colors.papel} />
+              <View style={styles.carregandoLinha}>
+                <ActivityIndicator color={colors.papel} />
+                <Text style={styles.botaoTexto}>Entrando…</Text>
+              </View>
             ) : (
               <Text style={styles.botaoTexto}>Entrar</Text>
             )}
           </Pressable>
 
-          <Text style={styles.nota}>
-            Piloto do Pulso — o acesso é liberado pela nossa equipe.
-          </Text>
+          {carregando ? (
+            <Text style={styles.carregandoMsg}>{MENSAGENS_CARREGANDO[msg]}</Text>
+          ) : (
+            <Text style={styles.nota}>
+              Piloto do Pulso — o acesso é liberado pela nossa equipe.
+            </Text>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -144,6 +171,15 @@ const styles = StyleSheet.create({
     fontFamily: fonts.displayMedio,
     fontSize: 16,
     color: colors.papel,
+  },
+  carregandoLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  carregandoMsg: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    letterSpacing: 0.3,
+    color: colors.okEscuro,
+    textAlign: 'center',
+    marginTop: 14,
   },
   nota: {
     fontFamily: fonts.corpo,

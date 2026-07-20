@@ -4,7 +4,15 @@
  */
 
 import { router } from 'expo-router';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PulsoLogo } from '@/components/logo';
@@ -22,7 +30,20 @@ export default function Dashboard() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.vazio}>
           <PulsoLogo size={30} />
-          <Text style={styles.vazioTexto}>Sem dados ainda. Volte e entre de novo.</Text>
+          <Text style={styles.vazioTexto}>
+            Assim que seus lançamentos chegarem, o monitor liga aqui.
+          </Text>
+          <Pressable
+            style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
+            onPress={carregar}
+            disabled={carregando}
+          >
+            {carregando ? (
+              <ActivityIndicator color={colors.papel} />
+            ) : (
+              <Text style={styles.tentarTexto}>Tentar de novo</Text>
+            )}
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -141,8 +162,23 @@ function Chip({ rotulo, valor, positivo }: { rotulo: string; valor: string; posi
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
   scroll: { paddingBottom: 28 },
-  vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
-  vazioTexto: { fontFamily: fonts.corpo, color: colors.cinza },
+  vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 40 },
+  vazioTexto: {
+    fontFamily: fonts.corpo,
+    fontSize: 14,
+    color: colors.cinza,
+    textAlign: 'center',
+    lineHeight: 21,
+  },
+  tentar: {
+    backgroundColor: colors.mata,
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 26,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  tentarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
 
   topo: {
     flexDirection: 'row',
@@ -235,7 +271,7 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 10,
   },
-  pressionado: { opacity: 0.75 },
+  pressionado: { opacity: 0.9, transform: [{ scale: 0.98 }] },
   barra: { width: 7, borderRadius: 4 },
   alertaMiolo: { flex: 1, gap: 2 },
   alertaTitulo: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta },
