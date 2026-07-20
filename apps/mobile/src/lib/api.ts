@@ -85,6 +85,20 @@ export async function fetchDashboard(companyId: string): Promise<DashboardJson> 
   return getJson<DashboardJson>(`/companies/${companyId}/dashboard`);
 }
 
+/** Registra o "endereço" (push token) deste celular para a empresa. */
+export async function registerDevice(
+  companyId: string,
+  token: string,
+  platform: string,
+): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/companies/${companyId}/devices`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ token, platform }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao registrar aparelho`);
+}
+
 export interface ChatTurnJson {
   role: 'user' | 'assistant';
   content: string;

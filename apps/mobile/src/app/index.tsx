@@ -31,10 +31,18 @@ const MENSAGENS_CARREGANDO = [
 ];
 
 export default function Login() {
-  const { carregar, carregando } = usePulso();
+  const { carregar, carregando, restaurando, logado } = usePulso();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [msg, setMsg] = useState(0);
+
+  // Abertura do app: se já havia sessão salva, entra direto no painel.
+  // Depende só de `restaurando` para não competir com o login manual (que
+  // segue para o onboarding).
+  useEffect(() => {
+    if (!restaurando && logado) router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurando]);
 
   useEffect(() => {
     if (!carregando) {
@@ -46,6 +54,16 @@ export default function Login() {
     }, 4500);
     return () => clearInterval(t);
   }, [carregando]);
+
+  // Enquanto verifica a sessão salva, evita piscar a tela de login.
+  if (restaurando) {
+    return (
+      <SafeAreaView style={[styles.safe, styles.centro]}>
+        <PulsoLogo size={40} color={colors.papel} />
+        <ActivityIndicator color={colors.papel} style={{ marginTop: 20 }} />
+      </SafeAreaView>
+    );
+  }
 
   async function entrar() {
     await carregar();
@@ -118,6 +136,7 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.mata },
+  centro: { justifyContent: 'center', alignItems: 'center' },
   wrap: { flex: 1 },
   hero: {
     flex: 1,

@@ -11,6 +11,7 @@ import { createSql, type Sql } from './db';
  */
 const MIGRATIONS: Array<[name: string, file: string]> = [
   ['0001_schema', 'schema.sql'],
+  ['0002_devices', '0002_devices.sql'],
 ];
 
 export async function migrate(sql: Sql): Promise<string[]> {

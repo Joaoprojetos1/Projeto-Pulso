@@ -6,7 +6,8 @@ import {
 import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
 import { JosefinSans_600SemiBold, JosefinSans_700Bold } from '@expo-google-fonts/josefin-sans';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -29,6 +30,15 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
+
+  // Tocar na notificação de alerta abre o app no painel.
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((res) => {
+      const data = res.notification.request.content.data as { kind?: string } | undefined;
+      if (data?.kind === 'alert') router.navigate('/(tabs)');
+    });
+    return () => sub.remove();
+  }, []);
 
   if (!fontsLoaded) return null;
 

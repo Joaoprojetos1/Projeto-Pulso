@@ -5,6 +5,7 @@ import { AnthropicAlertWriter } from './ai/writer';
 import { buildApp } from './app';
 import { createSql } from './db';
 import { migrate } from './migrate';
+import { ExpoPushSender } from './push';
 
 // conveniência de dev: carrega .env local se existir (sem sobrescrever o ambiente)
 if (existsSync('.env')) {
@@ -33,7 +34,10 @@ if (!temIA) {
   console.log('ANTHROPIC_API_KEY ausente: alertas com texto padrão e conversa desligada.');
 }
 
-const app = buildApp(sql, { logger: true, alertWriter, chatModel });
+// entrega de push pelo serviço do Expo (não precisa de chave)
+const pushSender = new ExpoPushSender();
+
+const app = buildApp(sql, { logger: true, alertWriter, chatModel, pushSender });
 const port = Number(process.env.PORT ?? 3000);
 // HOST=0.0.0.0 deixa o celular (Expo Go) acessar a API pela rede local
 const host = process.env.HOST ?? '127.0.0.1';

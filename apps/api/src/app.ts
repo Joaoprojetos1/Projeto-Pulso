@@ -3,9 +3,11 @@ import fastify from 'fastify';
 import type { ChatModel } from './ai/chat';
 import type { AlertWriterModel } from './ai/writer';
 import type { Sql } from './db';
+import type { PushSender } from './push';
 import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
+import { registerDevices } from './routes/devices';
 import { registerSnapshots } from './routes/snapshots';
 
 export interface AppOptions {
@@ -14,6 +16,8 @@ export interface AppOptions {
   alertWriter?: AlertWriterModel | null;
   /** Sem modelo (null), a conversa responde com o aviso honesto. */
   chatModel?: ChatModel | null;
+  /** Sem enviador (null), nada é entregue no celular (o cálculo segue igual). */
+  pushSender?: PushSender | null;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -23,7 +27,8 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
 
   registerCompanies(app, sql);
   registerData(app, sql);
-  registerSnapshots(app, sql, opts.alertWriter ?? null);
+  registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
+  registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
 
   return app;

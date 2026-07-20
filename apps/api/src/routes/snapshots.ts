@@ -5,6 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { writeAlert, type AlertWriterModel } from '../ai/writer';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
+import type { PushMessage, PushSender } from '../push';
 
 /**
  * Cálculo e leitura.
@@ -51,10 +52,59 @@ async function loadCompanySnapshot(
   };
 }
 
+/**
+ * Entrega no celular os alertas sérios (warn/critical) que ainda não foram
+ * avisados. Trava anti-spam: o mesmo tipo de alerta (rule_key) não repete
+ * em 12h. Nunca falha o snapshot — push é entrega, não cálculo.
+ */
+/** Tipos de alerta já entregues nas últimas 12h. Lido ANTES de recalcular
+ *  (o recálculo apaga e recria os alertas do dia, junto do pushed_at). */
+async function recentlyPushedRuleKeys(sql: Sql, companyId: string): Promise<Set<string>> {
+  const rows = await sql`
+    SELECT DISTINCT rule_key FROM alerts
+    WHERE company_id = ${companyId} AND pushed_at IS NOT NULL AND pushed_at > now() - interval '12 hours'`;
+  return new Set(rows.map((r) => r.rule_key as string));
+}
+
+async function notifyNewAlerts(
+  sql: Sql,
+  pushSender: PushSender,
+  companyId: string,
+  written: Array<{ id: string; ruleKey: string; severity: string; title: string | null; body: string | null }>,
+  jaAvisado: Set<string>,
+): Promise<void> {
+  const serios = written.filter((a) => a.severity === 'warn' || a.severity === 'critical');
+  if (serios.length === 0) return;
+
+  const tokenRows = await sql`SELECT token FROM device_tokens WHERE company_id = ${companyId}`;
+  if (tokenRows.length === 0) return;
+  const tokens = tokenRows.map((r) => r.token as string);
+
+  const aEnviar = serios.filter((a) => !jaAvisado.has(a.ruleKey));
+  if (aEnviar.length === 0) return;
+
+  const messages: PushMessage[] = [];
+  for (const a of aEnviar) {
+    for (const to of tokens) {
+      messages.push({
+        to,
+        title: a.title ?? 'Pulso',
+        body: a.body ?? 'Há um sinal importante no seu caixa.',
+        data: { kind: 'alert', ruleKey: a.ruleKey },
+      });
+    }
+  }
+
+  await pushSender.send(messages);
+  const ids = aEnviar.map((a) => a.id);
+  await sql`UPDATE alerts SET pushed_at = now() WHERE id = ANY(${ids})`;
+}
+
 export function registerSnapshots(
   app: FastifyInstance,
   sql: Sql,
   alertWriter: AlertWriterModel | null = null,
+  pushSender: PushSender | null = null,
 ) {
   app.post<{ Params: { id: string }; Body: { asOf?: string } | undefined }>(
     '/companies/:id/snapshots',
@@ -74,6 +124,11 @@ export function registerSnapshots(
 
       const asOf = req.body?.asOf ?? new Date().toISOString().slice(0, 10);
 
+      // lido antes de recalcular: o recálculo do dia apaga os alertas (e o pushed_at)
+      const jaAvisado = pushSender
+        ? await recentlyPushedRuleKeys(sql, company.id)
+        : new Set<string>();
+
       const snap = await loadCompanySnapshot(sql, company, asOf);
       const indicators = computeAll(snap);
       const alerts = evaluate(indicators);
@@ -85,6 +140,13 @@ export function registerSnapshots(
         alerts.map(async (a) => ({ alert: a, text: await writeAlert(alertWriter, a, profile) })),
       );
 
+      const gravados: Array<{
+        id: string;
+        ruleKey: string;
+        severity: string;
+        title: string | null;
+        body: string | null;
+      }> = [];
       const snapshotId = await sql.begin(async (tx) => {
         const [s] = await tx`
           INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload)
@@ -98,14 +160,31 @@ export function registerSnapshots(
         // recalcular o mesmo dia substitui os alertas daquele dia
         await tx`DELETE FROM alerts WHERE snapshot_id = ${s.id}`;
         for (const { alert: a, text } of written) {
-          await tx`
+          const [row] = await tx`
             INSERT INTO alerts (company_id, snapshot_id, rule_key, severity, facts,
                                 text_title, text_body, model_version)
             VALUES (${company.id}, ${s.id}, ${a.ruleKey}, ${a.severity}, ${tx.json(a.facts as never)},
-                    ${text.title}, ${text.body}, ${text.modelVersion})`;
+                    ${text.title}, ${text.body}, ${text.modelVersion})
+            RETURNING id`;
+          gravados.push({
+            id: row.id as string,
+            ruleKey: a.ruleKey,
+            severity: a.severity,
+            title: text.title,
+            body: text.body,
+          });
         }
         return s.id as string;
       });
+
+      // entrega no celular (best-effort): nunca derruba o snapshot
+      if (pushSender) {
+        try {
+          await notifyNewAlerts(sql, pushSender, company.id, gravados, jaAvisado);
+        } catch (err) {
+          app.log.error({ err }, 'falha ao enviar push dos alertas');
+        }
+      }
 
       return reply.code(201).send({
         snapshotId,
