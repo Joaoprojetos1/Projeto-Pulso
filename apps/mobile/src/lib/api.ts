@@ -1,11 +1,13 @@
 /**
  * Cliente da API do Pulso. O app busca JSON e desenha — nada mais.
  *
- * A URL do servidor sai do próprio Expo (o computador que roda o Metro
- * também roda a API), ou de EXPO_PUBLIC_API_URL.
+ * Por padrão fala com o servidor na nuvem (Render), então o app funciona sem
+ * depender de nenhum computador ligado. Para desenvolver contra um servidor
+ * local, defina EXPO_PUBLIC_API_URL=http://localhost:3000 (ou o IP da máquina).
  */
 
-import Constants from 'expo-constants';
+/** Servidor de produção do Pulso (Render + banco Neon). */
+const CLOUD_API_URL = 'https://pulso-api-9byl.onrender.com';
 
 export interface AlertJson {
   ruleKey: string;
@@ -43,9 +45,7 @@ export interface DashboardJson {
 function apiBase(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
-  const hostUri = Constants.expoConfig?.hostUri;
-  const host = hostUri ? hostUri.split(':')[0] : 'localhost';
-  return `http://${host}:3000`;
+  return CLOUD_API_URL;
 }
 
 /**
