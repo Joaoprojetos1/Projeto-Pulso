@@ -8,6 +8,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // troca de aba com um leve fade em vez de corte seco
+        animation: 'fade',
         tabBarActiveTintColor: colors.vivo,
         tabBarInactiveTintColor: colors.cinza,
         tabBarStyle: {

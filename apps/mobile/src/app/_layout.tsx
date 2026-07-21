@@ -49,6 +49,8 @@ export default function RootLayout() {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.papel },
+          // telas entram deslizando de leve (sensação de app vivo, não estático)
+          animation: 'slide_from_right',
         }}
       >
         <Stack.Screen name="index" />
@@ -56,7 +58,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="alerta/[index]"
-          options={{ presentation: 'modal', headerShown: false }}
+          // o alerta sobe como um painel, deslizando de baixo
+          options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }}
         />
       </Stack>
     </PulsoProvider>

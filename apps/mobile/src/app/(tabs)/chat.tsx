@@ -5,7 +5,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -16,6 +16,15 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import Animated, {
+  Easing,
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { sendChat, type ChatTurnJson } from '@/lib/api';
@@ -26,6 +35,36 @@ interface Mensagem {
   id: string;
   de: 'voce' | 'pulso';
   texto: string;
+}
+
+// sugestões de partida — perguntas que o Pulso sabe responder bem
+const SUGESTOES = ['Quando meu caixa zera?', 'Quem me deve?', 'Dá pra pagar as contas do mês?'];
+
+/** Um pontinho que pulsa, com atraso próprio (bolha "digitando…"). */
+function Ponto({ atraso }: { atraso: number }) {
+  const o = useSharedValue(0.3);
+  useEffect(() => {
+    o.value = withDelay(
+      atraso,
+      withRepeat(withTiming(1, { duration: 500, easing: Easing.inOut(Easing.ease) }), -1, true),
+    );
+  }, [o, atraso]);
+  const estilo = useAnimatedStyle(() => ({ opacity: o.value }));
+  return <Animated.View style={[styles.ponto, estilo]} />;
+}
+
+/** A bolha "digitando…" do Pulso, com três pontinhos pulsando em sequência. */
+function Digitando() {
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(180)}
+      style={[styles.msg, styles.msgPulso, styles.digitandoBolha]}
+    >
+      <Ponto atraso={0} />
+      <Ponto atraso={150} />
+      <Ponto atraso={300} />
+    </Animated.View>
+  );
 }
 
 const RESPOSTA_DEMO =
@@ -54,8 +93,8 @@ export default function Chat() {
     setTimeout(() => lista.current?.scrollToEnd({ animated: true }), 60);
   }
 
-  async function enviar() {
-    const limpo = texto.trim();
+  async function enviar(valorDireto?: string) {
+    const limpo = (valorDireto ?? texto).trim();
     if (!limpo || pensando) return;
     setTexto('');
 
@@ -101,15 +140,32 @@ export default function Chat() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.lista}
           renderItem={({ item }) => (
-            <View style={[styles.msg, item.de === 'voce' ? styles.msgVoce : styles.msgPulso]}>
+            <Animated.View
+              entering={FadeInDown.duration(220)}
+              style={[styles.msg, item.de === 'voce' ? styles.msgVoce : styles.msgPulso]}
+            >
               <Text style={item.de === 'voce' ? styles.msgTextoVoce : styles.msgTextoPulso}>
                 {item.texto}
               </Text>
-            </View>
+            </Animated.View>
           )}
+          ListFooterComponent={pensando ? <Digitando /> : null}
         />
 
-        {pensando && <Text style={styles.digitando}>O Pulso está pensando…</Text>}
+        {/* sugestões de partida — só enquanto a conversa mal começou */}
+        {mensagens.length <= 1 && !pensando && (
+          <View style={styles.sugestoes}>
+            {SUGESTOES.map((s) => (
+              <Pressable
+                key={s}
+                style={({ pressed }) => [styles.sugestao, pressed && styles.pressionado]}
+                onPress={() => enviar(s)}
+              >
+                <Text style={styles.sugestaoTexto}>{s}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <View style={styles.entrada}>
           <TextInput
@@ -118,12 +174,12 @@ export default function Chat() {
             onChangeText={setTexto}
             placeholder="Pergunte sobre seu negócio…"
             placeholderTextColor={colors.cinza}
-            onSubmitEditing={enviar}
+            onSubmitEditing={() => enviar()}
             returnKeyType="send"
           />
           <Pressable
             style={({ pressed }) => [styles.enviar, pressed && styles.pressionado]}
-            onPress={enviar}
+            onPress={() => enviar()}
           >
             <Ionicons name="arrow-forward" size={18} color={colors.mata} />
           </Pressable>
@@ -160,13 +216,19 @@ const styles = StyleSheet.create({
   },
   msgTextoVoce: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.papel },
   msgTextoPulso: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.tinta },
-  digitando: {
-    fontFamily: fonts.corpo,
-    fontSize: 12,
-    color: colors.cinza,
-    paddingHorizontal: 18,
-    paddingBottom: 4,
+  digitandoBolha: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 14 },
+  ponto: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.cinza },
+
+  sugestoes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  sugestao: {
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
+  sugestaoTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.mata },
 
   entrada: {
     flexDirection: 'row',
