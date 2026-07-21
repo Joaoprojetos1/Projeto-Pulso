@@ -28,6 +28,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { sendMyChat, type ChatTurnJson } from '@/lib/api';
+import { responderDeterministico } from '@/lib/perguntas';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -68,8 +69,9 @@ function Digitando() {
 }
 
 const RESPOSTA_DEMO =
-  'No modo demonstração eu ainda não converso de verdade — isso acontece com o servidor ligado. ' +
-  'Explore o painel: o alerta vermelho mostra exatamente de onde vem cada número.';
+  'Na demonstração eu respondo as perguntas de caixa com os números do exemplo. ' +
+  'Tente: "Quando meu caixa zera?", "Quem me deve?" ou "Dá pra pagar as contas do mês?". ' +
+  'Com sua conta ligada, eu converso sobre os seus próprios números.';
 
 const RESPOSTA_ERRO =
   'Não consegui falar com o servidor agora. Tente de novo em instantes — seus alertas continuam no painel.';
@@ -102,9 +104,11 @@ export default function Chat() {
     setMensagens(minhas);
     rolar();
 
-    // modo demonstração (sem login): resposta local honesta, sem fingir IA
+    // modo demonstração (sem login): responde as perguntas determinísticas com os
+    // números prontos do exemplo; se não for uma delas, orienta. Nunca finge IA.
     if (!token) {
-      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_DEMO }]);
+      const det = dashboard ? responderDeterministico(dashboard, limpo) : null;
+      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: det ?? RESPOSTA_DEMO }]);
       rolar();
       return;
     }
