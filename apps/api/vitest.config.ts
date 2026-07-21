@@ -10,6 +10,9 @@ export default defineConfig({
   },
   test: {
     include: ['test/**/*.test.ts'],
+    // cada arquivo sobe um Postgres embutido (pesado). Rodar em SEQUÊNCIA evita
+    // vários bancos ao mesmo tempo, que estouravam o tempo em máquinas menores.
+    fileParallelism: false,
     // o banco embutido demora para subir na primeira vez
     testTimeout: 60_000,
     hookTimeout: 240_000,

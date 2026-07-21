@@ -4,6 +4,7 @@ import type { ChatModel } from './ai/chat';
 import type { AlertWriterModel } from './ai/writer';
 import type { Sql } from './db';
 import type { PushSender } from './push';
+import { registerAuth } from './routes/auth';
 import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
@@ -25,6 +26,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
 
   app.get('/health', async () => ({ ok: true }));
 
+  registerAuth(app, sql, opts.chatModel ?? null);
   registerCompanies(app, sql);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);

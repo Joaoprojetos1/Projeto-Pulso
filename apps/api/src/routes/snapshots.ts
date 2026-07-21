@@ -100,6 +100,45 @@ async function notifyNewAlerts(
   await sql`UPDATE alerts SET pushed_at = now() WHERE id = ANY(${ids})`;
 }
 
+/**
+ * Monta a resposta do dashboard (último snapshot + alertas ordenados).
+ * Retorna null quando a empresa ainda não tem nenhum cálculo (conta nova).
+ * Fonte única usada tanto pela rota pública quanto pela rota logada (/me).
+ */
+export async function buildDashboard(sql: Sql, company: CompanyRow) {
+  const [snapshot] = await sql`
+    SELECT id, as_of::text AS as_of, core_version, payload, computed_at
+    FROM indicator_snapshots
+    WHERE company_id = ${company.id}
+    ORDER BY as_of DESC
+    LIMIT 1`;
+  if (!snapshot) return null;
+
+  const alertRows = await sql`
+    SELECT rule_key, severity::text AS severity, facts, text_title, text_body, created_at
+    FROM alerts
+    WHERE snapshot_id = ${snapshot.id}
+    ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END, created_at`;
+
+  return {
+    company: toCompanyJson(company),
+    snapshot: {
+      asOf: snapshot.as_of,
+      coreVersion: snapshot.core_version,
+      computedAt: snapshot.computed_at,
+      indicators: snapshot.payload,
+    },
+    alerts: alertRows.map((a) => ({
+      ruleKey: a.rule_key,
+      severity: a.severity,
+      facts: a.facts,
+      textTitle: a.text_title,
+      textBody: a.text_body,
+      createdAt: a.created_at,
+    })),
+  };
+}
+
 export function registerSnapshots(
   app: FastifyInstance,
   sql: Sql,
@@ -209,42 +248,13 @@ export function registerSnapshots(
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
 
-      const [snapshot] = await sql`
-        SELECT id, as_of::text AS as_of, core_version, payload, computed_at
-        FROM indicator_snapshots
-        WHERE company_id = ${company.id}
-        ORDER BY as_of DESC
-        LIMIT 1`;
-      if (!snapshot) {
+      const dash = await buildDashboard(sql, company);
+      if (!dash) {
         return reply.code(404).send({
           error: 'Nenhum cálculo feito ainda. Importe dados e crie um snapshot primeiro.',
         });
       }
-
-      // ordenação de apresentação (o pior primeiro), espelhando o core
-      const alertRows = await sql`
-        SELECT rule_key, severity::text AS severity, facts, text_title, text_body, created_at
-        FROM alerts
-        WHERE snapshot_id = ${snapshot.id}
-        ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END, created_at`;
-
-      return {
-        company: toCompanyJson(company),
-        snapshot: {
-          asOf: snapshot.as_of,
-          coreVersion: snapshot.core_version,
-          computedAt: snapshot.computed_at,
-          indicators: snapshot.payload,
-        },
-        alerts: alertRows.map((a) => ({
-          ruleKey: a.rule_key,
-          severity: a.severity,
-          facts: a.facts,
-          textTitle: a.text_title,
-          textBody: a.text_body,
-          createdAt: a.created_at,
-        })),
-      };
+      return dash;
     },
   );
 

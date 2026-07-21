@@ -8,6 +8,8 @@ services:
     name: pulso-api
     runtime: node
     plan: free
+    # sobe uma versão nova sozinho a cada push no main (não precisa Manual Deploy)
+    autoDeploy: true
     # Instala só o que a API precisa (pula o app Expo, que é pesado) e compila o core.
     buildCommand: corepack enable && pnpm install --prod=false --filter "@pulso/api..." && pnpm --filter @pulso/core build
     startCommand: pnpm --filter @pulso/api start
