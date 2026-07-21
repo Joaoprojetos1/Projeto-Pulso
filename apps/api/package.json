@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.1",
+    "@fastify/cors": "^11.3.0",
     "@pulso/core": "workspace:*",
     "fastify": "^5.10.0",
     "postgres": "^3.4.9"

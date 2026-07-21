@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import fastify from 'fastify';
 
 import type { ChatModel } from './ai/chat';
@@ -9,6 +10,7 @@ import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
 import { registerDevices } from './routes/devices';
+import { registerInterest } from './routes/interest';
 import { registerPlanned } from './routes/planned';
 import { registerSnapshots } from './routes/snapshots';
 
@@ -25,9 +27,13 @@ export interface AppOptions {
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
   const app = fastify({ logger: opts.logger ?? false });
 
+  // o site (outra origem) chama a API do navegador; auth é por Bearer, não cookie
+  app.register(cors, { origin: true });
+
   app.get('/health', async () => ({ ok: true }));
 
   registerAuth(app, sql, opts.chatModel ?? null);
+  registerInterest(app, sql);
   registerPlanned(app, sql);
   registerCompanies(app, sql);
   registerData(app, sql);
