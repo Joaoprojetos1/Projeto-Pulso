@@ -318,9 +318,9 @@
           </svg>
         </div>
         <div class="alert-figures">
-          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval">R$ 21.300</div></div>
-          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval">−R$ 8.400</div></div>
-          <div class="figure"><div class="flabel">Recebe em</div><div class="fval">46 dias</div></div>
+          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval" data-count="21300" data-prefix="R$ ">R$ 21.300</div></div>
+          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval" data-count="8400" data-prefix="−R$ ">−R$ 8.400</div></div>
+          <div class="figure"><div class="flabel">Recebe em</div><div class="fval" data-count="46" data-suffix=" dias">46 dias</div></div>
         </div>
       </div>
     </div>
@@ -534,6 +534,29 @@
       });
     }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
     alvos.forEach(function (el) { obs.observe(el); });
+
+    // Números que "contam" ao entrar na tela (ex.: os do cartão de alerta).
+    var nums = document.querySelectorAll('[data-count]');
+    function contar(el) {
+      var alvo = parseInt(el.getAttribute('data-count'), 10);
+      var pre = el.getAttribute('data-prefix') || '';
+      var suf = el.getAttribute('data-suffix') || '';
+      var ini = null, dur = 900;
+      function passo(t) {
+        if (ini === null) ini = t;
+        var p = Math.min((t - ini) / dur, 1);
+        var val = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+        el.textContent = pre + val.toLocaleString('pt-BR') + suf;
+        if (p < 1) requestAnimationFrame(passo);
+      }
+      requestAnimationFrame(passo);
+    }
+    var obsN = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (e.isIntersecting) { contar(e.target); obsN.unobserve(e.target); }
+      });
+    }, { threshold: 0.4 });
+    nums.forEach(function (el) { obsN.observe(el); });
   })();
 </script>
 
