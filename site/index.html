@@ -420,7 +420,7 @@
   .aud-note { font-size: .7rem; line-height: 1.4; color: #838993; margin-top: 10px; }
 
   /* ---------- Planos ---------- */
-  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: start; }
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: stretch; }
   @media (max-width: 860px) { .plans-grid { grid-template-columns: 1fr; max-width: 440px; } }
   .plan { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow); }
   .plan.destaque { border-color: color-mix(in srgb, var(--vivo) 55%, var(--line)); position: relative; }
@@ -457,9 +457,9 @@
   .step:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--vivo) 40%, var(--line)); }
   .plan { transition: transform .2s ease, box-shadow .2s ease; }
   .plan:hover { transform: translateY(-4px); }
+  /* destaque sem levantar o card (mantem os botoes alinhados na base): so realce */
   @media (min-width: 861px) {
-    .plan.destaque { transform: translateY(-10px); box-shadow: 0 22px 48px -26px color-mix(in srgb, var(--vivo) 55%, transparent); }
-    .plan.destaque:hover { transform: translateY(-14px); }
+    .plan.destaque { box-shadow: 0 22px 48px -26px color-mix(in srgb, var(--vivo) 55%, transparent); }
   }
 
   /* FAQ centralizado (resolve o vazio a direita) */
@@ -491,7 +491,7 @@
     </a>
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="#como">Como funciona</a>
-      <a class="navlink" href="#vigia">O que vigia</a>
+      <a class="navlink" href="#vigia">O que ele monitora</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
       <a class="btn btn-primary" href="#lista">Entrar na lista</a>
@@ -506,7 +506,7 @@
   <div class="backdrop"></div>
   <nav class="sheet" aria-label="Menu">
     <a class="m-link" href="#como">Como funciona</a>
-    <a class="m-link" href="#vigia">O que vigia</a>
+    <a class="m-link" href="#vigia">O que ele monitora</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
     <a class="btn btn-primary" href="#lista">Entrar na lista de espera</a>
@@ -543,9 +543,9 @@
           </svg>
         </div>
         <div class="alert-figures">
-          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval">R$ 21.300</div></div>
-          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval">−R$ 8.400</div></div>
-          <div class="figure"><div class="flabel">Recebe em</div><div class="fval">46 dias</div></div>
+          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval" data-countup="21300" data-prefix="R$ ">R$ 21.300</div></div>
+          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval" data-countup="8400" data-prefix="−R$ ">−R$ 8.400</div></div>
+          <div class="figure"><div class="flabel">Recebe em</div><div class="fval" data-countup="46" data-suffix=" dias">46 dias</div></div>
         </div>
       </div>
     </div>
@@ -913,6 +913,29 @@
         es.forEach(function (e) { if (e.isIntersecting) { contar(e.target); obsC.unobserve(e.target); } });
       }, { threshold: 0.6 });
       destaques.forEach(function (el) { obsC.observe(el); });
+    }
+
+    // Hero: os 3 numeros do card de alerta contam de 0 ao valor (rapido, ~800ms),
+    // com prefixo/sufixo (R$, dias). Uma vez, ao entrar na tela.
+    function contarFmt(el) {
+      var alvo = parseInt(el.getAttribute('data-countup'), 10) || 0;
+      var pre = el.getAttribute('data-prefix') || '';
+      var suf = el.getAttribute('data-suffix') || '';
+      var ini = null, dur = 800;
+      function passo(t) {
+        if (ini === null) ini = t;
+        var p = Math.min((t - ini) / dur, 1);
+        var v = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+        el.textContent = pre + v.toLocaleString('pt-BR') + suf;
+        if (p < 1) requestAnimationFrame(passo);
+      }
+      requestAnimationFrame(passo);
+    }
+    if (!reduz && 'IntersectionObserver' in window) {
+      var obsH = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { contarFmt(e.target); obsH.unobserve(e.target); } });
+      }, { threshold: 0.3 });
+      document.querySelectorAll('[data-countup]').forEach(function (el) { obsH.observe(el); });
     }
   })();
 
