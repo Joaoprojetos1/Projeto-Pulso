@@ -6,50 +6,49 @@
 <title>Pulso — Andamento do projeto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 <style>
   :root{
-    /* marca Pulso */
-    --mata:#0E2E2A; --vivo:#23C883; --papel:#F6F4EE; --tinta:#13221F;
-    --cinza:#5F6F6B; --linha:#DCD8CC; --alerta:#E39A26; --critico:#D8503F;
+    /* marca Pulso (tokens atuais: packages/tokens) */
+    --mata:#37373F; --vivo:#23C883; --papel:#F5F4F2; --tinta:#2A2A31;
+    --cinza:#838993; --linha:#E0DEDA; --alerta:#E39A26; --critico:#D8503F;
     --branco:#FFFFFF;
 
-    /* tokens semânticos — tema claro (padrão) */
     --bg:var(--papel);
     --surface:var(--branco);
-    --surface-2:#FBFAF6;
+    --surface-2:#FBFAF9;
     --brand:var(--mata);
     --brand-ink:var(--papel);
     --text:var(--tinta);
     --muted:var(--cinza);
     --border:var(--linha);
     --ok:#158556;
-    --shadow:0 20px 44px -28px rgba(19,34,31,.42);
+    --shadow:0 20px 44px -28px rgba(42,42,49,.42);
 
-    --display:"Sora","Segoe UI",system-ui,-apple-system,sans-serif;
+    --display:"Manrope","Segoe UI",system-ui,-apple-system,sans-serif;
     --body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
-    --mono:"IBM Plex Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+    --mono:"Figtree","Segoe UI",system-ui,sans-serif;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#0B2420; --surface:#123029; --surface-2:#0F2A24;
-      --brand:#0B2420; --brand-ink:var(--papel); --text:#EAF1EC;
-      --muted:#9FB8AF; --border:#26463F; --ok:#5FE0A6;
+      --bg:#26262B; --surface:#33333B; --surface-2:#2C2C33;
+      --brand:#1F1F24; --brand-ink:var(--papel); --text:#ECEBEF;
+      --muted:#A6A6AE; --border:#3C3C45; --ok:#4FE0A3;
       --shadow:0 22px 48px -30px rgba(0,0,0,.65);
     }
   }
   :root[data-theme="light"]{
-    --bg:var(--papel); --surface:var(--branco); --surface-2:#FBFAF6;
+    --bg:var(--papel); --surface:var(--branco); --surface-2:#FBFAF9;
     --brand:var(--mata); --brand-ink:var(--papel); --text:var(--tinta);
     --muted:var(--cinza); --border:var(--linha); --ok:#158556;
-    --shadow:0 20px 44px -28px rgba(19,34,31,.42);
+    --shadow:0 20px 44px -28px rgba(42,42,49,.42);
   }
   :root[data-theme="dark"]{
-    --bg:#0B2420; --surface:#123029; --surface-2:#0F2A24;
-    --brand:#0B2420; --brand-ink:var(--papel); --text:#EAF1EC;
-    --muted:#9FB8AF; --border:#26463F; --ok:#5FE0A6;
+    --bg:#26262B; --surface:#33333B; --surface-2:#2C2C33;
+    --brand:#1F1F24; --brand-ink:var(--papel); --text:#ECEBEF;
+    --muted:#A6A6AE; --border:#3C3C45; --ok:#4FE0A3;
     --shadow:0 22px 48px -30px rgba(0,0,0,.65);
   }
 
@@ -62,30 +61,27 @@
   .wrap{max-width:920px;margin:0 auto;padding:clamp(20px,4vw,44px) clamp(16px,4vw,28px) 72px}
   .tnum{font-variant-numeric:tabular-nums}
 
-  /* ---------- cabeçalho ---------- */
   header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
   .logo{height:34px;width:auto;color:var(--text)}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 
-  /* ---------- resumo ---------- */
   .hero{
     background:var(--brand);color:var(--brand-ink);border-radius:20px;
     padding:clamp(24px,4vw,36px);box-shadow:var(--shadow);margin-bottom:14px;
   }
   .hero .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--vivo);margin:0 0 10px}
   .hero h1{font-family:var(--display);font-weight:800;letter-spacing:-.025em;font-size:clamp(23px,4.2vw,34px);margin:0 0 8px;text-wrap:balance;line-height:1.14}
-  .hero p{margin:0;color:#CFE0D8;max-width:60ch}
+  .hero p{margin:0;color:#C7CBD1;max-width:62ch}
 
   .stat{display:flex;align-items:baseline;gap:12px;margin:20px 0 12px;flex-wrap:wrap}
   .stat b{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,50px);line-height:1;letter-spacing:-.03em}
-  .stat b span{font-size:.48em;color:#BFD2CB;font-weight:600}
-  .stat .leg{font-size:14px;color:#BFD2CB;max-width:30ch}
+  .stat b span{font-size:.48em;color:#B4B8C0;font-weight:600}
+  .stat .leg{font-size:14px;color:#B4B8C0;max-width:30ch}
 
   .barra{height:10px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden}
-  .barra .fill{height:100%;width:43%;border-radius:6px;background:linear-gradient(90deg,var(--vivo),#7FE0B4)}
-  .hero .obs{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#9FB8AF;margin-top:8px}
+  .barra .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--vivo),#7FE0B4)}
+  .hero .obs{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#9BA0A9;margin-top:8px}
 
-  /* ---------- foco ---------- */
   .focus{
     display:flex;gap:14px;align-items:flex-start;
     background:var(--surface);border:1px solid var(--border);border-left:5px solid var(--alerta);
@@ -99,14 +95,22 @@
   h2.sec{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;margin:8px 0 4px}
   p.seclead{margin:0 0 18px;color:var(--muted);font-size:14px}
 
-  /* ---------- grupos de trabalho ---------- */
+  /* ---------- links (site + app) ---------- */
+  .links{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 28px}
+  @media(max-width:640px){.links{grid-template-columns:1fr}}
+  .linkcard{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;text-decoration:none;color:var(--text);transition:transform .18s ease,border-color .18s ease}
+  .linkcard:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--vivo) 48%,var(--border))}
+  .linkcard .lk{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .linkcard .lt{font-family:var(--display);font-weight:700;font-size:16.5px;letter-spacing:-.01em}
+  .linkcard .ld{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .linkcard .lgo{margin-top:auto;padding-top:8px;font-family:var(--mono);font-size:11px;color:var(--vivo);font-weight:600}
+
   .grupos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media (max-width:720px){.grupos{grid-template-columns:1fr}}
   .grupo{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;break-inside:avoid}
   .ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
   .ghead h3{margin:0;font-family:var(--display);font-weight:700;font-size:15.5px;letter-spacing:-.01em}
   .gcount{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
-  .gcount.zero{color:var(--muted)}
   .gcount.full{color:var(--ok)}
   .tarefas{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
   .tarefas li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.45}
@@ -119,7 +123,6 @@
   .t-now .tx b{color:var(--alerta);font-weight:600}
   .tx{flex:1}
 
-  /* ---------- números / acompanhar ---------- */
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
   @media (max-width:640px){.grid2{grid-template-columns:1fr}}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
@@ -141,24 +144,12 @@
     display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
     font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 
-  /* ---------- app no celular (QR) ---------- */
-  .qrcard{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;
-    background:var(--surface);border:1px solid var(--border);border-radius:16px;
-    padding:18px 20px;margin:0 0 26px}
-  @media(max-width:560px){.qrcard{grid-template-columns:1fr;justify-items:center;text-align:center}}
-  .qrcard img{width:150px;height:150px;border-radius:10px;border:1px solid var(--border);background:#fff}
-  .qrcard h3{margin:0 0 6px;font-family:var(--display);font-weight:700;font-size:15.5px}
-  .qrcard p{margin:0 0 6px;font-size:13.5px;color:var(--muted)}
-  .qrcard .passo b{color:var(--text)}
-  .qrcard .aviso{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--alerta);margin-top:6px}
-
-  /* ---------- diário do intensivo ---------- */
   .dias{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
   details.dia{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
   details.dia summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 18px}
   details.dia summary::-webkit-details-marker{display:none}
   details.dia summary:focus-visible{outline:2px solid var(--vivo);outline-offset:-2px}
-  .dia .dnum{font-family:var(--mono);font-size:11px;color:var(--vivo);background:rgba(35,200,131,.12);border-radius:8px;padding:4px 8px;white-space:nowrap}
+  .dia .dnum{font-family:var(--mono);font-size:11px;color:var(--vivo);background:rgba(35,200,131,.12);border-radius:8px;padding:4px 8px;white-space:nowrap;font-weight:600}
   .dia .dtit{flex:1;font-family:var(--display);font-weight:600;font-size:14.5px}
   .dia .dresumo{font-size:12.5px;color:var(--muted);white-space:nowrap}
   .dia .seta-d{color:var(--muted);transition:transform .2s ease}
@@ -180,9 +171,9 @@
 
   <header class="top">
     <svg class="logo" viewBox="0 0 520 120" role="img" aria-label="Pulso" xmlns="http://www.w3.org/2000/svg">
-      <text x="0" y="86" font-family="Sora, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">pu</text>
+      <text x="0" y="86" font-family="Manrope, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">pu</text>
       <path class="beat" d="M118 86 L150 86 L163 40 L178 96 L190 66 L204 86 L236 86" fill="none" stroke="#23C883" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="240" y="86" font-family="Sora, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">so</text>
+      <text x="240" y="86" font-family="Manrope, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">so</text>
       <circle cx="236" cy="86" r="7" fill="#23C883"/>
     </svg>
     <div class="eyebrow">Andamento do projeto · intensivo</div>
@@ -190,37 +181,47 @@
 
   <section class="hero">
     <p class="k">Onde estamos</p>
-    <h1>A fundação está pronta. O produto está só começando.</h1>
-    <p>Estamos num intensivo de aproximadamente duas semanas. Os primeiros dias foram para o alicerce — o motor de cálculo, o servidor, a voz da IA e as telas do app. É o que sustenta todo o resto. E o resto é muito: dados reais, conversa inteligente, WhatsApp, site, venda e o piloto com clínica de verdade.</p>
+    <h1>O produto saiu do papel: já dá pra abrir, entrar e usar.</h1>
+    <p>Passamos da fundação para o produto de verdade. O servidor está no ar 24h, a inteligência artificial já responde com números reais, o dono cria a própria conta e o app roda no celular e também no navegador. O site de vendas está publicado. O que falta agora é encorpar o motor de contas, ligar as notificações e rodar o piloto com uma clínica real.</p>
 
     <div class="stat">
-      <b class="tnum">21<span> / 42 tarefas</span></b>
-      <span class="leg">concluídas até agora. Cada área abaixo mostra o que está feito e o que falta.</span>
+      <b class="tnum">30<span> / 49 tarefas</span></b>
+      <span class="leg">concluídas. Cada frente abaixo mostra o que está feito e o que falta.</span>
     </div>
-    <div class="barra" role="img" aria-label="50% concluído"><div class="fill" style="width:50%"></div></div>
-    <p class="obs">≈ 50% · fundação concluída · servidor no ar · corpo do produto em construção</p>
+    <div class="barra" role="img" aria-label="61% concluído"><div class="fill" style="width:61%"></div></div>
+    <p class="obs">≈ 61% · servidor no ar · IA no ar · login e contas prontos · site publicado</p>
   </section>
 
   <div class="focus">
     <div class="pulse-dot" aria-hidden="true"></div>
     <div>
       <div class="fi">Frentes da vez</div>
-      <h3>Do alicerce para o que o cliente vê e paga</h3>
-      <p>Próximos blocos: a conversa do app respondendo de verdade, o site com a venda, e a leitura do arquivo real da clínica (assim que o modelo do especialista chegar).</p>
+      <h3>Encorpar as contas, ligar o aviso e ir a campo</h3>
+      <p>Próximos blocos: o motor de projeção usando as contas previstas (com o desenho validado pelo especialista), a notificação que chega sozinha no celular (falta a configuração do Firebase), e o piloto com uma clínica de verdade.</p>
     </div>
   </div>
 
-  <h2 class="sec">Veja o app no seu celular</h2>
-  <p class="seclead">O aplicativo já abre no telefone pelo Expo Go — escaneie o código abaixo.</p>
-  <div class="qrcard">
-    <img src="data:image/png;base64,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" alt="Código QR para abrir o Pulso no Expo Go" width="150" height="150">
-    <div>
-      <h3>Como abrir</h3>
-      <p class="passo"><b>Android:</b> abra o aplicativo <b>Expo Go</b> e toque em "Scan QR code" — a câmera comum não funciona.</p>
-      <p class="passo"><b>iPhone:</b> aponte a câmera normal e toque na notificação que aparece.</p>
-      <p class="passo">A primeira carga leva até um minuto. O app abre com a clínica de demonstração (dados fictícios).</p>
-      <div class="aviso">Funciona enquanto o app estiver ligado no computador do projeto</div>
-    </div>
+  <h2 class="sec">Ver o Pulso agora</h2>
+  <p class="seclead">Três formas de acompanhar. O app no navegador é o jeito mais fácil de testar no computador.</p>
+  <div class="links">
+    <a class="linkcard" href="https://pulso-site.onrender.com" target="_blank" rel="noopener">
+      <span class="lk">Site</span>
+      <span class="lt">Site de vendas</span>
+      <span class="ld">A página pública do Pulso, com planos e lista de espera.</span>
+      <span class="lgo">pulso-site.onrender.com →</span>
+    </a>
+    <a class="linkcard" href="https://joaoprojetos1.github.io/Projeto-Pulso/app/" target="_blank" rel="noopener">
+      <span class="lk">App · navegador</span>
+      <span class="lt">Abrir o app no PC</span>
+      <span class="ld">O aplicativo rodando no navegador, sem instalar nada. Toque em "Ver demonstração" para explorar.</span>
+      <span class="lgo">abrir no navegador →</span>
+    </a>
+    <a class="linkcard" href="https://expo.dev/artifacts/eas/oV4ZHsCK_5EZzn87lRNoeRbNgur1t2LJvbgUG9X5EeU.apk" target="_blank" rel="noopener">
+      <span class="lk">App · Android</span>
+      <span class="lt">Instalar no celular</span>
+      <span class="ld">O app instalável (Android). O link do arquivo pode expirar com o tempo; se não baixar, é só pedir um novo.</span>
+      <span class="lgo">baixar o APK →</span>
+    </a>
   </div>
 
   <h2 class="sec">Diário do intensivo</h2>
@@ -230,40 +231,61 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 1</span>
-        <span class="dtit">Quinta, 17 de julho — a fundação inteira</span>
+        <span class="dtit">17 de julho — a fundação inteira</span>
         <span class="dresumo tnum">9 entregas</span>
         <span class="seta-d">›</span>
       </summary>
       <div class="dcorpo">
         <ul>
           <li><span class="ok">✓</span><span>Projeto criado no GitHub, com as regras do produto e as proteções de dados de cliente desde o primeiro commit</span></li>
-          <li><span class="ok">✓</span><span>Motor de cálculo montado e travado com 29 testes — incluindo o cenário que define o produto: a empresa que vende cada vez mais e mesmo assim quebra</span></li>
-          <li><span class="ok">✓</span><span>Duas clínicas fictícias de teste: a saudável fica em silêncio, a "tesoura" dispara os alarmes certos (caixa zera dia 29/07)</span></li>
-          <li><span class="ok">✓</span><span>Servidor de pé: recebe os dados, guarda com segurança, chama o motor e responde o painel — testado de ponta a ponta com banco de dados real</span></li>
-          <li><span class="ok">✓</span><span>A voz da IA: avisos em linguagem simples, com um fiscal em código contra número inventado e texto reserva que nunca deixa o alerta mudo</span></li>
-          <li><span class="ok">✓</span><span>Aplicativo com as seis telas da marca, rodando no celular via Expo Go</span></li>
-          <li><span class="ok">✓</span><span>Esta página de acompanhamento, com o mapa completo das 42 tarefas</span></li>
-          <li><span class="ok">✓</span><span>A conversa do app ligada de verdade: a IA responde usando só os números calculados, com o mesmo fiscal contra número inventado</span></li>
-          <li><span class="ok">✓</span><span>Fim do dia: 75 testes automáticos passando</span></li>
+          <li><span class="ok">✓</span><span>Motor de cálculo montado e travado com testes, incluindo o cenário que define o produto: a empresa que vende cada vez mais e mesmo assim quebra</span></li>
+          <li><span class="ok">✓</span><span>Duas clínicas fictícias de teste: a saudável fica em silêncio, a "tesoura" dispara os alarmes certos (caixa zera 29 de julho)</span></li>
+          <li><span class="ok">✓</span><span>Servidor de pé: recebe os dados, guarda com segurança, chama o motor e responde o painel, testado de ponta a ponta com banco de dados real</span></li>
+          <li><span class="ok">✓</span><span>A voz da IA: avisos em linguagem simples, com um fiscal contra número inventado e texto reserva que nunca deixa o alerta mudo</span></li>
+          <li><span class="ok">✓</span><span>Aplicativo com as telas da marca, rodando no celular</span></li>
+          <li><span class="ok">✓</span><span>Esta página de acompanhamento, com o mapa completo das tarefas</span></li>
+          <li><span class="ok">✓</span><span>A conversa do app ligada: a IA responde usando só os números calculados</span></li>
+          <li><span class="ok">✓</span><span>Fim do dia: dezenas de testes automáticos passando</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia">
+      <summary>
+        <span class="dnum">DIA 2</span>
+        <span class="dtit">20 de julho — o Pulso no ar, fora do computador</span>
+        <span class="dresumo tnum">6 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span>Servidor na nuvem (Render) + banco de dados (Neon): o Pulso passa a responder 24h na internet, sem depender de nenhum computador ligado</span></li>
+          <li><span class="ok">✓</span><span>App tolerante à "soneca" do plano gratuito: espera o servidor acordar em vez de dar erro na primeira visita</span></li>
+          <li><span class="ok">✓</span><span>Inteligência artificial ligada em produção: o chat responde com os números reais, sempre conferidos contra invenção</span></li>
+          <li><span class="ok">✓</span><span>Cara da marca no app: ícone e tela de abertura com o batimento do Pulso</span></li>
+          <li><span class="ok">✓</span><span>App instalável no Android (sem depender do computador do projeto)</span></li>
+          <li><span class="ok">✓</span><span>Notificação push: todo o código pronto e testado (falta só a configuração do Firebase para os avisos chegarem)</span></li>
         </ul>
       </div>
     </details>
 
     <details class="dia" open>
       <summary>
-        <span class="dnum">DIA 2</span>
-        <span class="dtit">Segunda, 20 de julho — o Pulso no ar, fora do computador</span>
-        <span class="dresumo tnum">6 entregas</span>
+        <span class="dnum">DIA 3</span>
+        <span class="dtit">21 de julho — o produto ganha corpo</span>
+        <span class="dresumo tnum">8 entregas</span>
         <span class="seta-d">›</span>
       </summary>
       <div class="dcorpo">
         <ul>
-          <li><span class="ok">✓</span><span>Servidor preparado para viver na nuvem (Render), sem depender do computador ligado — a receita de instalação já está pronta no projeto</span></li>
-          <li><span class="ok">✓</span><span>Banco de dados pronto para o Neon, com conexão segura (SSL) ligando sozinha quando não é a máquina local</span></li>
-          <li><span class="ok">✓</span><span>App paciente com a "soneca" do plano gratuito: espera o servidor acordar em vez de dar erro na primeira visita</span></li>
-          <li><span class="ok">✓</span><span>Guia passo a passo (Neon + Render) para criar as duas contas gratuitas</span></li>
-          <li><span class="ok">✓</span><span>Contas gratuitas criadas (banco Neon + servidor Render) e tudo ligado: o Pulso agora responde 24h na internet, lendo os dados da nuvem — não depende mais de nenhum computador ligado</span></li>
-          <li><span class="ok">✓</span><span>Cara da marca no app: ícone e tela de abertura (splash) com o batimento do Pulso, no lugar dos genéricos do Expo</span></li>
+          <li><span class="ok">✓</span><span>Login de verdade: o dono cria a própria conta com e-mail e senha (senha guardada com segurança) e o app o mantém logado</span></li>
+          <li><span class="ok">✓</span><span>Contas a pagar e a receber: o dono cadastra o que espera receber e pagar, tudo marcado como "previsão", separado do que já aconteceu de verdade. Ao confirmar, a conta "gradua" e guarda a data real</span></li>
+          <li><span class="ok">✓</span><span>Site de vendas publicado e enxuto: planos, segurança/LGPD, perguntas frequentes e lista de espera (o cadastro de e-mail funciona de verdade)</span></li>
+          <li><span class="ok">✓</span><span>Versão do app no navegador: dá pra abrir e testar o Pulso no computador, sem instalar</span></li>
+          <li><span class="ok">✓</span><span>Acabamento e marca: nova fonte, rótulos em linguagem de dono ("Dinheiro preso" no lugar de "ciclo de caixa"), cor viva só onde é sinal</span></li>
+          <li><span class="ok">✓</span><span>Conversa que responde na demonstração: as perguntas de caixa têm resposta certa com os números do exemplo, sem depender de internet</span></li>
+          <li><span class="ok">✓</span><span>Tendência nos indicadores: cada número mostra se melhorou ou piorou em relação ao mês passado</span></li>
+          <li><span class="ok">✓</span><span>Demonstração sempre à mão, direto na tela de entrada, para testar tudo sem criar conta</span></li>
         </ul>
       </div>
     </details>
@@ -271,7 +293,7 @@
   </div>
 
   <h2 class="sec">O mapa completo</h2>
-  <p class="seclead">Nove frentes de trabalho, abertas tarefa por tarefa. Verde é feito e testado; laranja é o que está em andamento ou esperando alguém; vazio é o que ainda vem.</p>
+  <p class="seclead">As frentes de trabalho, abertas tarefa por tarefa. Verde é feito e testado; laranja é o que está em andamento ou esperando alguém; vazio é o que ainda vem.</p>
 
   <div class="grupos">
 
@@ -282,7 +304,7 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Indicadores financeiros calculados em código</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Previsão de quando o caixa zera, pelo atraso real dos clientes</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Regras de alerta: caixa, efeito tesoura, concentração, queda de receita</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">29 testes automáticos travando os cálculos</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Testes automáticos travando os cálculos</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Auditoria das fórmulas pelo especialista</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Indicadores restantes da lista (ponto de equilíbrio, inadimplência, ano contra ano)</span></li>
       </ul>
@@ -291,62 +313,84 @@
     <div class="grupo">
       <div class="ghead"><h3>2 · Clínicas de teste</h3><span class="gcount full tnum">3 de 3</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica saudável fictícia — fica em silêncio</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica "tesoura" fictícia — dispara os alarmes certos</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica saudável fictícia, fica em silêncio</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica "tesoura" fictícia, dispara os alarmes certos</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes que travam esse comportamento</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>3 · Leitura de dados reais</h3><span class="gcount zero tnum">0 de 4</span></div>
+      <div class="ghead"><h3>3 · Leitura de dados reais</h3><span class="gcount tnum">1 de 4</span></div>
       <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Entrada de dados no servidor (formato padrão), sem duplicar arquivo</span></li>
         <li class="t-now"><span class="ic">●</span><span class="tx"><b>Aguardando</b> o arquivo modelo do sistema da clínica (especialista)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Leitor tolerante a arquivo bagunçado</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Testes com arquivos errados de propósito</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Envio do arquivo pelo aplicativo</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">5 de 7</span></div>
+      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">6 de 7</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Banco de dados com histórico completo</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">As quatro portas: cadastro, dados, cálculo e painel</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">As portas: cadastro, dados, cálculo, painel, contas e chat</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Proteção contra arquivo duplicado</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes de ponta a ponta com banco de verdade</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Login e controle de acesso</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Servidor na nuvem — no ar 24h (Render + banco Neon)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Login e controle de acesso</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Servidor na nuvem, no ar 24h (Render + banco Neon)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Backup e monitoramento</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>5 · A voz (IA)</h3><span class="gcount tnum">4 de 6</span></div>
+      <div class="ghead"><h3>5 · A voz (IA)</h3><span class="gcount tnum">5 de 6</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">IA escreve os avisos só com números já calculados</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Fiscal em código contra número inventado</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Texto reserva — o alerta nunca fica mudo</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Conversa do app respondendo de verdade (com o mesmo fiscal)</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Chave da IA em produção</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Texto reserva, o alerta nunca fica mudo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Conversa do app respondendo de verdade</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Inteligência artificial ligada em produção</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Revisão dos textos pelo especialista</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">4 de 7</span></div>
+      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">7 de 9</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">As seis telas com a marca Pulso</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">As telas com a marca Pulso</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">"De onde vem esse número" aberto em todo alerta</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Modo demonstração rotulado</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Ícone e tela de abertura com a marca</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Login de verdade</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Notificações — o aviso que chega sozinho no celular</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Modo demonstração, sempre à mão na tela de entrada</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Login de verdade (cria conta, mantém logado)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de contas a pagar e a receber</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Acabamento da marca e rótulos em linguagem de dono</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Versão no navegador (abrir no computador)</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Notificações: <b>código pronto</b>, falta a configuração do Firebase</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Publicação nas lojas (App Store / Google Play)</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>7 · WhatsApp</h3><span class="gcount zero tnum">0 de 2</span></div>
+      <div class="ghead"><h3>7 · Contas (planejamento)</h3><span class="gcount tnum">2 de 4</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Cadastro de contas previstas (a pagar e a receber), separado do realizado</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Confirmar que aconteceu (a conta "gradua" e guarda a data real)</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Motor: a previsão empurrando a projeção de caixa (com desenho validado pelo especialista)</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Aprendizado do atraso de cada cliente</span></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <div class="ghead"><h3>8 · Site e venda</h3><span class="gcount tnum">2 de 4</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Página de vendas publicada (planos, segurança, perguntas)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Lista de espera: cadastro de e-mail funcionando</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Pagamento no app: Pix, boleto e cartão</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Ligação do pagamento com o servidor</span></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <div class="ghead"><h3>9 · WhatsApp</h3><span class="gcount tnum">0 de 2</span></div>
       <ul class="tarefas">
         <li class="t-todo"><span class="ic"></span><span class="tx">Chatbot do Pulso no WhatsApp</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Alertas chegando pelo WhatsApp</span></li>
@@ -354,16 +398,7 @@
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>8 · Site e venda</h3><span class="gcount zero tnum">0 de 3</span></div>
-      <ul class="tarefas">
-        <li class="t-todo"><span class="ic"></span><span class="tx">Página de vendas</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Pagamento: Pix, boleto e cartão</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Ligação do pagamento com o servidor</span></li>
-      </ul>
-    </div>
-
-    <div class="grupo">
-      <div class="ghead"><h3>9 · Piloto com clínica real</h3><span class="gcount zero tnum">0 de 3</span></div>
+      <div class="ghead"><h3>10 · Piloto com clínica real</h3><span class="gcount tnum">0 de 3</span></div>
       <ul class="tarefas">
         <li class="t-todo"><span class="ic"></span><span class="tx">Primeira clínica de verdade usando</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Métricas do piloto: alerta aberto? ação tomada?</span></li>
@@ -377,28 +412,28 @@
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
-        <div class="metric"><b class="tnum">21</b><span>tarefas concluídas</span></div>
-        <div class="metric"><b class="tnum">21</b><span>pela frente</span></div>
-        <div class="metric"><b class="tnum">75</b><span>testes passando</span></div>
+        <div class="metric"><b class="tnum">30</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">19</b><span>pela frente</span></div>
+        <div class="metric"><b class="tnum">61</b><span>testes no servidor</span></div>
       </div>
     </div>
     <div class="card">
       <h3>Como acompanhar</h3>
       <ul>
         <li><span class="seta">→</span> <b>Esta página:</b> atualizada a cada avanço, sempre no mesmo link.</li>
+        <li><span class="seta">→</span> <b>Site e app:</b> os links no topo, para ver o Pulso funcionando.</li>
         <li><span class="seta">→</span> <b>GitHub:</b> o histórico detalhado, com data e explicação.</li>
-        <li><span class="seta">→</span> <b>Expo Go:</b> o app já abre no celular escaneando um código QR.</li>
       </ul>
     </div>
   </div>
 
   <div class="note">
-    <b>A promessa do produto, em uma frase:</b> avisar o dono da clínica <b>antes</b> do caixa acabar — não depois do fechamento do mês. E todo alerta mostra "de onde vem esse número", com as contas abertas. É isso que separa o Pulso de uma "IA que dá palpite".
+    <b>A promessa do produto, em uma frase:</b> avisar o dono do negócio <b>antes</b> do caixa acabar, não depois do fechamento do mês. E todo alerta mostra "de onde vem esse número", com as contas abertas. É isso que separa o Pulso de uma "IA que dá palpite".
   </div>
 
   <footer class="foot">
-    <span>Pulso · Vetor Finanças</span>
-    <span>Atualizado 20 jul 2026</span>
+    <span>Pulso</span>
+    <span>Atualizado 21 jul 2026</span>
   </footer>
 
 </div>
