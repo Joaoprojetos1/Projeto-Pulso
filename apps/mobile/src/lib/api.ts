@@ -31,6 +31,16 @@ export interface CashProjectionPoint {
   zeroOn: string | null;
 }
 
+export interface Comparativo {
+  atual: number | null;
+  anterior: number | null;
+}
+export interface Comparativos {
+  cash_cycle: Comparativo;
+  contribution_margin: Comparativo;
+  revenue_current: Comparativo;
+}
+
 export interface DashboardJson {
   company: { id: string; name: string; niche: string };
   snapshot: {
@@ -39,6 +49,8 @@ export interface DashboardJson {
     computedAt: string;
     indicators: Record<string, IndicatorJson>;
   };
+  /** Tendência atual × anterior dos indicadores de topo (quando há histórico). */
+  comparativos?: Comparativos;
   alerts: AlertJson[];
 }
 
@@ -190,10 +202,11 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
   const body = (await res.json()) as {
     company: { id: string; name: string; niche: string };
     snapshot: DashboardJson['snapshot'] | null;
+    comparativos?: Comparativos;
     alerts: AlertJson[];
   };
   const dashboard: DashboardJson | null = body.snapshot
-    ? { company: body.company, snapshot: body.snapshot, alerts: body.alerts }
+    ? { company: body.company, snapshot: body.snapshot, comparativos: body.comparativos, alerts: body.alerts }
     : null;
   return { companyId: body.company.id, companyName: body.company.name, dashboard };
 }

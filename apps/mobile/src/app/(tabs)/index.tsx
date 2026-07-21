@@ -32,6 +32,26 @@ import { brl, dataBR, dias, pct } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, type Severity } from '@/theme';
 
+interface Tend {
+  seta: string;
+  pct: number;
+  bom: boolean;
+}
+
+/** Tendência atual × anterior. `menorEhMelhor` inverte o julgamento (ex.: ciclo). */
+function tendencia(
+  atual: number | null | undefined,
+  anterior: number | null | undefined,
+  menorEhMelhor: boolean,
+): Tend | null {
+  if (atual == null || anterior == null || anterior === 0) return null;
+  const dif = atual - anterior;
+  if (dif === 0) return { seta: '→', pct: 0, bom: true };
+  const pct = Math.round((Math.abs(dif) / Math.abs(anterior)) * 100);
+  const subiu = dif > 0;
+  return { seta: subiu ? '↑' : '↓', pct, bom: menorEhMelhor ? !subiu : subiu };
+}
+
 export default function Dashboard() {
   const { dashboard, fonte, carregando, carregar } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
@@ -75,13 +95,27 @@ export default function Dashboard() {
 
   const saudavel = !zeroOn;
 
+  // tendência (atual × anterior) — vem pronta do servidor; o app só desenha a seta
+  const comp = dashboard.comparativos;
+  const tendCiclo = tendencia(comp?.cash_cycle.atual, comp?.cash_cycle.anterior, true);
+  const tendMargem = tendencia(comp?.contribution_margin.atual, comp?.contribution_margin.anterior, false);
+  const tendReceita = tendencia(comp?.revenue_current.atual, comp?.revenue_current.anterior, false);
+
   // mini-cards: o VALOR vem pronto do servidor; a frase é um texto-modelo que só
   // encaixa o número (o app não calcula nada — regra do CLAUDE.md).
-  const miniCards = [
+  const miniCards: Array<{
+    id: string;
+    rotulo: string;
+    valor: string;
+    positivo?: boolean;
+    tend?: Tend | null;
+    explica: string;
+  }> = [
     {
       id: 'ciclo',
       rotulo: 'CICLO DE CAIXA',
       valor: ciclo !== null ? dias(ciclo) : '—',
+      tend: tendCiclo,
       explica:
         ciclo !== null
           ? `Você leva em média ${dias(ciclo)} entre atender e o dinheiro cair na conta. Quanto menor, mais folga no caixa.`
@@ -92,6 +126,7 @@ export default function Dashboard() {
       rotulo: 'MARGEM',
       valor: margem !== null ? pct(margem) : '—',
       positivo: true,
+      tend: tendMargem,
       explica:
         margem !== null
           ? `De cada R$ 100 que entram, sobram cerca de R$ ${Math.round(margem * 100)} depois dos custos que variam com a venda — é o que ajuda a pagar as contas fixas.`
@@ -101,6 +136,7 @@ export default function Dashboard() {
       id: 'receita',
       rotulo: 'RECEITA / MÊS',
       valor: receita !== null ? brl(receita) : '—',
+      tend: tendReceita,
       explica:
         receita !== null
           ? `Foi quanto seu negócio faturou no mês (${brl(receita)}). Compare com o mês anterior ao lado.`
@@ -196,6 +232,7 @@ export default function Dashboard() {
               rotulo={c.rotulo}
               valor={c.valor}
               positivo={c.positivo}
+              tend={c.tend}
               ativo={abertoChip === c.id}
               onPress={() => setAbertoChip((atual) => (atual === c.id ? null : c.id))}
             />
@@ -245,12 +282,14 @@ function Chip({
   rotulo,
   valor,
   positivo,
+  tend,
   ativo,
   onPress,
 }: {
   rotulo: string;
   valor: string;
   positivo?: boolean;
+  tend?: Tend | null;
   ativo?: boolean;
   onPress?: () => void;
 }) {
@@ -265,6 +304,11 @@ function Chip({
     >
       <Text style={styles.chipRotulo}>{rotulo}</Text>
       <Text style={[styles.chipValor, positivo && { color: colors.okEscuro }]}>{valor}</Text>
+      {tend && (
+        <Text style={[styles.chipTend, { color: tend.bom ? colors.okEscuro : colors.alerta }]}>
+          {tend.seta} {tend.pct}% vs mês passado
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -405,7 +449,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     marginRight: 8,
-    minWidth: 104,
+    minWidth: 132,
   },
   chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   chipRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.8, color: colors.cinza },
@@ -416,6 +460,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontVariant: ['tabular-nums'],
   },
+  chipTend: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.2, marginTop: 3 },
 
   explica: {
     marginHorizontal: 16,

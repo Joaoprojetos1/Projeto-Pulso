@@ -78,6 +78,12 @@ export const DEMO_DASHBOARD: DashboardJson = {
       },
     },
   },
+  // tendência do exemplo (atual × anterior) — fictícia, como o resto da demonstração
+  comparativos: {
+    cash_cycle: { atual: 36, anterior: 30 }, // piorou: leva mais dias pra receber
+    contribution_margin: { atual: 0.75, anterior: 0.8 }, // margem caiu
+    revenue_current: { atual: 6_680_000, anterior: 5_880_000 }, // receita subiu
+  },
   alerts: [
     {
       ruleKey: 'cash_runway',
