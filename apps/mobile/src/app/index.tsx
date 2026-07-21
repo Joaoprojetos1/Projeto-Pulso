@@ -154,15 +154,20 @@ export default function Login() {
             )}
           </Pressable>
 
+          {/* demonstração sempre à mão, abaixo do login, pra testar sem criar conta */}
+          {!carregando && (
+            <Pressable
+              onPress={verDemonstracao}
+              style={({ pressed }) => [styles.demoBtn, pressed && styles.pressionado]}
+            >
+              <Text style={styles.demoBtnTexto}>Ver demonstração (sem conta)</Text>
+            </Pressable>
+          )}
+
           {carregando ? (
             <Text style={styles.carregandoMsg}>{MENSAGENS_CARREGANDO[msg]}</Text>
           ) : erro ? (
-            <View style={styles.erroBloco}>
-              <Text style={styles.erroTexto}>{erro}</Text>
-              <Pressable onPress={verDemonstracao} hitSlop={8}>
-                <Text style={styles.erroLink}>Ver uma demonstração enquanto isso →</Text>
-              </Pressable>
-            </View>
+            <Text style={styles.erroTexto}>{erro}</Text>
           ) : (
             <Pressable
               onPress={() => setModo(cadastrando ? 'entrar' : 'cadastrar')}
@@ -248,18 +253,21 @@ const styles = StyleSheet.create({
   },
   trocaModo: { marginTop: 16, alignItems: 'center' },
   trocaModoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.mata },
-  erroBloco: { marginTop: 14, gap: 10, alignItems: 'center' },
+  demoBtn: {
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  demoBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   erroTexto: {
     fontFamily: fonts.corpo,
     fontSize: 13,
     lineHeight: 19,
     color: colors.critico,
     textAlign: 'center',
-  },
-  erroLink: {
-    fontFamily: fonts.corpoMedio,
-    fontSize: 13,
-    color: colors.mata,
-    textAlign: 'center',
+    marginTop: 14,
   },
 });
