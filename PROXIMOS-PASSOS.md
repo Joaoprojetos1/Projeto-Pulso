@@ -112,12 +112,24 @@ código do push (API + app) está correto; é só a credencial que falta.
   telas, alerta como painel, chat vivo. _(à espera de publicar por OTA — passo 1)._
 
 ## Fase B — funcionalidades que faltam
-- Notificação push (o aviso chegar sozinho no celular) — coração da promessa.
-- Login/autenticação de verdade (cada empresa com sua conta).
-- Chatbot no WhatsApp (número de teste agora; oficial no lançamento).
+- Notificação push (o aviso chegar sozinho no celular) — TRAVADO no Firebase (ver
+  seção "vibração/APK novo").
+- [x] **Login/autenticação de verdade — FEITO (autocadastro).** Publicado por OTA
+  (update group `93548c4a`, commits c7f8124 server + 9f77f34 app). Server: tabelas
+  users/auth_tokens (senha scrypt, token só como sha256), rotas /auth/signup,
+  /auth/login, /auth/logout, /me/dashboard, /me/chat (isolado por usuário). App:
+  tela alterna entrar/criar conta; mantém logado pelo token (AsyncStorage). Conta
+  nova entra com painel vazio (sem chutar número). **Escolha do João: cliente se
+  cadastra sozinho.** 55 testes no server.
+  - _Obs.: como o storage mudou de 'pulso.logado' p/ 'pulso.token', quem já estava
+    "logado" no app cai na tela de login após este OTA — cadastra ou usa a demo._
+- Chatbot no WhatsApp — PARADO por ora (João: "deixa pra depois"; precisa conta
+  WhatsApp Business + provedor Meta/Twilio).
 
 ## Fase C — depende do especialista / dados reais
-- Leitor do arquivo real de um negócio (aguarda o modelo do especialista).
+- Leitor do arquivo real de um negócio (aguarda o modelo do especialista Marco).
+- [x] Datas do gráfico vindas do servidor — FEITO (a legenda hoje/+Nd usa os
+  horizonDays que o servidor manda, não valores fixos).
 - Piloto com empresa de verdade.
 
 ## Fase D — depende do CEO / negócio
