@@ -420,8 +420,8 @@
   .aud-note { font-size: .7rem; line-height: 1.4; color: #838993; margin-top: 10px; }
 
   /* ---------- Planos ---------- */
-  .plans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 2.8rem; max-width: 780px; }
-  @media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: start; }
+  @media (max-width: 860px) { .plans-grid { grid-template-columns: 1fr; max-width: 440px; } }
   .plan { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow); }
   .plan.destaque { border-color: color-mix(in srgb, var(--vivo) 55%, var(--line)); position: relative; }
   .plan .p-tag { position: absolute; top: -11px; left: 24px; background: var(--vivo); color: #06231A; font-family: var(--f-mono); font-size: .6rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
@@ -434,6 +434,37 @@
   .plan .btn { margin-top: auto; justify-content: center; }
   .plans-note { margin-top: 1.6rem; font-family: var(--f-mono); font-size: .78rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
   .plans-note::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--vivo); }
+
+  /* ---------- Ajustes de enxugamento / fluidez (briefing) ---------- */
+  /* divisorias mais visiveis: linha 12% + fundo alternado por bloco */
+  .sec + .sec { border-top: 1px solid var(--line); }
+  .sec:nth-of-type(even) { background: var(--surface-2); }
+
+  /* glow verde suave nas pontas do hero (sutil, nao neon) */
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(58% 48% at 0% 0%, color-mix(in srgb, var(--vivo) 13%, transparent), transparent 60%),
+      radial-gradient(55% 50% at 100% 100%, color-mix(in srgb, var(--vivo) 12%, transparent), transparent 62%);
+  }
+  .hero .wrap { position: relative; z-index: 1; }
+
+  /* numero de destaque inline (ex.: os 46 dias no "ponto cego") */
+  .num-hl { font-family: var(--f-display); font-weight: 700; color: var(--pulse-ink); font-variant-numeric: tabular-nums; }
+
+  /* mais vida: passos e planos sobem de leve no hover */
+  .step { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+  .step:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--vivo) 40%, var(--line)); }
+  .plan { transition: transform .2s ease, box-shadow .2s ease; }
+  .plan:hover { transform: translateY(-4px); }
+  @media (min-width: 861px) {
+    .plan.destaque { transform: translateY(-10px); box-shadow: 0 22px 48px -26px color-mix(in srgb, var(--vivo) 55%, transparent); }
+    .plan.destaque:hover { transform: translateY(-14px); }
+  }
+
+  /* FAQ centralizado (resolve o vazio a direita) */
+  #faq .sec-head { max-width: none; text-align: center; align-items: center; margin-inline: auto; }
+  #faq .faq-list { margin-inline: auto; }
 
   /* ---------- Ajustes finos de tela pequena (360–430px) ---------- */
   @media (max-width: 430px) {
@@ -459,10 +490,8 @@
       Pulso
     </a>
     <nav class="nav" aria-label="Principal">
-      <a class="navlink" href="#problema">O ponto cego</a>
       <a class="navlink" href="#como">Como funciona</a>
-      <a class="navlink" href="#vigia">O que ele vigia</a>
-      <a class="navlink" href="#seguranca">Segurança</a>
+      <a class="navlink" href="#vigia">O que vigia</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
       <a class="btn btn-primary" href="#lista">Entrar na lista</a>
@@ -476,10 +505,8 @@
 <div class="mobile-menu" id="mobile-menu">
   <div class="backdrop"></div>
   <nav class="sheet" aria-label="Menu">
-    <a class="m-link" href="#problema">O ponto cego</a>
     <a class="m-link" href="#como">Como funciona</a>
-    <a class="m-link" href="#vigia">O que ele vigia</a>
-    <a class="m-link" href="#seguranca">Segurança</a>
+    <a class="m-link" href="#vigia">O que vigia</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
     <a class="btn btn-primary" href="#lista">Entrar na lista de espera</a>
@@ -534,20 +561,11 @@
       <div>
         <p class="prose">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde, pelo susto no extrato.</p>
         <div class="facts">
-          <div class="fact"><span class="fk">Recebimento</span><span class="fv">Seus clientes pagam 46 dias depois da venda.</span></div>
+          <div class="fact"><span class="fk">Recebimento</span><span class="fv">Seus clientes pagam, em média, <b class="num-hl" data-countto="46">46</b> dias depois da venda. Nesse intervalo, as contas continuam chegando.</span></div>
           <div class="fact"><span class="fk">Custo fixo</span><span class="fv">Aluguel, equipe e impostos não esperam o dinheiro entrar.</span></div>
           <div class="fact"><span class="fk">O susto</span><span class="fv">Sem alguém olhando todo dia, o aperto chega sem aviso.</span></div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- NÚMERO EM DESTAQUE (respiro) -->
-  <section class="sec bignum reveal">
-    <div class="wrap">
-      <span class="eyebrow">O tamanho do ponto cego</span>
-      <div class="n" aria-label="46 dias"><span>46</span><span class="u">dias</span></div>
-      <p class="cap">É quanto o dinheiro de uma venda leva, em média, pra cair na sua conta. Nesse intervalo, <strong>as contas continuam chegando</strong>.</p>
     </div>
   </section>
 
@@ -704,31 +722,6 @@
     </div>
   </section>
 
-  <!-- CONFIANÇA (regra de ouro) — faixa escura de largura total -->
-  <section class="sec-dark" id="regra">
-    <div class="wrap">
-      <div class="dark-inner reveal">
-        <span class="eyebrow">A regra de ouro</span>
-        <h2>Todo número é calculado. A inteligência artificial nunca inventa um valor.</h2>
-        <p class="prose">No Pulso, cada número é calculado e conferido por um especialista em finanças de pequenas empresas. A IA só traduz o resultado numa frase que você entende. Nunca um número chutado num aviso sobre o seu dinheiro.</p>
-      </div>
-    </div>
-    <svg class="pulse-bg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true">
-      <path class="pulse-base" pathLength="1" d="M0,30 H150 L168,30 L180,16 L192,30 H235 L270,30 L286,30 L300,6 L314,50 L328,30 L360,30 H470 L488,30 L500,20 L512,40 L524,30 H600"/>
-    </svg>
-  </section>
-
-  <!-- PARA QUEM -->
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head center">
-        <span class="eyebrow">Por onde começamos</span>
-        <h2>Feito para o seu negócio.</h2>
-        <p class="prose" style="text-align:center; max-width:52ch;">O Pulso entende o que todo pequeno negócio precisa: saber, com antecedência, se o caixa aguenta o mês. Recebimento, custo fixo, concentração de clientes. O que aperta o seu caixa é o que ele vigia.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- SEGURANÇA / LGPD -->
   <section class="sec" id="seguranca">
     <div class="wrap">
@@ -750,7 +743,7 @@
         <div class="safe-card">
           <span class="sk">De onde vem</span>
           <h3>Todo número é rastreável</h3>
-          <p>Cada alerta mostra exatamente as contas que o motor usou. Você sempre pode ver de onde veio aquele valor. Nada é estimado por IA.</p>
+          <p>Cada número é calculado e conferido; a inteligência artificial nunca inventa um valor. Todo alerta mostra as contas que o motor usou, e você sempre vê de onde veio aquele número.</p>
         </div>
       </div>
       <!-- TODO(prova social): trocar/complementar por depoimento real ou numero de negocios atendidos quando houver. Nao inventar. -->
@@ -778,16 +771,25 @@
           <a class="btn btn-ghost" href="#lista">Entrar na lista</a>
         </div>
         <div class="plan destaque">
-          <span class="p-tag">Mais completo</span>
+          <span class="p-tag">Mais escolhido</span>
+          <span class="p-name">Crescimento</span>
+          <div class="p-price">R$ 147<small> /mês</small></div>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Essencial</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Contas a pagar e a receber</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
+          </ul>
+          <a class="btn btn-primary" href="#lista">Entrar na lista</a>
+        </div>
+        <div class="plan">
           <span class="p-name">Pro</span>
           <div class="p-price">R$ 197<small> /mês</small></div>
           <ul>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Essencial</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Crescimento</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os indicadores do motor</li>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Suporte prioritário</li>
           </ul>
-          <a class="btn btn-primary" href="#lista">Entrar na lista</a>
+          <a class="btn btn-ghost" href="#lista">Entrar na lista</a>
         </div>
       </div>
       <p class="plans-note">Sem fidelidade. A assinatura acontece dentro do app. Entre na lista e a gente avisa quando ele abrir.</p>
@@ -804,7 +806,7 @@
       <div class="faq-list reveal">
         <details class="faq-item">
           <summary>Quanto custa? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Dois planos: <strong>Essencial por R$ 97/mês</strong> e <strong>Pro por R$ 197/mês</strong>. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade. A assinatura acontece dentro do app; entre na lista de espera e a gente avisa quando ele abrir.</div>
+          <div class="faq-body">Três planos: <strong>Essencial R$ 97</strong>, <strong>Crescimento R$ 147</strong> e <strong>Pro R$ 197</strong> por mês. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade. A assinatura acontece dentro do app; entre na lista de espera e a gente avisa quando ele abrir.</div>
         </details>
         <details class="faq-item">
           <summary>Como o Pulso pega meus números? <span class="plus" aria-hidden="true"></span></summary>
@@ -890,8 +892,28 @@
     window.addEventListener('scroll', aoRolar, { passive: true });
     window.addEventListener('resize', aoRolar, { passive: true });
     window.addEventListener('hashchange', function () { setTimeout(varrer, 60); });
-    // Números do site são estáticos e coerentes (constantes no HTML). Sem contagem
-    // animada: número que muda a cada scroll destrói a credibilidade do produto.
+
+    // Número de DESTAQUE (só ele): conta de 0 ate o valor ao entrar na tela.
+    // Os demais números do site seguem estáticos (constantes no HTML), pra nao
+    // parecer que o valor muda. So o destaque anima, e uma vez.
+    var destaques = document.querySelectorAll('[data-countto]');
+    function contar(el) {
+      var alvo = parseInt(el.getAttribute('data-countto'), 10) || 0;
+      var ini = null, dur = 1000;
+      function passo(t) {
+        if (ini === null) ini = t;
+        var p = Math.min((t - ini) / dur, 1);
+        el.textContent = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(passo);
+      }
+      requestAnimationFrame(passo);
+    }
+    if (!reduz && 'IntersectionObserver' in window) {
+      var obsC = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { contar(e.target); obsC.unobserve(e.target); } });
+      }, { threshold: 0.6 });
+      destaques.forEach(function (el) { obsC.observe(el); });
+    }
   })();
 
   // Menu do celular (hambúrguer): abre/fecha, fecha ao tocar num link,
