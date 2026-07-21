@@ -161,14 +161,16 @@ export default function Dashboard() {
             )}
           </Text>
           <PulseLine points={curva} color={saudavel ? colors.vivo : colors.critico} />
-          {/* legenda do tempo sob o gráfico: hoje → +30 → +60 → +90 */}
+          {/* legenda do tempo sob o gráfico: horizontes que o servidor mandou */}
           {curva.length >= 2 && (
             <View style={styles.legenda}>
-              {['hoje', '+30d', '+60d', '+90d'].slice(0, curva.length).map((r) => (
-                <Text key={r} style={styles.legendaTexto}>
-                  {r}
-                </Text>
-              ))}
+              {['hoje', ...(projecao ?? []).map((p) => `+${p.horizonDays}d`)]
+                .slice(0, curva.length)
+                .map((r) => (
+                  <Text key={r} style={styles.legendaTexto}>
+                    {r}
+                  </Text>
+                ))}
             </View>
           )}
           {!saudavel && zeroOn && (

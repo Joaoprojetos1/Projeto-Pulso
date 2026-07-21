@@ -1,33 +1,50 @@
 /**
- * Estado global mínimo do app: o dashboard carregado, de onde ele veio
- * (servidor de verdade ou demonstração) e se o dono continua logado.
+ * Estado global do app: o painel carregado, de onde ele veio (servidor de
+ * verdade ou demonstração), a sessão do dono (login de verdade) e se ele
+ * continua logado.
+ *
+ * Login de verdade: o dono se cadastra/entra, recebemos um token, guardamos no
+ * aparelho e usamos nas rotas /me. O app segue burro — só busca e desenha.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
-import { fetchCompanies, fetchDashboard, type DashboardJson } from './api';
+import {
+  authLogin,
+  authLogout,
+  authSignup,
+  AuthError,
+  fetchMyDashboard,
+  type DashboardJson,
+} from './api';
 import { DEMO_DASHBOARD } from './demo';
 import { registrarParaAvisos } from './push';
 
 export type Fonte = 'servidor' | 'demo';
 
-const CHAVE_SESSAO = 'pulso.logado';
+const CHAVE_TOKEN = 'pulso.token';
 
 interface PulsoState {
   dashboard: DashboardJson | null;
   fonte: Fonte | null;
   companyId: string | null;
+  /** Token da sessão (rotas /me). Null em demonstração. */
+  token: string | null;
   carregando: boolean;
-  /** O servidor não respondeu na última tentativa (mostra erro em vez de entrar vazio). */
-  erro: boolean;
+  /** Mensagem de erro da última tentativa (login/carga), ou null. */
+  erro: string | null;
   /** Enquanto verifica se havia sessão salva (abertura do app). */
   restaurando: boolean;
-  /** O dono já entrou e a sessão está guardada. */
+  /** O dono já entrou. */
   logado: boolean;
-  /** Busca no servidor. Retorna true se conseguiu; false marca `erro` e NÃO entra. */
+  /** Cria a conta (autocadastro). Retorna true se entrou. */
+  cadastrar: (businessName: string, email: string, password: string) => Promise<boolean>;
+  /** Entra com e-mail e senha. Retorna true se entrou. */
+  entrar: (email: string, password: string) => Promise<boolean>;
+  /** Recarrega o painel do dono logado (pull-to-refresh / tentar de novo). */
   carregar: () => Promise<boolean>;
-  /** Entra no modo demonstração de propósito (dados fictícios rotulados). */
+  /** Entra no modo demonstração (dados fictícios rotulados). */
   entrarDemo: () => void;
   sair: () => void;
 }
@@ -38,52 +55,117 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [dashboard, setDashboard] = useState<DashboardJson | null>(null);
   const [fonte, setFonte] = useState<Fonte | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [restaurando, setRestaurando] = useState(true);
   const [logado, setLogado] = useState(false);
 
-  const carregar = useCallback(async (): Promise<boolean> => {
+  // ref para o carregar() sempre enxergar o token atual sem recriar a função
+  const tokenRef = useRef<string | null>(null);
+  const guardarToken = useCallback(async (t: string) => {
+    tokenRef.current = t;
+    setToken(t);
+    await AsyncStorage.setItem(CHAVE_TOKEN, t);
+  }, []);
+
+  const limparSessao = useCallback(async () => {
+    tokenRef.current = null;
+    setToken(null);
+    setDashboard(null);
+    setFonte(null);
+    setCompanyId(null);
+    setLogado(false);
+    await AsyncStorage.removeItem(CHAVE_TOKEN);
+  }, []);
+
+  /** Busca o painel do dono logado. Usa o token guardado (ou o passado). */
+  const carregar = useCallback(async (tok?: string): Promise<boolean> => {
+    const t = tok ?? tokenRef.current;
+    if (!t) return false;
     setCarregando(true);
-    setErro(false);
+    setErro(null);
     try {
-      const companies = await fetchCompanies();
-      if (companies.length === 0) throw new Error('sem empresas no servidor');
-      const id = companies[0]!.id;
-      const dash = await fetchDashboard(id);
+      const { dashboard: dash, companyId: id } = await fetchMyDashboard(t);
       setDashboard(dash);
-      setFonte('servidor');
       setCompanyId(id);
+      setFonte('servidor');
+      setLogado(true);
       // registra este celular para receber os avisos (silencioso se falhar)
       void registrarParaAvisos(id);
-      setLogado(true);
-      void AsyncStorage.setItem(CHAVE_SESSAO, 'sim');
       return true;
-    } catch {
-      // NÃO entra vazio: sinaliza o erro para a tela mostrar "tentar de novo".
-      setErro(true);
+    } catch (e) {
+      if (e instanceof AuthError && e.tipo === 'credenciais') {
+        await limparSessao();
+        setErro('Sua sessão expirou. Entre de novo.');
+      } else {
+        setErro('Não consegui falar com o servidor agora.');
+      }
       return false;
     } finally {
       setCarregando(false);
     }
-  }, []);
+  }, [limparSessao]);
+
+  const entrar = useCallback(
+    async (email: string, password: string): Promise<boolean> => {
+      setCarregando(true);
+      setErro(null);
+      try {
+        const r = await authLogin(email, password);
+        await guardarToken(r.token);
+        return await carregar(r.token);
+      } catch (e) {
+        setErro(e instanceof AuthError ? e.message : 'Não consegui entrar agora.');
+        setCarregando(false);
+        return false;
+      }
+    },
+    [carregar, guardarToken],
+  );
+
+  const cadastrar = useCallback(
+    async (businessName: string, email: string, password: string): Promise<boolean> => {
+      setCarregando(true);
+      setErro(null);
+      try {
+        const r = await authSignup(businessName, email, password);
+        await guardarToken(r.token);
+        return await carregar(r.token);
+      } catch (e) {
+        setErro(e instanceof AuthError ? e.message : 'Não consegui criar a conta agora.');
+        setCarregando(false);
+        return false;
+      }
+    },
+    [carregar, guardarToken],
+  );
 
   const entrarDemo = useCallback(() => {
     setDashboard(DEMO_DASHBOARD);
     setFonte('demo');
     setCompanyId(null);
-    setErro(false);
+    setErro(null);
     setLogado(true);
-    void AsyncStorage.setItem(CHAVE_SESSAO, 'sim');
   }, []);
 
-  // na abertura do app: se havia sessão salva, entra direto (sem pedir login)
+  const sair = useCallback(() => {
+    const t = tokenRef.current;
+    if (t) void authLogout(t);
+    void limparSessao();
+  }, [limparSessao]);
+
+  // abertura do app: se havia token salvo, entra direto (mantém logado)
   useEffect(() => {
     let vivo = true;
     (async () => {
       try {
-        const salvo = await AsyncStorage.getItem(CHAVE_SESSAO);
-        if (vivo && salvo === 'sim') await carregar();
+        const salvo = await AsyncStorage.getItem(CHAVE_TOKEN);
+        if (vivo && salvo) {
+          tokenRef.current = salvo;
+          setToken(salvo);
+          await carregar(salvo);
+        }
       } catch {
         // sem sessão salva: segue para a tela de login normalmente
       } finally {
@@ -95,29 +177,37 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     };
   }, [carregar]);
 
-  const sair = useCallback(() => {
-    setDashboard(null);
-    setFonte(null);
-    setCompanyId(null);
-    setErro(false);
-    setLogado(false);
-    void AsyncStorage.removeItem(CHAVE_SESSAO);
-  }, []);
-
   const value = useMemo(
     () => ({
       dashboard,
       fonte,
       companyId,
+      token,
       carregando,
       erro,
       restaurando,
       logado,
-      carregar,
+      cadastrar,
+      entrar,
+      carregar: () => carregar(),
       entrarDemo,
       sair,
     }),
-    [dashboard, fonte, companyId, carregando, erro, restaurando, logado, carregar, entrarDemo, sair],
+    [
+      dashboard,
+      fonte,
+      companyId,
+      token,
+      carregando,
+      erro,
+      restaurando,
+      logado,
+      cadastrar,
+      entrar,
+      carregar,
+      entrarDemo,
+      sair,
+    ],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

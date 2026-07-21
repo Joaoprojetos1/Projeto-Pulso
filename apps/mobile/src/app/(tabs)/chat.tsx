@@ -27,7 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sendChat, type ChatTurnJson } from '@/lib/api';
+import { sendMyChat, type ChatTurnJson } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -75,7 +75,7 @@ const RESPOSTA_ERRO =
   'Não consegui falar com o servidor agora. Tente de novo em instantes — seus alertas continuam no painel.';
 
 export default function Chat() {
-  const { dashboard, fonte } = usePulso();
+  const { dashboard, token } = usePulso();
   const [texto, setTexto] = useState('');
   const [pensando, setPensando] = useState(false);
   const [mensagens, setMensagens] = useState<Mensagem[]>([
@@ -102,8 +102,8 @@ export default function Chat() {
     setMensagens(minhas);
     rolar();
 
-    // modo demonstração: resposta local honesta, sem fingir IA
-    if (fonte !== 'servidor' || !dashboard) {
+    // modo demonstração (sem login): resposta local honesta, sem fingir IA
+    if (!token) {
       setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_DEMO }]);
       rolar();
       return;
@@ -115,7 +115,7 @@ export default function Chat() {
       const turns: ChatTurnJson[] = minhas
         .filter((m) => m.id !== 'boas-vindas')
         .map((m) => ({ role: m.de === 'voce' ? 'user' : 'assistant', content: m.texto }));
-      const resposta = await sendChat(dashboard.company.id, turns);
+      const resposta = await sendMyChat(token, turns);
       setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: resposta }]);
     } catch {
       setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_ERRO }]);

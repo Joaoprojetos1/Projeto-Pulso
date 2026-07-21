@@ -114,3 +114,98 @@ export async function sendChat(companyId: string, messages: ChatTurnJson[]): Pro
   const body = (await res.json()) as { reply: string };
   return body.reply;
 }
+
+/* ----------------------- Login de verdade ----------------------- */
+
+/** Motivo do erro de autenticação, para a tela mostrar a mensagem certa. */
+export type AuthErroTipo = 'credenciais' | 'conflito' | 'rede' | 'desconhecido';
+export class AuthError extends Error {
+  tipo: AuthErroTipo;
+  constructor(tipo: AuthErroTipo, mensagem: string) {
+    super(mensagem);
+    this.tipo = tipo;
+  }
+}
+
+export interface AuthResult {
+  token: string;
+  email: string;
+  company: { id: string; name: string; niche?: string };
+}
+
+async function postAuth(path: string, body: unknown): Promise<AuthResult> {
+  let res: Response;
+  try {
+    res = await fetchWithWake(`${apiBase()}${path}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+  }
+  if (res.ok) return (await res.json()) as AuthResult;
+  if (res.status === 401) throw new AuthError('credenciais', 'E-mail ou senha incorretos.');
+  if (res.status === 409) throw new AuthError('conflito', 'Já existe uma conta com esse e-mail.');
+  throw new AuthError('desconhecido', `Não deu certo agora (${res.status}).`);
+}
+
+export function authSignup(
+  businessName: string,
+  email: string,
+  password: string,
+): Promise<AuthResult> {
+  return postAuth('/auth/signup', { businessName, email, password });
+}
+
+export function authLogin(email: string, password: string): Promise<AuthResult> {
+  return postAuth('/auth/login', { email, password });
+}
+
+export async function authLogout(token: string): Promise<void> {
+  try {
+    await fetchWithWake(`${apiBase()}/auth/logout`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // sair é local de qualquer jeito; se o servidor não responder, tudo bem
+  }
+}
+
+export interface MyDashboard {
+  companyId: string;
+  companyName: string;
+  /** null = conta nova, ainda sem dados (mostra o estado de "vazio"). */
+  dashboard: DashboardJson | null;
+}
+
+/** Painel do dono logado (usa o token; só vê a própria empresa). */
+export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
+  const res = await fetchWithWake(`${apiBase()}/me/dashboard`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no painel`);
+  const body = (await res.json()) as {
+    company: { id: string; name: string; niche: string };
+    snapshot: DashboardJson['snapshot'] | null;
+    alerts: AlertJson[];
+  };
+  const dashboard: DashboardJson | null = body.snapshot
+    ? { company: body.company, snapshot: body.snapshot, alerts: body.alerts }
+    : null;
+  return { companyId: body.company.id, companyName: body.company.name, dashboard };
+}
+
+/** Conversa do dono logado. */
+export async function sendMyChat(token: string, messages: ChatTurnJson[]): Promise<string> {
+  const res = await fetchWithWake(`${apiBase()}/me/chat`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
+  const body = (await res.json()) as { reply: string };
+  return body.reply;
+}
