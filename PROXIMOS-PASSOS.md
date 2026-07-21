@@ -81,9 +81,14 @@ verdade (servidor, ligado ao login); avatar do topo abre a aba Conta.
   **É a parte de fórmula nova — validar desenho com o Marco (ver decisão).**
 - [ ] **FASE 3 — aprendizado (graduação).** Ao confirmar, registrar atraso do cliente
   (due_on × confirmed_on) e afinar as próximas projeções/alertas daquele cliente.
-- [ ] **FASE 4 — ajustes existentes.** Chat determinístico na demo (as 3 perguntas
-  respondidas pelos números do motor, sem IA); tendência/histórico nos 3 indicadores
-  do topo (hoje só Receita compara). (Avatar já feito na Fase 1.)
+- [x] **FASE 4 — ajustes existentes. FEITA (21/07, OTA `3577cee0`).** (1) Chat
+  determinístico na demo: `perguntas.ts` responde as 3 perguntas ("quando o caixa
+  zera", "quem me deve", "dá pra pagar as contas do mês") com os números já
+  calculados, sem IA (commit 3066bd5). (2) Tendência nos 3 indicadores do topo:
+  server `buildDashboard` devolve `comparativos` (atual × anterior — Receita usa o
+  mês anterior do snapshot; Ciclo/Margem usam o snapshot anterior, aparecem só com
+  histórico, nunca inventam); app desenha a seta ↑/↓ verde(melhora)/laranja(piora)
+  (commits 3c6145c server + 1df92fc app). Avatar já foi na Fase 1.
 - Estruturar só (não construir): integrações preenchem o REALIZADO automático;
   simulação de cenários ("e se o maior cliente atrasar 15d?"); camada de padrão/sazonalidade.
 
