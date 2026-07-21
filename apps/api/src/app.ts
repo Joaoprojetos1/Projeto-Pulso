@@ -9,6 +9,7 @@ import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
 import { registerDevices } from './routes/devices';
+import { registerPlanned } from './routes/planned';
 import { registerSnapshots } from './routes/snapshots';
 
 export interface AppOptions {
@@ -27,6 +28,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   app.get('/health', async () => ({ ok: true }));
 
   registerAuth(app, sql, opts.chatModel ?? null);
+  registerPlanned(app, sql);
   registerCompanies(app, sql);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
