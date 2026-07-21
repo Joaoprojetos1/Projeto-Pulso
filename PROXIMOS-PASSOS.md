@@ -27,11 +27,14 @@
    projeto (app.json `android.googleServicesFile`); (d) **APK novo** (não vai por
    OTA) e reinstalar; (e) então `push-test` na Clínica Horizonte
    (id 5e330c08-9a71-4f9e-9e0a-5f909f01d099) deve chegar no celular.
-3. **Site (pulso-site.onrender.com), Ondas 0–3:** ligar o contato do WhatsApp
-   (wa.me — confirmar o número, celular BR tem 9 dígitos após o DDD), seção de
-   segurança/LGPD, FAQ antes do CTA, capa de compartilhamento (og:image) +
-   favicon ECG, e animações de rolagem (hoje o site não tem JS). Auto-deploya no
-   mesmo push.
+3. **Site (pulso-site.onrender.com):** FEITO (commit e12d3dd) — seção de
+   segurança/LGPD, FAQ antes do CTA, favicon ECG, capa de compartilhamento
+   (og:png 1200x630 gerado com System.Drawing), animações de aparecer ao rolar
+   (1º JS do site, respeita prefers-reduced-motion). O contato WhatsApp já estava
+   ligado. **⚠️ PENDENTE do João:** confirmar o NÚMERO do WhatsApp —
+   `wa.me/553194287877` tem só 8 dígitos após o DDD 31 (celular BR = 9). Se
+   faltou um dígito, o único botão de contato do site leva pro vazio. Corrigir em
+   todos os `wa.me/...` do site/index.html quando confirmar.
 4. **App — itens que dependem do servidor/IA (⚠️):** botão "O que eu faço?" no
    alerta entregar próximos passos concretos redigidos pela IA (não o app
    inventando); datas do gráfico vindas do servidor. Ficam pra depois.
