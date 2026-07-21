@@ -100,6 +100,33 @@ async function notifyNewAlerts(
   await sql`UPDATE alerts SET pushed_at = now() WHERE id = ANY(${ids})`;
 }
 
+type Payload = Record<string, { value?: unknown }> | null | undefined;
+
+function valorInd(payload: Payload, key: string): number | null {
+  const v = payload?.[key]?.value;
+  return typeof v === 'number' ? v : null;
+}
+
+/**
+ * Comparativo atual × anterior dos indicadores de topo (Ciclo, Margem, Receita).
+ * TUDO já foi calculado pelo core — aqui só comparamos dois retratos. Receita
+ * usa o mês anterior do próprio snapshot; Ciclo e Margem usam o snapshot
+ * anterior (aparecem só quando já existe histórico — nunca inventamos).
+ */
+function montarComparativos(atual: Payload, anterior: Payload) {
+  return {
+    cash_cycle: { atual: valorInd(atual, 'cash_cycle'), anterior: valorInd(anterior, 'cash_cycle') },
+    contribution_margin: {
+      atual: valorInd(atual, 'contribution_margin'),
+      anterior: valorInd(anterior, 'contribution_margin'),
+    },
+    revenue_current: {
+      atual: valorInd(atual, 'revenue_current'),
+      anterior: valorInd(atual, 'revenue_previous'),
+    },
+  };
+}
+
 /**
  * Monta a resposta do dashboard (último snapshot + alertas ordenados).
  * Retorna null quando a empresa ainda não tem nenhum cálculo (conta nova).
@@ -113,6 +140,14 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     ORDER BY as_of DESC
     LIMIT 1`;
   if (!snapshot) return null;
+
+  // snapshot anterior (para a tendência de Ciclo e Margem); pode não existir
+  const [anterior] = await sql`
+    SELECT payload
+    FROM indicator_snapshots
+    WHERE company_id = ${company.id} AND as_of < ${snapshot.as_of}
+    ORDER BY as_of DESC
+    LIMIT 1`;
 
   const alertRows = await sql`
     SELECT rule_key, severity::text AS severity, facts, text_title, text_body, created_at
@@ -128,6 +163,10 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
       computedAt: snapshot.computed_at,
       indicators: snapshot.payload,
     },
+    comparativos: montarComparativos(
+      snapshot.payload as Payload,
+      (anterior?.payload as Payload) ?? null,
+    ),
     alerts: alertRows.map((a) => ({
       ruleKey: a.rule_key,
       severity: a.severity,
