@@ -10,12 +10,11 @@
 
 ## 🔜 Próximos passos priorizados (20/07/2026)
 
-1. **PUBLICAR a fluidez do app por OTA.** O código da Onda 2 (animações/fluidez)
-   já está no main (commit `5b1a304`, tsc + build web OK) mas **ainda não foi
-   publicado** — o app instalado só verá depois do `eas update`. Precisa do
-   EXPO_TOKEN do João (ele cola; o Claude não digita chave). Comando, de
-   `apps/mobile`: `$env:EXPO_TOKEN='...'; npx eas-cli update --branch preview
-   --message "fluidez Onda 2"`. Depois o João revoga o token.
+1. ✅ **FLUIDEZ PUBLICADA POR OTA (20/07)** — `eas update --branch preview`,
+   update group `91607898-5316-4f66-ab34-df11b60cb4d8`, runtime 0.1.0 (casa com o
+   APK instalado, canal preview), commit c4dba64. O app baixa na abertura e aplica
+   no reinício seguinte (abrir → fechar → abrir pra ver). Token EXPO usado foi
+   pedido pra REVOGAR (expo.dev/settings/access-tokens).
 2. **Destravar o PUSH (Firebase/FCM).** O push NÃO funciona no APK atual: o
    Android exige que o app esteja ligado a um projeto Firebase (FCM), e isso
    nunca foi configurado — não há `google-services.json` no projeto e o
