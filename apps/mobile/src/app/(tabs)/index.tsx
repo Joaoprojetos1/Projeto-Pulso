@@ -126,11 +126,16 @@ export default function Dashboard() {
       >
         <View style={styles.topo}>
           <PulsoLogo size={26} />
-          <View style={styles.avatar}>
+          <Pressable
+            onPress={() => router.push('/(tabs)/conta')}
+            style={({ pressed }) => [styles.avatar, pressed && styles.pressionado]}
+            hitSlop={8}
+            accessibilityLabel="Abrir minha conta"
+          >
             <Text style={styles.avatarTexto}>
               {dashboard.company.name.replace(/^Clínica\s+/i, '').charAt(0)}
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         {fonte === 'demo' && (

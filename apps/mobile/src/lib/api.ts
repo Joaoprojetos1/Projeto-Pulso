@@ -209,3 +209,78 @@ export async function sendMyChat(token: string, messages: ChatTurnJson[]): Promi
   const body = (await res.json()) as { reply: string };
   return body.reply;
 }
+
+/* --------------- Contas previstas (a pagar / a receber) --------------- */
+
+export type ContaKind = 'receivable' | 'payable';
+export type ContaStatus = 'prevista' | 'vencida' | 'realizada';
+export type ContaRecorrencia = 'none' | 'monthly';
+
+export interface ContaJson {
+  id: string;
+  kind: ContaKind;
+  amountCents: number;
+  dueOn: string;
+  counterparty: string | null;
+  category: string | null;
+  recurrence: ContaRecorrencia;
+  natureza: 'avulsa' | 'recorrente';
+  status: ContaStatus;
+  confirmedOn: string | null;
+  /** true enquanto não graduada — na tela é sempre marcada "Previsão". */
+  previsao: boolean;
+  createdAt: string;
+}
+
+export interface NovaConta {
+  kind: ContaKind;
+  amountCents: number;
+  dueOn: string;
+  counterparty?: string;
+  category?: string;
+  recurrence?: ContaRecorrencia;
+}
+
+const authHeader = (token: string) => ({ authorization: `Bearer ${token}` });
+
+export async function fetchContas(token: string, kind?: ContaKind): Promise<ContaJson[]> {
+  const q = kind ? `?kind=${kind}` : '';
+  const res = await fetchWithWake(`${apiBase()}/me/contas${q}`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nas contas`);
+  const body = (await res.json()) as { contas: ContaJson[] };
+  return body.contas;
+}
+
+export async function criarConta(token: string, conta: NovaConta): Promise<ContaJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/contas`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(conta),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao cadastrar conta`);
+  return (await res.json()) as ContaJson;
+}
+
+/** Graduação: o dono confirma que a conta aconteceu (previsto → realizado). */
+export async function confirmarConta(
+  token: string,
+  id: string,
+  confirmedOn?: string,
+): Promise<ContaJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/contas/${id}/confirmar`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(confirmedOn ? { confirmedOn } : {}),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao confirmar conta`);
+  return (await res.json()) as ContaJson;
+}
+
+export async function excluirConta(token: string, id: string): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/contas/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao excluir conta`);
+}
