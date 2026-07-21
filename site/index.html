@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Pulso — saiba que o caixa vai apertar, antes de apertar</title>
-<meta name="description" content="O Pulso acompanha o dinheiro do seu negócio todo dia e avisa, em português claro, quando o caixa vai para o vermelho — com data e valor. Para pequenos negócios." />
-<meta property="og:title" content="Pulso — o caixa do seu negócio, sob controle" />
+<title>Pulso: saiba que o caixa vai apertar, antes de apertar</title>
+<meta name="description" content="O Pulso acompanha o dinheiro do seu negócio todo dia e avisa, em português claro, quando o caixa vai para o vermelho, com data e valor. Para pequenos negócios." />
+<meta property="og:title" content="Pulso: o caixa do seu negócio, sob controle" />
 <meta property="og:description" content="Avisa antes do caixa apertar. Com data, valor e sem jargão." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://pulso-site.onrender.com/og.png" />
@@ -16,7 +16,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2042%2024'%3E%3Cpath%20d='M1,12H12L15.5,12L18,5L20.5,12H24L27,12L29.5,3L32,21L34.5,12L37,12H41'%20fill='none'%20stroke='%2323C883'%20stroke-width='3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   /* ---------- Marca Pulso (fonte: packages/tokens) ---------- */
   :root {
@@ -40,9 +40,11 @@
     --pulse:   var(--vivo);
     --pulse-ink: #158556;      /* vivo mais escuro, legível sobre papel */
     --shadow:  0 1px 2px rgba(42,42,49,.05), 0 12px 32px -12px rgba(42,42,49,.18);
-    --f-display: 'Josefin Sans', 'Segoe UI', system-ui, sans-serif;
+    /* Duas familias no site inteiro: Manrope (titulos) e Figtree (corpo, rotulos
+       e numeros com tabular-nums). Sem terceira familia. */
+    --f-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
     --f-body:    'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --f-mono:    'IBM Plex Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+    --f-mono:    'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -251,8 +253,9 @@
   @media (max-width: 720px) { .watch-grid { grid-template-columns: 1fr; } }
   .signal { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; transition: transform .18s ease, border-color .18s ease; }
   .signal:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
-  .signal-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .signal .sk { font-family: var(--f-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+  .signal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .signal .sk { display: flex; flex-direction: column; gap: 2px; font-family: var(--f-display); font-weight: 600; font-size: .98rem; color: var(--ink); letter-spacing: -0.01em; }
+  .signal .sk-tech { font-family: var(--f-mono); font-size: .58rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
   .signal p { color: var(--ink); font-size: 1.02rem; }
   .sev { font-family: var(--f-mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; padding: .3em .6em; border-radius: 999px; white-space: nowrap; }
   .sev-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
@@ -273,11 +276,21 @@
   .cta-final { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
   .cta-final .prose { text-align: center; }
   .cta-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); }
+  .lista-form { display: flex; gap: 10px; width: 100%; max-width: 480px; margin-top: .3rem; flex-wrap: wrap; justify-content: center; }
+  .lista-input { flex: 1 1 240px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .82em 1.3em; font-family: var(--f-body); font-size: 1rem; color: var(--ink); }
+  .lista-input::placeholder { color: var(--muted); }
+  .lista-input:focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; }
+  .lista-form .btn { flex: 0 0 auto; }
+  .lista-msg-ok { color: var(--pulse-ink); }
+  .lista-msg-erro { color: var(--critico); }
 
   /* rodapé */
   .site-foot { border-top: 1px solid var(--line-2); padding-block: 34px; }
   .site-foot .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  .foot-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); }
+  .foot-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); flex-basis: 100%; }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .foot-links a { font-size: .86rem; color: var(--muted); text-decoration: none; }
+  .foot-links a:hover { color: var(--ink); }
 
   .draft-tag { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--alerta); border: 1px dashed color-mix(in srgb, var(--alerta) 55%, transparent); padding: .2em .5em; border-radius: 6px; }
 
@@ -452,7 +465,7 @@
       <a class="navlink" href="#seguranca">Segurança</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
-      <a class="btn btn-primary" href="https://wa.me/553194287877?text=Oi%2C%20quero%20testar%20o%20Pulso." target="_blank" rel="noopener">Quero testar</a>
+      <a class="btn btn-primary" href="#lista">Entrar na lista</a>
     </nav>
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
       <span class="ham" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -469,7 +482,7 @@
     <a class="m-link" href="#seguranca">Segurança</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
-    <a class="btn btn-primary" href="https://wa.me/553194287877?text=Oi%2C%20quero%20testar%20o%20Pulso." target="_blank" rel="noopener">Quero testar o Pulso</a>
+    <a class="btn btn-primary" href="#lista">Entrar na lista de espera</a>
   </nav>
 </div>
 
@@ -481,12 +494,12 @@
       <div class="hero-copy">
         <span class="eyebrow">Para donos de negócio</span>
         <h1>Saiba que o caixa vai apertar.<br><span class="accent">Antes</span> de apertar.</h1>
-        <p class="lead">O Pulso acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho — com data e valor. Você reage a tempo, não depois do susto.</p>
+        <p class="lead">O Pulso acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho, com data e valor. Você reage a tempo, não depois do susto.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="https://wa.me/553194287877?text=Oi%2C%20quero%20testar%20o%20Pulso." target="_blank" rel="noopener">Quero testar o Pulso <span class="btn-arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-primary" href="#lista">Entrar na lista de espera <span class="btn-arrow" aria-hidden="true">→</span></a>
           <a class="btn btn-ghost" href="#como">Ver como funciona</a>
         </div>
-        <p class="hero-note">Feito para pequenos negócios · avisa no WhatsApp e no app</p>
+        <p class="hero-note">Feito para pequenos negócios · o app avisa antes do aperto</p>
       </div>
 
       <div class="alert-card" role="img" aria-label="Exemplo de alerta do Pulso: seu caixa pode zerar em 29 de julho.">
@@ -495,7 +508,7 @@
           <span class="alert-time">hoje, 08:14</span>
         </div>
         <div class="alert-headline">Seu caixa pode zerar em <b>29 de julho</b>.</div>
-        <p class="alert-sub">No ritmo de hoje, faltam cerca de R$ 8.400 pra fechar o mês. Ainda dá tempo de ajustar — por isso o aviso chega agora.</p>
+        <p class="alert-sub">No ritmo de hoje, faltam cerca de R$ 8.400 pra fechar o mês. Ainda dá tempo de ajustar. Por isso o aviso chega agora.</p>
         <div class="pulse-wrap">
           <svg class="pulse-svg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true">
             <path class="pulse-base" pathLength="1" d="M0,30 H150 L168,30 L180,16 L192,30 H235 L270,30 L286,30 L300,6 L314,50 L328,30 L360,30 H470 L488,30 L500,20 L512,40 L524,30 H600"/>
@@ -503,9 +516,9 @@
           </svg>
         </div>
         <div class="alert-figures">
-          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval" data-count="21300" data-prefix="R$ ">R$ 21.300</div></div>
-          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval" data-count="8400" data-prefix="−R$ ">−R$ 8.400</div></div>
-          <div class="figure"><div class="flabel">Recebe em</div><div class="fval" data-count="46" data-suffix=" dias">46 dias</div></div>
+          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval">R$ 21.300</div></div>
+          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval">−R$ 8.400</div></div>
+          <div class="figure"><div class="flabel">Recebe em</div><div class="fval">46 dias</div></div>
         </div>
       </div>
     </div>
@@ -519,7 +532,7 @@
         <h2>Você toca o seu negócio. Quem cuida do caixa?</h2>
       </div>
       <div>
-        <p class="prose">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde — pelo susto no extrato.</p>
+        <p class="prose">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde, pelo susto no extrato.</p>
         <div class="facts">
           <div class="fact"><span class="fk">Recebimento</span><span class="fv">Seus clientes pagam 46 dias depois da venda.</span></div>
           <div class="fact"><span class="fk">Custo fixo</span><span class="fv">Aluguel, equipe e impostos não esperam o dinheiro entrar.</span></div>
@@ -533,7 +546,7 @@
   <section class="sec bignum reveal">
     <div class="wrap">
       <span class="eyebrow">O tamanho do ponto cego</span>
-      <div class="n" aria-label="46 dias"><span data-count="46">46</span><span class="u">dias</span></div>
+      <div class="n" aria-label="46 dias"><span>46</span><span class="u">dias</span></div>
       <p class="cap">É quanto o dinheiro de uma venda leva, em média, pra cair na sua conta. Nesse intervalo, <strong>as contas continuam chegando</strong>.</p>
     </div>
   </section>
@@ -554,7 +567,7 @@
         <div class="step">
           <span class="snum">Passo 2</span>
           <h3>O Pulso calcula todo dia</h3>
-          <p>Projeção de caixa, prazos de recebimento e margem. Cada conta é feita em código e conferida.</p>
+          <p>Projeção de caixa, prazos de recebimento e margem. Cada número é calculado, nunca chutado.</p>
         </div>
         <div class="step">
           <span class="snum">Passo 3</span>
@@ -594,7 +607,7 @@
               </div>
             </div>
           </div>
-          <figcaption class="phone-cap">O aviso chega <b>antes</b> — no WhatsApp e no app.</figcaption>
+          <figcaption class="phone-cap">O aviso chega <b>antes</b>, no WhatsApp e no app.</figcaption>
         </figure>
 
         <!-- 2. dashboard: a projeção de caixa -->
@@ -602,7 +615,7 @@
           <div class="phone">
             <div class="screen scr-app">
               <div class="app-top">
-                <svg width="60" height="17" viewBox="0 0 150 24" fill="none" aria-hidden="true"><path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="#23C883" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><text x="50" y="17" font-family="Josefin Sans, sans-serif" font-weight="700" font-size="15" fill="#37373F">Pulso</text></svg>
+                <svg width="60" height="17" viewBox="0 0 150 24" fill="none" aria-hidden="true"><path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="#23C883" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><text x="50" y="17" font-family="Manrope, sans-serif" font-weight="700" font-size="15" fill="#37373F">Pulso</text></svg>
                 <span class="app-avatar">A</span>
               </div>
               <span class="app-seal">DEMONSTRAÇÃO · DADOS FICTÍCIOS</span>
@@ -618,9 +631,9 @@
                 <div class="cc-risk">ponto de risco: 29 de julho</div>
               </div>
               <div class="app-chips">
-                <div class="app-chip"><div class="k">CICLO</div><div class="v">36 dias</div></div>
-                <div class="app-chip"><div class="k">MARGEM</div><div class="v ok">75%</div></div>
-                <div class="app-chip"><div class="k">RECEITA/MÊS</div><div class="v">R$ 66,8 mil</div></div>
+                <div class="app-chip"><div class="k">DINHEIRO PRESO</div><div class="v">46 dias</div></div>
+                <div class="app-chip"><div class="k">O QUE SOBRA</div><div class="v">75%</div></div>
+                <div class="app-chip"><div class="k">FATUROU/MÊS</div><div class="v">R$ 66,8 mil</div></div>
               </div>
               <div class="app-secttl">O que pede sua atenção</div>
               <div class="app-alert"><span class="bar crit"></span><span class="at">Seu caixa pode zerar em 29 de julho</span></div>
@@ -641,7 +654,7 @@
                 <div class="aud-k">DE ONDE VEM ESSE NÚMERO</div>
                 <div class="aud-row"><span class="rk">Saldo hoje</span><span class="rv">R$ 21.300</span></div>
                 <div class="aud-row"><span class="rk">Atraso médio</span><span class="rv">12 dias</span></div>
-                <div class="aud-row"><span class="rk">Recebimento</span><span class="rv">36 dias</span></div>
+                <div class="aud-row"><span class="rk">Recebimento</span><span class="rv">46 dias</span></div>
                 <div class="aud-row"><span class="rk">Custo fixo / mês</span><span class="rv">R$ 34.200</span></div>
                 <div class="aud-row"><span class="rk">Zera em</span><span class="rv">29 de julho</span></div>
                 <div class="aud-note">Estes são os números exatos que o motor usou. Nada é estimado por IA.</div>
@@ -663,27 +676,27 @@
       </div>
       <div class="watch-grid reveal stagger">
         <div class="signal">
-          <div class="signal-top"><span class="sk">Caixa</span><span class="sev sev-crit">Crítico</span></div>
+          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span><span class="sev sev-crit">Crítico</span></div>
           <p>Seu caixa pode zerar em menos de 60 dias.</p>
         </div>
         <div class="signal">
-          <div class="signal-top"><span class="sk">Efeito tesoura</span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Cresce, mas o caixa aperta<span class="sk-tech">efeito tesoura</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>Você vende mais, mas o dinheiro está demorando mais a chegar.</p>
         </div>
         <div class="signal">
-          <div class="signal-top"><span class="sk">Concentração</span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Depende de poucos clientes<span class="sk-tech">concentração</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>Um único cliente responde por boa parte do seu faturamento.</p>
         </div>
         <div class="signal">
-          <div class="signal-top"><span class="sk">Ciclo de caixa</span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Dinheiro fica preso<span class="sk-tech">ciclo de caixa</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>O tempo entre pagar suas contas e receber está piorando.</p>
         </div>
         <div class="signal">
-          <div class="signal-top"><span class="sk">Margem</span><span class="sev sev-warn">Atenção</span></div>
-          <p>Sua margem caiu dois meses seguidos — o custo subiu ou o preço ficou para trás.</p>
+          <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span><span class="sev sev-warn">Atenção</span></div>
+          <p>Sua margem caiu dois meses seguidos. O custo subiu ou o preço ficou para trás.</p>
         </div>
         <div class="signal">
-          <div class="signal-top"><span class="sk">Silêncio</span><span class="sev sev-warn">Tudo certo</span></div>
+          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span><span class="sev sev-warn">Tudo certo</span></div>
           <p>Quando está tudo bem, o Pulso fica quieto. Sem aviso, é bom sinal.</p>
         </div>
       </div>
@@ -697,7 +710,7 @@
       <div class="dark-inner reveal">
         <span class="eyebrow">A regra de ouro</span>
         <h2>Todo número é calculado. A inteligência artificial nunca inventa um valor.</h2>
-        <p class="prose">No Pulso, quem faz as contas é o código — cada fórmula conferida por um especialista em finanças de pequenas empresas. A IA só traduz o resultado pra uma frase que você entende. Nunca um número chutado num aviso sobre o seu dinheiro.</p>
+        <p class="prose">No Pulso, cada número é calculado e conferido por um especialista em finanças de pequenas empresas. A IA só traduz o resultado numa frase que você entende. Nunca um número chutado num aviso sobre o seu dinheiro.</p>
       </div>
     </div>
     <svg class="pulse-bg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true">
@@ -711,7 +724,7 @@
       <div class="sec-head center">
         <span class="eyebrow">Por onde começamos</span>
         <h2>Feito para o seu negócio.</h2>
-        <p class="prose" style="text-align:center; max-width:52ch;">O Pulso entende o que todo pequeno negócio precisa: saber, com antecedência, se o caixa aguenta o mês. Recebimento, custo fixo, concentração de clientes — o que aperta o seu caixa é o que ele vigia.</p>
+        <p class="prose" style="text-align:center; max-width:52ch;">O Pulso entende o que todo pequeno negócio precisa: saber, com antecedência, se o caixa aguenta o mês. Recebimento, custo fixo, concentração de clientes. O que aperta o seu caixa é o que ele vigia.</p>
       </div>
     </div>
   </section>
@@ -725,21 +738,23 @@
       </div>
       <div class="safe-grid reveal stagger">
         <div class="safe-card">
-          <span class="sk">Só seu</span>
+          <span class="sk">LGPD</span>
           <h3>Nada é compartilhado</h3>
-          <p>Os dados do seu negócio ficam guardados para calcular os seus indicadores — e para mais nada. Não vendemos, não repassamos, não usamos para treinar inteligência artificial.</p>
+          <p>Seguimos a Lei Geral de Proteção de Dados. Seus dados servem só para calcular os seus indicadores. Não vendemos, não repassamos e não usamos para treinar inteligência artificial.</p>
+        </div>
+        <div class="safe-card">
+          <span class="sk">Protegido</span>
+          <h3>Criptografado e somente-leitura</h3>
+          <p>Seus dados trafegam criptografados e ficam em servidor seguro. Conexões de dados são somente-leitura: o Pulso lê para calcular, nunca movimenta o seu dinheiro.</p>
         </div>
         <div class="safe-card">
           <span class="sk">De onde vem</span>
           <h3>Todo número é rastreável</h3>
-          <p>Cada alerta mostra exatamente as contas que o motor usou. Você sempre pode ver de onde veio aquele valor — nada é estimado por IA.</p>
-        </div>
-        <div class="safe-card">
-          <span class="sk">No seu controle</span>
-          <h3>Você manda nos seus dados</h3>
-          <p>É você quem decide conectar e desconectar seus números quando quiser. A conversa começa sem compromisso e sem cartão.</p>
+          <p>Cada alerta mostra exatamente as contas que o motor usou. Você sempre pode ver de onde veio aquele valor. Nada é estimado por IA.</p>
         </div>
       </div>
+      <!-- TODO(prova social): trocar/complementar por depoimento real ou numero de negocios atendidos quando houver. Nao inventar. -->
+      <p class="plans-note" style="margin-top:1.8rem;">Cada fórmula é conferida por um especialista em finanças de pequenas empresas.</p>
     </div>
   </section>
 
@@ -760,7 +775,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Projeção de caixa 30/60/90 dias</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Alertas do que pede atenção</li>
           </ul>
-          <a class="btn btn-ghost" href="https://wa.me/553194287877?text=Oi%2C%20quero%20o%20plano%20Essencial%20do%20Pulso." target="_blank" rel="noopener">Começar no Essencial</a>
+          <a class="btn btn-ghost" href="#lista">Entrar na lista</a>
         </div>
         <div class="plan destaque">
           <span class="p-tag">Mais completo</span>
@@ -772,10 +787,10 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Suporte prioritário</li>
           </ul>
-          <a class="btn btn-primary" href="https://wa.me/553194287877?text=Oi%2C%20quero%20o%20plano%20Pro%20do%20Pulso." target="_blank" rel="noopener">Quero o Pro</a>
+          <a class="btn btn-primary" href="#lista">Entrar na lista</a>
         </div>
       </div>
-      <p class="plans-note">Sem fidelidade. Comece sem cartão — a gente configura junto com você.</p>
+      <p class="plans-note">Sem fidelidade. A assinatura acontece dentro do app. Entre na lista e a gente avisa quando ele abrir.</p>
     </div>
   </section>
 
@@ -789,7 +804,7 @@
       <div class="faq-list reveal">
         <details class="faq-item">
           <summary>Quanto custa? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Dois planos: <strong>Essencial por R$ 97/mês</strong> e <strong>Pro por R$ 197/mês</strong>. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade e sem cartão pra começar — a gente configura junto com você.</div>
+          <div class="faq-body">Dois planos: <strong>Essencial por R$ 97/mês</strong> e <strong>Pro por R$ 197/mês</strong>. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade. A assinatura acontece dentro do app; entre na lista de espera e a gente avisa quando ele abrir.</div>
         </details>
         <details class="faq-item">
           <summary>Como o Pulso pega meus números? <span class="plus" aria-hidden="true"></span></summary>
@@ -801,24 +816,27 @@
         </details>
         <details class="faq-item">
           <summary>A inteligência artificial pode errar um valor? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Não nos números. Quem faz as contas é o código, com cada fórmula conferida. A IA só transforma o resultado numa frase clara — ela nunca inventa um valor no aviso sobre o seu dinheiro.</div>
+          <div class="faq-body">Não nos números. Cada número é calculado e conferido, fórmula por fórmula. A IA só transforma o resultado numa frase clara. Ela nunca inventa um valor no aviso sobre o seu dinheiro.</div>
         </details>
         <details class="faq-item">
           <summary>Preciso instalar alguma coisa? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Os avisos chegam no WhatsApp e há também um aplicativo para acompanhar o painel. Você escolhe por onde prefere ser avisado.</div>
+          <div class="faq-body">O Pulso é um aplicativo no seu celular. Assim que ele abrir nas lojas, você instala em um toque. Os avisos importantes também podem chegar no seu WhatsApp.</div>
         </details>
       </div>
     </div>
   </section>
 
-  <!-- CTA FINAL -->
-  <section class="sec" id="contato">
+  <!-- LISTA DE INTERESSE (CTA principal enquanto o app nao publica) -->
+  <section class="sec" id="lista">
     <div class="wrap cta-final reveal">
-      <span class="eyebrow">Comece agora</span>
-      <h2>Enxergue o caixa antes do aperto.</h2>
-      <p class="prose">A gente conversa, entende a rotina do seu negócio e te mostra como o Pulso fica com os seus números. Sem compromisso.</p>
-      <a class="btn btn-primary" href="https://wa.me/553194287877?text=Oi%2C%20quero%20testar%20o%20Pulso." target="_blank" rel="noopener">Quero testar o Pulso <span class="btn-arrow" aria-hidden="true">→</span></a>
-      <p class="cta-note">Você fala com a gente direto no WhatsApp. Sem compromisso.</p>
+      <span class="eyebrow">Lista de espera</span>
+      <h2>Seja o primeiro a usar o Pulso.</h2>
+      <p class="prose">O app está a caminho das lojas. Deixe seu e-mail: a gente avisa assim que ele abrir e reserva o seu lugar no piloto. Sem compromisso.</p>
+      <form class="lista-form" id="lista-form" novalidate>
+        <input class="lista-input" id="lista-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
+        <button class="btn btn-primary" type="submit">Quero ser avisado <span class="btn-arrow" aria-hidden="true">→</span></button>
+      </form>
+      <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Sem compromisso. Você recebe um aviso quando o app abrir.</p>
     </div>
   </section>
 
@@ -832,8 +850,13 @@
       </svg>
       Pulso
     </a>
-    <span class="foot-note">Seus dados são seus. Nunca compartilhamos.</span>
-    <span class="foot-note">Pulso</span>
+    <nav class="foot-links" aria-label="Rodapé">
+      <a href="#seguranca">Privacidade e segurança</a>
+      <a href="#faq">Perguntas frequentes</a>
+      <a href="https://wa.me/553194287877?text=Oi%2C%20preciso%20de%20suporte%20do%20Pulso." target="_blank" rel="noopener">Suporte no WhatsApp</a>
+    </nav>
+    <!-- TODO(rodape): inserir o CNPJ real e o link da politica de privacidade quando existirem. -->
+    <span class="foot-note">Pulso · CNPJ a definir · Seus dados são seus, nunca compartilhamos.</span>
   </div>
 </footer>
 
@@ -867,29 +890,8 @@
     window.addEventListener('scroll', aoRolar, { passive: true });
     window.addEventListener('resize', aoRolar, { passive: true });
     window.addEventListener('hashchange', function () { setTimeout(varrer, 60); });
-
-    // Números que "contam" ao entrar na tela (ex.: os do cartão de alerta).
-    var nums = document.querySelectorAll('[data-count]');
-    function contar(el) {
-      var alvo = parseInt(el.getAttribute('data-count'), 10);
-      var pre = el.getAttribute('data-prefix') || '';
-      var suf = el.getAttribute('data-suffix') || '';
-      var ini = null, dur = 900;
-      function passo(t) {
-        if (ini === null) ini = t;
-        var p = Math.min((t - ini) / dur, 1);
-        var val = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
-        el.textContent = pre + val.toLocaleString('pt-BR') + suf;
-        if (p < 1) requestAnimationFrame(passo);
-      }
-      requestAnimationFrame(passo);
-    }
-    var obsN = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (e) {
-        if (e.isIntersecting) { contar(e.target); obsN.unobserve(e.target); }
-      });
-    }, { threshold: 0.4 });
-    nums.forEach(function (el) { obsN.observe(el); });
+    // Números do site são estáticos e coerentes (constantes no HTML). Sem contagem
+    // animada: número que muda a cada scroll destrói a credibilidade do produto.
   })();
 
   // Menu do celular (hambúrguer): abre/fecha, fecha ao tocar num link,
@@ -907,6 +909,40 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechar(); });
     // se a tela crescer além do breakpoint, garante o menu fechado
     window.matchMedia('(min-width: 861px)').addEventListener('change', function (m) { if (m.matches) fechar(); });
+  })();
+
+  // Lista de interesse: PONTO DE INTEGRACAO ISOLADO. Enquanto o app nao publica,
+  // o CTA guarda o e-mail. Quando o app abrir nas lojas, troque este bloco (e os
+  // botoes href="#lista") por um redirecionamento aos links de App Store / Play.
+  (function () {
+    var API = 'https://pulso-api-9byl.onrender.com/interesse';
+    var form = document.getElementById('lista-form');
+    var input = document.getElementById('lista-email');
+    var msg = document.getElementById('lista-msg');
+    if (!form || !input || !msg) return;
+    var enviando = false;
+    function mostra(texto, cls) { msg.textContent = texto; msg.className = 'cta-note ' + (cls || ''); }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (enviando) return;
+      var email = (input.value || '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        mostra('Confira o e-mail e tente de novo.', 'lista-msg-erro'); input.focus(); return;
+      }
+      enviando = true;
+      mostra('Enviando...', '');
+      fetch(API, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: email, source: 'site' })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('falhou');
+        form.reset();
+        mostra('Pronto! Você está na lista. A gente avisa quando o app abrir.', 'lista-msg-ok');
+      }).catch(function () {
+        mostra('Não consegui salvar agora. Tente de novo em instantes.', 'lista-msg-erro');
+      }).then(function () { enviando = false; });
+    });
   })();
 </script>
 
