@@ -8,6 +8,42 @@
 
 ---
 
+## 🔜 Próximos passos priorizados (20/07/2026)
+
+1. **PUBLICAR a fluidez do app por OTA.** O código da Onda 2 (animações/fluidez)
+   já está no main (commit `5b1a304`, tsc + build web OK) mas **ainda não foi
+   publicado** — o app instalado só verá depois do `eas update`. Precisa do
+   EXPO_TOKEN do João (ele cola; o Claude não digita chave). Comando, de
+   `apps/mobile`: `$env:EXPO_TOKEN='...'; npx eas-cli update --branch preview
+   --message "fluidez Onda 2"`. Depois o João revoga o token.
+2. **Destravar o PUSH (Firebase/FCM).** O push NÃO funciona no APK atual: o
+   Android exige que o app esteja ligado a um projeto Firebase (FCM), e isso
+   nunca foi configurado — não há `google-services.json` no projeto e o
+   `getExpoPushTokenAsync` falha em silêncio (por isso `push-test` responde
+   `sent:0 / nenhum aparelho registrado`). Passos: (a) João cria projeto no
+   Firebase Console e adiciona o app Android `com.vetorfinancas.pulso` → baixa
+   `google-services.json`; (b) subir a credencial FCM V1 pro Expo
+   (`eas credentials` ou expo.dev); (c) plugar o `google-services.json` no
+   projeto (app.json `android.googleServicesFile`); (d) **APK novo** (não vai por
+   OTA) e reinstalar; (e) então `push-test` na Clínica Horizonte
+   (id 5e330c08-9a71-4f9e-9e0a-5f909f01d099) deve chegar no celular.
+3. **Site (pulso-site.onrender.com), Ondas 0–3:** ligar o contato do WhatsApp
+   (wa.me — confirmar o número, celular BR tem 9 dígitos após o DDD), seção de
+   segurança/LGPD, FAQ antes do CTA, capa de compartilhamento (og:image) +
+   favicon ECG, e animações de rolagem (hoje o site não tem JS). Auto-deploya no
+   mesmo push.
+4. **App — itens que dependem do servidor/IA (⚠️):** botão "O que eu faço?" no
+   alerta entregar próximos passos concretos redigidos pela IA (não o app
+   inventando); datas do gráfico vindas do servidor. Ficam pra depois.
+
+**Já FEITO nesta rodada (20/07, commit 5b1a304):** Onda 2 completa — transições
+entre telas, alerta subindo como painel, count-up no número principal, linha do
+gráfico se desenhando, mini-cards tocáveis ("de onde vem esse número"), legenda
+de tempo + ponto de risco no gráfico, chat vivo ("digitando…" animado, bolhas
+suaves, 3 sugestões). Onda 0 (cor da barra, nome da clínica) já estava certa.
+
+---
+
 ## ✅ Fase A publicada pelo ar (20/07)
 
 As melhorias da Fase A (itens 1, 3, 5) foram publicadas por **OTA** para o app
@@ -38,12 +74,12 @@ Infra pronta (ambos resolvidos 20/07):
    (links de artefato EAS expiram; regerar com nova build se cair). Só o APK novo
    tem push (OTA não serve para módulo nativo).
 
-**⭐ PRÓXIMO: testar o push no celular.** Instalar o APK acima → abrir o app → tocar
-em Entrar (ao carregar do servidor, o app pede permissão de notificação e registra
-o aparelho na Clínica Horizonte). Depois, do PC:
-`POST https://pulso-api-9byl.onrender.com/companies/5e330c08-9a71-4f9e-9e0a-5f909f01d099/push-test`
-→ a notificação deve chegar. O disparo REAL também acontece ao criar um snapshot com
-alerta sério (POST .../snapshots) — a trava anti-spam segura repetição em 12h.
+**⚠️ TESTE DO PUSH FALHOU — falta o Firebase (20/07).** O João instalou o APK,
+abriu, permitiu a notificação, mas o `push-test` respondeu `sent:0 / Nenhum
+aparelho registrado`. Causa confirmada no código: falta configurar o **Firebase/
+FCM** (sem `google-services.json`; `getExpoPushTokenAsync` falha em silêncio no
+APK standalone). Ver o passo 2 da lista priorizada no topo para destravar. O
+código do push (API + app) está correto; é só a credencial que falta.
 
 ---
 
@@ -54,12 +90,12 @@ alerta sério (POST .../snapshots) — a trava anti-spam segura repetição em 1
   no login, então o painel abre instantâneo; esqueleto teria pouco valor. Só vale
   se a carga passar pro painel.
 - [x] **3. Estado de vazio/erro** com botão "Tentar de novo" no painel.
-- [ ] **4. Manter logado** — ADIADO: precisa de módulo nativo de armazenamento
-  (`@react-native-async-storage/async-storage`), que **NÃO pode ir por OTA**
-  (quebraria o app instalado). Fazer junto com o **próximo APK novo**.
+- [x] **4. Manter logado** — FEITO no APK da Fase B (async-storage). Restaura a
+  sessão na abertura do app.
 - [x] **5. Vida/animações** — linha de pulso (ECG) com ponto final pulsante
-  (reanimated) + feedback de toque nos cartões. (Dá pra ir além depois: número
-  "subindo" ao carregar, transições entre telas.)
+  (reanimated) + feedback de toque nos cartões. **Ampliado na Onda 2 (commit
+  5b1a304):** número "subindo" ao carregar, linha se desenhando, transições entre
+  telas, alerta como painel, chat vivo. _(à espera de publicar por OTA — passo 1)._
 
 ## Fase B — funcionalidades que faltam
 - Notificação push (o aviso chegar sozinho no celular) — coração da promessa.
