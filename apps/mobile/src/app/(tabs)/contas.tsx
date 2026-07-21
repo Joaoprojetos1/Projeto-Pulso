@@ -62,7 +62,7 @@ function reaisParaCents(txt: string): number | null {
 
 const rotuloStatus: Record<ContaJson['status'], string> = {
   prevista: 'Prevista',
-  vencida: 'Venceu — confirmar?',
+  vencida: 'Venceu, confirmar?',
   realizada: 'Aconteceu',
 };
 const corStatus: Record<ContaJson['status'], string> = {
@@ -353,7 +353,7 @@ function NovaContaForm({
           color={recorrente ? colors.vivo : colors.cinza}
         />
         <Text style={styles.naturezaTexto}>
-          Repete todo mês (recorrente) — ex.: aluguel, folha
+          Repete todo mês (recorrente). Ex.: aluguel, folha
         </Text>
       </Pressable>
 

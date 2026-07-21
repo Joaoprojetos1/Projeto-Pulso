@@ -10,9 +10,8 @@
  *
  * O app é burro: zero lógica financeira. Isto aqui é só aparência.
  *
- * Fontes: as oficiais de títulos são licenciadas (comprar para uso oficial). No
- * app usamos as substitutas próximas: Josefin Sans (geométrica fina) para
- * títulos e Figtree para o corpo.
+ * Fontes: Manrope (grotesca sobria e encorpada) nos titulos e Figtree no corpo.
+ * IBM Plex Mono segue nos dados/rotulos. Fonte unica dos nomes: packages/tokens.
  */
 
 export const colors = {
@@ -31,9 +30,9 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  display: 'JosefinSans_700Bold',
-  displayBlack: 'JosefinSans_700Bold', // Josefin Sans não tem 800; 700 é o mais forte
-  displayMedio: 'JosefinSans_600SemiBold',
+  display: 'Manrope_700Bold',
+  displayBlack: 'Manrope_800ExtraBold', // peso mais forte para o número herói
+  displayMedio: 'Manrope_600SemiBold',
   corpo: 'Figtree_400Regular',
   corpoMedio: 'Figtree_500Medium',
   corpoForte: 'Figtree_600SemiBold',

@@ -21,7 +21,7 @@ export default function Conta() {
 
         <View style={styles.cartao}>
           <Text style={styles.rotulo}>NEGÓCIO</Text>
-          <Text style={styles.nome}>{dashboard?.company.name ?? '—'}</Text>
+          <Text style={styles.nome}>{dashboard?.company.name ?? '·'}</Text>
           <Text style={styles.detalhe}>
             {fonte === 'demo' ? 'Modo demonstração · dados fictícios' : 'Conectada ao servidor do Pulso'}
           </Text>
@@ -32,7 +32,7 @@ export default function Conta() {
           <Text style={styles.nome}>Piloto</Text>
           <Text style={styles.detalhe}>
             Você faz parte da turma que está construindo o Pulso com a gente. A assinatura, quando
-            chegar, acontece no site do Pulso — nada de pagamento por aqui.
+            chegar, acontece no site do Pulso. Nada de pagamento por aqui.
           </Text>
         </View>
 

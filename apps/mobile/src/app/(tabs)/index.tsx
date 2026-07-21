@@ -106,6 +106,7 @@ export default function Dashboard() {
   const miniCards: Array<{
     id: string;
     rotulo: string;
+    tecnico?: string;
     valor: string;
     positivo?: boolean;
     tend?: Tend | null;
@@ -113,8 +114,9 @@ export default function Dashboard() {
   }> = [
     {
       id: 'ciclo',
-      rotulo: 'CICLO DE CAIXA',
-      valor: ciclo !== null ? dias(ciclo) : '—',
+      rotulo: 'DINHEIRO PRESO',
+      tecnico: 'ciclo de caixa',
+      valor: ciclo !== null ? dias(ciclo) : '·',
       tend: tendCiclo,
       explica:
         ciclo !== null
@@ -123,19 +125,20 @@ export default function Dashboard() {
     },
     {
       id: 'margem',
-      rotulo: 'MARGEM',
-      valor: margem !== null ? pct(margem) : '—',
-      positivo: true,
+      rotulo: 'O QUE SOBRA',
+      tecnico: 'margem',
+      valor: margem !== null ? pct(margem) : '·',
       tend: tendMargem,
       explica:
         margem !== null
-          ? `De cada R$ 100 que entram, sobram cerca de R$ ${Math.round(margem * 100)} depois dos custos que variam com a venda — é o que ajuda a pagar as contas fixas.`
+          ? `De cada R$ 100 que entram, sobram cerca de R$ ${Math.round(margem * 100)} depois dos custos que variam com a venda. É o que ajuda a pagar as contas fixas.`
           : 'A margem mostra quanto sobra de cada venda depois dos custos variáveis.',
     },
     {
       id: 'receita',
-      rotulo: 'RECEITA / MÊS',
-      valor: receita !== null ? brl(receita) : '—',
+      rotulo: 'FATUROU NO MÊS',
+      tecnico: 'receita',
+      valor: receita !== null ? brl(receita) : '·',
       tend: tendReceita,
       explica:
         receita !== null
@@ -145,10 +148,10 @@ export default function Dashboard() {
     {
       id: 'mesAnterior',
       rotulo: 'MÊS ANTERIOR',
-      valor: receitaAnterior !== null ? brl(receitaAnterior) : '—',
+      valor: receitaAnterior !== null ? brl(receitaAnterior) : '·',
       explica:
         receitaAnterior !== null
-          ? `Seu faturamento no mês passado foi ${brl(receitaAnterior)} — serve de referência pra ver se você cresceu.`
+          ? `Seu faturamento no mês passado foi ${brl(receitaAnterior)}. Serve de referência pra ver se você cresceu.`
           : 'O faturamento do mês passado, pra comparar com o atual.',
     },
   ];
@@ -186,18 +189,18 @@ export default function Dashboard() {
           {p30 ? (
             <CountUpMoney cents={p30.projectedCents} style={styles.cashValor} />
           ) : (
-            <Text style={styles.cashValor}>—</Text>
+            <Text style={styles.cashValor}>·</Text>
           )}
           <Text style={styles.cashDetalhe}>
             {saudavel ? (
               <>
                 Pulso <Text style={styles.cashOk}>saudável</Text> · hoje em caixa:{' '}
-                {saldoHoje !== null ? brl(saldoHoje) : '—'}
+                {saldoHoje !== null ? brl(saldoHoje) : '·'}
               </>
             ) : (
               <>
                 Risco de zerar em <Text style={styles.cashRuim}>{dataBR(zeroOn!)}</Text> · hoje:{' '}
-                {saldoHoje !== null ? brl(saldoHoje) : '—'}
+                {saldoHoje !== null ? brl(saldoHoje) : '·'}
               </>
             )}
           </Text>
@@ -230,8 +233,8 @@ export default function Dashboard() {
             <Chip
               key={c.id}
               rotulo={c.rotulo}
+              tecnico={c.tecnico}
               valor={c.valor}
-              positivo={c.positivo}
               tend={c.tend}
               ativo={abertoChip === c.id}
               onPress={() => setAbertoChip((atual) => (atual === c.id ? null : c.id))}
@@ -280,15 +283,15 @@ export default function Dashboard() {
 
 function Chip({
   rotulo,
+  tecnico,
   valor,
-  positivo,
   tend,
   ativo,
   onPress,
 }: {
   rotulo: string;
+  tecnico?: string;
   valor: string;
-  positivo?: boolean;
   tend?: Tend | null;
   ativo?: boolean;
   onPress?: () => void;
@@ -303,7 +306,8 @@ function Chip({
       ]}
     >
       <Text style={styles.chipRotulo}>{rotulo}</Text>
-      <Text style={[styles.chipValor, positivo && { color: colors.okEscuro }]}>{valor}</Text>
+      {tecnico ? <Text style={styles.chipTecnico}>{tecnico}</Text> : null}
+      <Text style={styles.chipValor}>{valor}</Text>
       {tend && (
         <Text style={[styles.chipTend, { color: tend.bom ? colors.okEscuro : colors.alerta }]}>
           {tend.seta} {tend.pct}% vs mês passado
@@ -382,7 +386,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarTexto: { fontFamily: fonts.display, fontSize: 14, color: colors.vivo },
+  avatarTexto: { fontFamily: fonts.display, fontSize: 14, color: colors.papel },
 
   selo: {
     alignSelf: 'flex-start',
@@ -452,7 +456,8 @@ const styles = StyleSheet.create({
     minWidth: 132,
   },
   chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
-  chipRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.8, color: colors.cinza },
+  chipRotulo: { fontFamily: fonts.corpoForte, fontSize: 10.5, letterSpacing: 0.2, color: colors.tinta },
+  chipTecnico: { fontFamily: fonts.mono, fontSize: 8, letterSpacing: 0.6, color: colors.cinza, marginTop: 1 },
   chipValor: {
     fontFamily: fonts.display,
     fontSize: 15,

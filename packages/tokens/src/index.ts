@@ -46,11 +46,12 @@ export const severityColor = {
 } as const;
 
 export const font = {
-  // As fontes oficiais de títulos são licenciadas — comprar para uso oficial.
-  // As substitutas web abaixo mantêm o caráter.
-  display: 'Josefin Sans', // ~Objektiv VF — títulos, wordmark
-  body: 'Figtree', // ~Myriad Pro — corpo
-  mono: 'IBM Plex Mono', // rótulos, dados, datas
+  // Duas famílias sustentam a marca. Manrope (grotesca sobria e encorpada) nos
+  // titulos, Figtree no corpo. No SITE ficam so estas duas (labels/numeros usam
+  // Figtree com tabular-nums). No APP o mono segue nos dados/rotulos.
+  display: 'Manrope', // titulos, wordmark
+  body: 'Figtree', // corpo
+  mono: 'IBM Plex Mono', // rotulos, dados, datas (so no app)
 } as const;
 
 export const weight = {

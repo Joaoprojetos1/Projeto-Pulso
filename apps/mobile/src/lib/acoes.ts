@@ -27,7 +27,7 @@ export function acoesParaAlerta(alerta: AlertJson): string[] {
     case 'cash_runway': {
       const zeroOn = s(f, 'zeroOn');
       const pmr = n(f, 'pmrDays');
-      if (zeroOn) passos.push(`O ponto de risco é ${dataBR(zeroOn)} — o melhor momento de agir é antes dessa data.`);
+      if (zeroOn) passos.push(`O ponto de risco é ${dataBR(zeroOn)}. O melhor momento de agir é antes dessa data.`);
       passos.push(
         pmr !== null
           ? `Fale com seus maiores clientes para antecipar recebimentos: hoje você recebe em média em ${dias(pmr)}.`
@@ -44,7 +44,7 @@ export function acoesParaAlerta(alerta: AlertJson): string[] {
       if (ncg !== null) passos.push(`Priorize cobrar o que está em aberto: há cerca de ${brl(ncg)} presos a receber.`);
       passos.push(
         pmr !== null && pmp !== null
-          ? `Reveja prazos: você recebe em ${dias(pmr)} e paga em ${dias(pmp)} — quanto mais perto, melhor pro caixa.`
+          ? `Reveja prazos: você recebe em ${dias(pmr)} e paga em ${dias(pmp)}. Quanto mais perto, melhor pro caixa.`
           : 'Reveja os prazos de recebimento com clientes e de pagamento com fornecedores.',
       );
       passos.push('Evite ampliar as vendas a prazo sem caixa para sustentar o intervalo até receber.');
@@ -60,7 +60,7 @@ export function acoesParaAlerta(alerta: AlertJson): string[] {
       break;
     }
     default:
-      passos.push('Abra a conversa e me pergunte o que fazer com esses números — eu explico com base neles.');
+      passos.push('Abra a conversa e me pergunte o que fazer com esses números. Eu explico com base neles.');
   }
 
   return passos;

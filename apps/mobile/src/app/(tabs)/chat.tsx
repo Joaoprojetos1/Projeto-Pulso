@@ -74,7 +74,7 @@ const RESPOSTA_DEMO =
   'Com sua conta ligada, eu converso sobre os seus próprios números.';
 
 const RESPOSTA_ERRO =
-  'Não consegui falar com o servidor agora. Tente de novo em instantes — seus alertas continuam no painel.';
+  'Não consegui falar com o servidor agora. Tente de novo em instantes. Seus alertas continuam no painel.';
 
 export default function Chat() {
   const { dashboard, token } = usePulso();

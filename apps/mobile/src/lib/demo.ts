@@ -18,28 +18,28 @@ export const DEMO_DASHBOARD: DashboardJson = {
     indicators: {
       cash_balance: {
         key: 'cash_balance',
-        value: 1_500_000,
+        value: 2_130_000,
         unit: 'cents',
         inputs: { observedOn: '2026-07-14', stalenessDays: 1 },
       },
       cash_projection: {
         key: 'cash_projection',
         value: [
-          { horizonDays: 30, projectedCents: 3_360_000, zeroOn: '2026-07-29' },
-          { horizonDays: 60, projectedCents: -60_000, zeroOn: '2026-07-29' },
-          { horizonDays: 90, projectedCents: -3_480_000, zeroOn: '2026-07-29' },
+          { horizonDays: 30, projectedCents: -840_000, zeroOn: '2026-07-29' },
+          { horizonDays: 60, projectedCents: -3_060_000, zeroOn: '2026-07-29' },
+          { horizonDays: 90, projectedCents: -5_280_000, zeroOn: '2026-07-29' },
         ],
         unit: 'cents',
         inputs: {
-          openingBalanceCents: 1_500_000,
+          openingBalanceCents: 2_130_000,
           avgLatenessDays: 12,
           monthlyFixedCostCents: 3_420_000,
           zeroOn: '2026-07-29',
         },
       },
-      pmr: { key: 'pmr', value: 36, unit: 'days', inputs: { settledCount: 22 } },
+      pmr: { key: 'pmr', value: 46, unit: 'days', inputs: { settledCount: 22 } },
       pmp: { key: 'pmp', value: 0, unit: 'days', inputs: { settledCount: 18 } },
-      cash_cycle: { key: 'cash_cycle', value: 36, unit: 'days', inputs: { pmr: 36, pmp: 0, pme: 0 } },
+      cash_cycle: { key: 'cash_cycle', value: 46, unit: 'days', inputs: { pmr: 46, pmp: 0, pme: 0 } },
       ncg: {
         key: 'ncg',
         value: 5_280_000,
@@ -80,7 +80,7 @@ export const DEMO_DASHBOARD: DashboardJson = {
   },
   // tendência do exemplo (atual × anterior) — fictícia, como o resto da demonstração
   comparativos: {
-    cash_cycle: { atual: 36, anterior: 30 }, // piorou: leva mais dias pra receber
+    cash_cycle: { atual: 46, anterior: 40 }, // piorou: leva mais dias pra receber
     contribution_margin: { atual: 0.75, anterior: 0.8 }, // margem caiu
     revenue_current: { atual: 6_680_000, anterior: 5_880_000 }, // receita subiu
   },
@@ -90,15 +90,15 @@ export const DEMO_DASHBOARD: DashboardJson = {
       severity: 'critical',
       facts: {
         zeroOn: '2026-07-29',
-        openingBalanceCents: 1_500_000,
+        openingBalanceCents: 2_130_000,
         avgLatenessDays: 12,
-        pmrDays: 36,
+        pmrDays: 46,
         pmpDays: 0,
         monthlyFixedCostCents: 3_420_000,
       },
       textTitle: 'Seu caixa pode zerar em 29 de julho',
       textBody:
-        'No ritmo de hoje, o dinheiro em conta acaba em 29 de julho. Ainda dá tempo de agir — vale olhar isso agora.',
+        'No ritmo de hoje, o dinheiro em conta acaba em 29 de julho. Ainda dá tempo de agir. Vale olhar isso agora.',
     },
     {
       ruleKey: 'scissor',
@@ -109,7 +109,7 @@ export const DEMO_DASHBOARD: DashboardJson = {
         revenuePreviousCents: 5_880_000,
         ncgCents: 5_280_000,
         ncgOverRevenue: 0.79,
-        pmrDays: 36,
+        pmrDays: 46,
         pmpDays: 0,
       },
       textTitle: 'Você vende mais, mas o dinheiro demora a chegar',

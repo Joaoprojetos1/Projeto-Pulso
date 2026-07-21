@@ -33,11 +33,22 @@ dali:
 Nunca escreva um hex cru na UI. Use o nome semântico (`semantic.accent`,
 `severityColor.critical`).
 
+## Convenção de conteúdo (regra permanente)
+
+**Nunca use travessão (—) nem meia-risca (–) em nenhum texto visível**, no site ou
+no app: copy, título, placeholder, botão, mensagem, rótulo. Reescreva com ponto,
+vírgula, dois-pontos ou parênteses, ou quebre em duas frases. Motivo: consistência
+de voz e leitura limpa em telas pequenas. Vale para todo texto novo, sempre.
+(Hífen normal, em palavras compostas como "somente-leitura", segue permitido.)
+
 ## Fontes
 
-As fontes oficiais de títulos são **licenciadas** — comprar para uso oficial. No
-web/app, substitutas próximas: **Josefin Sans** (geométrica fina, títulos) e
-**Figtree** (humanista neutra, corpo). Rótulos e dados em IBM Plex Mono.
+Duas famílias sustentam a marca: **Manrope** (grotesca sóbria e encorpada) nos
+títulos e wordmark, e **Figtree** (humanista neutra) no corpo. No **site**, ficam
+só estas duas: rótulos e números usam Figtree (com `tabular-nums` e espaçamento de
+letra nos rótulos). No **app**, os dados e rótulos técnicos ainda usam IBM Plex
+Mono. A fonte de títulos oficial pode ser licenciada no futuro; Manrope é a de uso
+atual. Atualizar sempre em `packages/tokens/src/index.ts` (fonte única).
 
 ## Pendências antes de material impresso/registro
 

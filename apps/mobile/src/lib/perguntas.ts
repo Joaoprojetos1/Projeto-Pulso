@@ -50,7 +50,7 @@ export function responderDeterministico(dash: DashboardJson, pergunta: string): 
       const base = `No ritmo de hoje, seu caixa pode zerar em ${dataBR(z)}.`;
       return saldo !== null ? `${base} Hoje você tem ${brl(saldo)} em caixa.` : base;
     }
-    return 'Pelo cálculo de agora, seu caixa não zera dentro dos próximos 90 dias — está saudável.';
+    return 'Pelo cálculo de agora, seu caixa não zera dentro dos próximos 90 dias. Está saudável.';
   }
 
   // 2) "Quem me deve?" (concentração / a receber)
@@ -62,7 +62,7 @@ export function responderDeterministico(dash: DashboardJson, pergunta: string): 
     const partes: string[] = [];
     if (aReceber !== null) partes.push(`Você tem cerca de ${brl(aReceber)} a receber.`);
     if (cliente && share !== null) {
-      partes.push(`O maior peso é ${cliente}, com ${pct(share)} do seu faturamento — se ele atrasar, o caixa sente.`);
+      partes.push(`O maior peso é ${cliente}, com ${pct(share)} do seu faturamento. Se ele atrasar, o caixa sente.`);
     }
     return partes.length ? partes.join(' ') : null;
   }
@@ -75,7 +75,7 @@ export function responderDeterministico(dash: DashboardJson, pergunta: string): 
     if (z) {
       const base = `No ritmo de hoje o mês aperta: seu caixa pode zerar em ${dataBR(z)}.`;
       return custoFixo !== null
-        ? `${base} O custo fixo do mês é ${brl(custoFixo)} — vale antecipar recebimentos ou segurar gastos não essenciais.`
+        ? `${base} O custo fixo do mês é ${brl(custoFixo)}. Vale antecipar recebimentos ou segurar gastos não essenciais.`
         : base;
     }
     if (p30 !== null && p30 >= 0) {

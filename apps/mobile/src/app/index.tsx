@@ -25,7 +25,7 @@ import { colors, fonts } from '@/theme';
 // O servidor no plano grátis "dorme"; a 1ª visita leva ~30-50s pra acordar.
 const MENSAGENS_CARREGANDO = [
   'Ligando o monitor…',
-  'Acordando o servidor — o primeiro acesso demora um pouco…',
+  'Acordando o servidor. O primeiro acesso demora um pouco…',
   'Quase lá, buscando seus números…',
 ];
 
@@ -170,7 +170,7 @@ export default function Login() {
               style={styles.trocaModo}
             >
               <Text style={styles.trocaModoTexto}>
-                {cadastrando ? 'Já tenho conta — entrar' : 'Ainda não tem conta? Criar agora'}
+                {cadastrando ? 'Já tenho conta. Entrar' : 'Ainda não tem conta? Criar agora'}
               </Text>
             </Pressable>
           )}
