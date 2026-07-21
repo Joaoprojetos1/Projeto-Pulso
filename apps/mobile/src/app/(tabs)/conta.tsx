@@ -37,6 +37,21 @@ export default function Conta() {
         </View>
 
         <View style={styles.cartao}>
+          <Text style={styles.rotulo}>AVISOS NO WHATSAPP</Text>
+          <View style={styles.linhaAviso}>
+            <Text style={styles.nome}>Alertas de caixa</Text>
+            <View style={styles.selo}>
+              <Text style={styles.seloTexto}>EM BREVE</Text>
+            </View>
+          </View>
+          <Text style={styles.detalhe}>
+            Quando o aviso pelo WhatsApp estiver ligado, os alertas sérios (como o caixa perto de
+            zerar) chegam direto no seu número, uma vez por dia. Por enquanto você acompanha tudo aqui
+            no app e no painel.
+          </Text>
+        </View>
+
+        <View style={styles.cartao}>
           <Text style={styles.rotulo}>SEUS DADOS</Text>
           <Text style={styles.detalhe}>
             Os lançamentos do seu negócio ficam guardados no servidor do Pulso, protegidos e usados só
@@ -79,6 +94,16 @@ const styles = StyleSheet.create({
   rotulo: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1.2, color: colors.cinza },
   nome: { fontFamily: fonts.display, fontSize: 17, color: colors.tinta, letterSpacing: -0.2 },
   detalhe: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza },
+  linhaAviso: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  selo: {
+    backgroundColor: '#F0FBF6',
+    borderWidth: 1,
+    borderColor: colors.vivo,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  seloTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.okEscuro },
 
   sair: {
     borderWidth: 1.5,

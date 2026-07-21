@@ -31,7 +31,7 @@ const MENSAGENS_CARREGANDO = [
 ];
 
 export default function Login() {
-  const { carregar, carregando, restaurando, logado } = usePulso();
+  const { carregar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [msg, setMsg] = useState(0);
@@ -66,7 +66,13 @@ export default function Login() {
   }
 
   async function entrar() {
-    await carregar();
+    const ok = await carregar();
+    if (ok) router.replace('/onboarding');
+    // se falhar, fica na tela e mostra o erro + opção de demonstração
+  }
+
+  function verDemonstracao() {
+    entrarDemo();
     router.replace('/onboarding');
   }
 
@@ -123,6 +129,16 @@ export default function Login() {
 
           {carregando ? (
             <Text style={styles.carregandoMsg}>{MENSAGENS_CARREGANDO[msg]}</Text>
+          ) : erro ? (
+            <View style={styles.erroBloco}>
+              <Text style={styles.erroTexto}>
+                Não consegui falar com o servidor agora. Toque em Entrar para tentar de novo — pode
+                ser a "soneca" do servidor, que leva alguns segundos pra acordar.
+              </Text>
+              <Pressable onPress={verDemonstracao} hitSlop={8}>
+                <Text style={styles.erroLink}>Ver uma demonstração enquanto isso →</Text>
+              </Pressable>
+            </View>
           ) : (
             <Text style={styles.nota}>
               Piloto do Pulso — o acesso é liberado pela nossa equipe.
@@ -206,5 +222,19 @@ const styles = StyleSheet.create({
     color: colors.cinza,
     textAlign: 'center',
     marginTop: 14,
+  },
+  erroBloco: { marginTop: 14, gap: 10, alignItems: 'center' },
+  erroTexto: {
+    fontFamily: fonts.corpo,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.critico,
+    textAlign: 'center',
+  },
+  erroLink: {
+    fontFamily: fonts.corpoMedio,
+    fontSize: 13,
+    color: colors.mata,
+    textAlign: 'center',
   },
 });

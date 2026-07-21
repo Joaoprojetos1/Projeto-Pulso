@@ -9,6 +9,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { acoesParaAlerta } from '@/lib/acoes';
 import { rotuloFact, valorFact } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, severityLabel, type Severity } from '@/theme';
@@ -29,6 +30,7 @@ export default function DetalheAlerta() {
 
   const sev = alerta.severity as Severity;
   const cor = severityColor[sev];
+  const acoes = acoesParaAlerta(alerta);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -59,6 +61,19 @@ export default function DetalheAlerta() {
           </Text>
         </View>
 
+        {/* o que eu faço — passos concretos a partir dos números acima */}
+        <View style={styles.passos}>
+          <Text style={styles.passosRotulo}>O QUE EU FAÇO?</Text>
+          {acoes.map((passo, i) => (
+            <View key={i} style={styles.passo}>
+              <View style={[styles.passoBolha, { backgroundColor: cor }]}>
+                <Text style={styles.passoNum}>{i + 1}</Text>
+              </View>
+              <Text style={styles.passoTexto}>{passo}</Text>
+            </View>
+          ))}
+        </View>
+
         <Pressable
           style={({ pressed }) => [styles.cta, pressed && styles.pressionado]}
           onPress={() => {
@@ -66,7 +81,7 @@ export default function DetalheAlerta() {
             router.push('/(tabs)/chat');
           }}
         >
-          <Text style={styles.ctaTexto}>O que eu faço?</Text>
+          <Text style={styles.ctaTexto}>Falar com o Pulso sobre isso</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -137,6 +152,29 @@ const styles = StyleSheet.create({
     color: colors.cinza,
     marginTop: 10,
   },
+
+  passos: {
+    marginTop: 18,
+    gap: 14,
+  },
+  passosRotulo: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: colors.cinza,
+    marginBottom: 2,
+  },
+  passo: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  passoBolha: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  passoNum: { fontFamily: fonts.displayMedio, fontSize: 12, color: colors.papel },
+  passoTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.tinta },
 
   cta: {
     backgroundColor: colors.mata,

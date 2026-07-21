@@ -4,7 +4,7 @@
  */
 
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -14,7 +14,14 @@ import {
   Text,
   View,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountUpMoney } from '@/components/count-up-money';
@@ -31,6 +38,8 @@ export default function Dashboard() {
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
 
   if (!dashboard) {
+    // enquanto busca sem dados ainda, mostra o "esqueleto" (não uma tela branca)
+    if (carregando) return <SkeletonDashboard />;
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.vazio}>
@@ -41,13 +50,8 @@ export default function Dashboard() {
           <Pressable
             style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
             onPress={carregar}
-            disabled={carregando}
           >
-            {carregando ? (
-              <ActivityIndicator color={colors.papel} />
-            ) : (
-              <Text style={styles.tentarTexto}>Tentar de novo</Text>
-            )}
+            <Text style={styles.tentarTexto}>Tentar de novo</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -258,6 +262,39 @@ function Chip({
   );
 }
 
+/** Formas cinza com brilho passando, enquanto os dados não chegam. */
+function SkeletonDashboard() {
+  const brilho = useSharedValue(0.4);
+  useEffect(() => {
+    brilho.value = withRepeat(
+      withTiming(1, { duration: 850, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, [brilho]);
+  const estilo = useAnimatedStyle(() => ({ opacity: brilho.value }));
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.scroll}>
+        <View style={styles.topo}>
+          <PulsoLogo size={26} />
+          <Animated.View style={[styles.skAvatar, estilo]} />
+        </View>
+        <Animated.View style={[styles.skCash, estilo]} />
+        <View style={styles.skChips}>
+          <Animated.View style={[styles.skChip, estilo]} />
+          <Animated.View style={[styles.skChip, estilo]} />
+          <Animated.View style={[styles.skChip, estilo]} />
+        </View>
+        <Animated.View style={[styles.skLinhaTitulo, estilo]} />
+        <Animated.View style={[styles.skAlerta, estilo]} />
+        <Animated.View style={[styles.skAlerta, estilo]} />
+      </View>
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
   scroll: { paddingBottom: 28 },
@@ -419,4 +456,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+
+  // esqueleto (carregando)
+  skAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.linha },
+  skCash: { marginHorizontal: 16, height: 150, borderRadius: 20, backgroundColor: colors.linha },
+  skChips: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  skChip: { width: 104, height: 46, borderRadius: 12, backgroundColor: colors.linha },
+  skLinhaTitulo: {
+    width: 180,
+    height: 18,
+    borderRadius: 6,
+    backgroundColor: colors.linha,
+    marginHorizontal: 18,
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  skAlerta: { marginHorizontal: 16, height: 64, borderRadius: 14, backgroundColor: colors.linha, marginBottom: 8 },
 });
