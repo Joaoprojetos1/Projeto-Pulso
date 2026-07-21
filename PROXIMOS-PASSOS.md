@@ -34,15 +34,27 @@
    `wa.me/553194287877` tem só 8 dígitos após o DDD 31 (celular BR = 9). Se
    faltou um dígito, o único botão de contato do site leva pro vazio. Corrigir em
    todos os `wa.me/...` do site/index.html quando confirmar.
-4. **App — itens que dependem do servidor/IA (⚠️):** botão "O que eu faço?" no
-   alerta entregar próximos passos concretos redigidos pela IA (não o app
-   inventando); datas do gráfico vindas do servidor. Ficam pra depois.
+4. ✅ **SEGUNDA LEVA PUBLICADA POR OTA (20/07)** — update group
+   `7cf7d0dc-38e2-44f5-b890-1a21fa969742`, commit 9a59958. Fecha quase todos os
+   itens restantes do documento: alerta "O que eu faço?" com passos concretos
+   (acoes.ts — texto-modelo por ruleKey usando os facts do servidor; app não
+   calcula), esqueleto no painel, login não entra vazio no erro 503 (mostra erro +
+   "tentar de novo" + link opcional pra demonstração), seção de avisos WhatsApp na
+   Conta, e no SITE os números que contam ao entrar na tela.
 
-**Já FEITO nesta rodada (20/07, commit 5b1a304):** Onda 2 completa — transições
-entre telas, alerta subindo como painel, count-up no número principal, linha do
-gráfico se desenhando, mini-cards tocáveis ("de onde vem esse número"), legenda
-de tempo + ponto de risco no gráfico, chat vivo ("digitando…" animado, bolhas
-suaves, 3 sugestões). Onda 0 (cor da barra, nome da clínica) já estava certa.
+### Único item do documento que FALTA (precisa de APK novo, não OTA)
+- **[App] Vibração leve ao toque (expo-haptics).** É módulo NATIVO — não pode ir
+  por OTA (quebraria o app instalado). Fazer JUNTO com o APK do Firebase/push, pra
+  o João instalar uma vez só. NÃO adicionar `expo-haptics` num update OTA antes do
+  APK ter o módulo.
+- (Adiados de propósito: datas do gráfico vindas do servidor e refinamentos de IA
+  no alerta — o "O que eu faço?" hoje usa texto-modelo determinístico, que é seguro
+  e sempre correto.)
+
+**Resumo do documento pulso-proximos-passos.md:** ~24 de ~25 itens FEITOS. Só
+falta a vibração (agrupada com o APK do Firebase). Commits desta rodada: 5b1a304
+(Onda 2), e12d3dd (site LGPD/FAQ/favicon/og/animações), 5107907 (itens finais app),
+9a59958 (números no site).
 
 ---
 
