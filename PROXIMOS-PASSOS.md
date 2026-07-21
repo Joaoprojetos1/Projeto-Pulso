@@ -58,6 +58,35 @@ falta a vibração (agrupada com o APK do Firebase). Commits desta rodada: 5b1a3
 
 ---
 
+## 🧩 Evolução do app — Contas (Previsto vs Realizado)
+
+Spec do CEO (21/07). Decisões: construir agora como PLANEJAMENTO do dono (tudo
+marcado PREVISÃO; Marco valida antes de virar "oficial"); dados salvos na CONTA de
+verdade (servidor, ligado ao login); avatar do topo abre a aba Conta.
+
+- [x] **FASE 1 — fundação (dados + cadastro). PUBLICADA (21/07).** Server: migração
+  `0004_planned_entries` (camada PREVISTO **separada** de `entries`/REALIZADO — nunca
+  se misturam), rotas `/me/contas` (criar/listar por visão), `/me/contas/:id/confirmar`
+  (graduar: guarda `confirmed_on` = data real, para o futuro aprendizado de atraso),
+  DELETE. 6 testes (61 total). App: aba **Contas** (a receber/a pagar), cadastro de
+  baixo atrito (valor, cliente/fornecedor, categoria em chips, data em chips de prazo,
+  natureza avulsa/recorrente), ciclo de vida na tela (prevista/venceu-confirmar?/
+  aconteceu), botão graduar + excluir; avatar abre a Conta. Commits: 471bfe0 (server)
+  + 9f764fc (app). OTA update group `d5ac7d7f`. E2E validado em produção.
+  - Data sem seletor nativo (chips de prazo) de propósito: seletor nativo exigiria APK.
+- [ ] **FASE 2 — motor (projeção + cascata).** Previsto alimenta a projeção de caixa;
+  recorrência (monthly) expandida no horizonte 30/60/90; conta VENCIDA sem confirmação
+  empurra a data realista (NUNCA assumir entrada que não aconteceu); recálculo em
+  cascata a cada cadastro/confirmação; tudo auditável ("de onde vem esse número").
+  **É a parte de fórmula nova — validar desenho com o Marco (ver decisão).**
+- [ ] **FASE 3 — aprendizado (graduação).** Ao confirmar, registrar atraso do cliente
+  (due_on × confirmed_on) e afinar as próximas projeções/alertas daquele cliente.
+- [ ] **FASE 4 — ajustes existentes.** Chat determinístico na demo (as 3 perguntas
+  respondidas pelos números do motor, sem IA); tendência/histórico nos 3 indicadores
+  do topo (hoje só Receita compara). (Avatar já feito na Fase 1.)
+- Estruturar só (não construir): integrações preenchem o REALIZADO automático;
+  simulação de cenários ("e se o maior cliente atrasar 15d?"); camada de padrão/sazonalidade.
+
 ## ✅ Fase A publicada pelo ar (20/07)
 
 As melhorias da Fase A (itens 1, 3, 5) foram publicadas por **OTA** para o app
