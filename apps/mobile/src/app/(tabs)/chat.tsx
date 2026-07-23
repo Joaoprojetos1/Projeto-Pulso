@@ -27,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MarkdownLite } from '@/components/markdown-lite';
 import { QuotaError, sendMyChat, type ChatTurnJson } from '@/lib/api';
 import { responderDeterministico } from '@/lib/perguntas';
 import { usePulso } from '@/lib/pulso-context';
@@ -196,9 +197,11 @@ export default function Chat() {
                   item.falhou && styles.msgFalhou,
                 ]}
               >
-                <Text style={item.de === 'voce' ? styles.msgTextoVoce : styles.msgTextoPulso}>
-                  {item.texto}
-                </Text>
+                {item.de === 'voce' ? (
+                  <Text style={styles.msgTextoVoce}>{item.texto}</Text>
+                ) : (
+                  <MarkdownLite texto={item.texto} style={styles.msgTextoPulso} />
+                )}
               </View>
               {item.falhou && (
                 <Pressable onPress={() => reenviar(item)} hitSlop={6}>
