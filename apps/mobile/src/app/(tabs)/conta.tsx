@@ -4,12 +4,19 @@
  * mantém a comissão da loja fora do ticket).
  */
 
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
+
+// versão do app (de app.json). Um piloto sem canal de reclamação perde o melhor dado.
+const VERSAO_APP = Constants.expoConfig?.version ?? '—';
+const FEEDBACK_URL =
+  'https://wa.me/553194287877?text=' +
+  encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
 
 export default function Conta() {
   const { dashboard, fonte, sair } = usePulso();
@@ -59,6 +66,20 @@ export default function Conta() {
           </Text>
         </View>
 
+        <View style={styles.cartao}>
+          <Text style={styles.rotulo}>AJUDA E FEEDBACK</Text>
+          <Text style={styles.detalhe}>
+            Encontrou um problema ou tem uma ideia? Sua opinião é o que mais ajuda a construir o Pulso.
+          </Text>
+          <Pressable
+            style={({ pressed }) => [styles.feedback, pressed && styles.pressionado]}
+            onPress={() => Linking.openURL(FEEDBACK_URL)}
+          >
+            <Text style={styles.feedbackTexto}>Enviar feedback</Text>
+          </Pressable>
+          <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
+        </View>
+
         <Pressable
           style={({ pressed }) => [styles.sair, pressed && styles.pressionado]}
           onPress={() => {
@@ -104,6 +125,16 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   seloTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.okEscuro },
+
+  feedback: {
+    backgroundColor: colors.mata,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  feedbackTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.papel },
+  versao: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.6, color: colors.cinza, marginTop: 6 },
 
   sair: {
     borderWidth: 1.5,

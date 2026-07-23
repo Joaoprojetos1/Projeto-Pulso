@@ -226,6 +226,35 @@ export function authLogin(email: string, password: string): Promise<AuthResult> 
   return postAuth('/auth/login', { email, password });
 }
 
+/** Pede o código de recuperação por e-mail. Sempre "dá certo" (não revela se o e-mail existe). */
+export async function authForgotPassword(email: string): Promise<void> {
+  try {
+    await fetchWithWake(`${apiBase()}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+  } catch {
+    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+  }
+}
+
+/** Redefine a senha com o código recebido por e-mail. */
+export async function authResetPassword(token: string, password: string): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetchWithWake(`${apiBase()}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    });
+  } catch {
+    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+  }
+  if (res.status === 400) throw new AuthError('credenciais', 'Código inválido ou expirado. Peça um novo.');
+  if (!res.ok) throw new AuthError('desconhecido', `Não deu certo agora (${res.status}).`);
+}
+
 export async function authLogout(token: string): Promise<void> {
   try {
     await fetchWithWake(`${apiBase()}/auth/logout`, {

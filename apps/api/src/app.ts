@@ -4,6 +4,7 @@ import fastify from 'fastify';
 import type { ChatModel } from './ai/chat';
 import type { AlertWriterModel } from './ai/writer';
 import type { Sql } from './db';
+import type { Mailer } from './mailer';
 import type { PushSender } from './push';
 import { registerAdmin } from './routes/admin';
 import { registerAuth } from './routes/auth';
@@ -23,6 +24,8 @@ export interface AppOptions {
   chatModel?: ChatModel | null;
   /** Sem enviador (null), nada é entregue no celular (o cálculo segue igual). */
   pushSender?: PushSender | null;
+  /** Envio de e-mail (recuperação de senha). Sem opção, resolve pelo ambiente (log em dev). */
+  mailer?: Mailer;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -33,7 +36,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
 
   app.get('/health', async () => ({ ok: true }));
 
-  registerAuth(app, sql, opts.chatModel ?? null);
+  registerAuth(app, sql, opts.chatModel ?? null, opts.mailer);
   registerAdmin(app, sql);
   registerInterest(app, sql);
   registerPlanned(app, sql);

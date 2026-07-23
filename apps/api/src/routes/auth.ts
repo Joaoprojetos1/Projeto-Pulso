@@ -11,6 +11,7 @@ import {
 } from '../auth';
 import type { Sql } from '../db';
 import { toCompanyJson, type CompanyRow } from '../http';
+import { resolveMailer, type Mailer } from '../mailer';
 import { QuotaExceededError, quotaExceededPayload } from '../quota';
 import { converse } from '../services/conversation';
 import { currentUserMessage } from './chat';
@@ -59,6 +60,23 @@ const loginSchema = {
   },
 } as const;
 
+const forgotSchema = {
+  type: 'object',
+  required: ['email'],
+  additionalProperties: false,
+  properties: { email: { type: 'string', pattern: EMAIL_PATTERN, maxLength: 200 } },
+} as const;
+
+const resetSchema = {
+  type: 'object',
+  required: ['token', 'password'],
+  additionalProperties: false,
+  properties: {
+    token: { type: 'string', minLength: 16, maxLength: 200 },
+    password: { type: 'string', minLength: 8, maxLength: 200 },
+  },
+} as const;
+
 const chatBodySchema = {
   type: 'object',
   required: ['messages'],
@@ -81,7 +99,12 @@ const chatBodySchema = {
   },
 } as const;
 
-export function registerAuth(app: FastifyInstance, sql: Sql, chatModel: ChatModel | null = null) {
+export function registerAuth(
+  app: FastifyInstance,
+  sql: Sql,
+  chatModel: ChatModel | null = null,
+  mailer: Mailer = resolveMailer(),
+) {
   // cadastro: cria a empresa (vazia) + o usuário + um token de sessão
   app.post<{ Body: SignupBody }>(
     '/auth/signup',
@@ -161,6 +184,64 @@ export function registerAuth(app: FastifyInstance, sql: Sql, chatModel: ChatMode
     }
     return reply.send({ ok: true });
   });
+
+  // esqueci a senha: gera um token de uso único (1h) e envia por e-mail.
+  // Responde 200 sempre — não revela se o e-mail existe (mesma prudência do login).
+  app.post<{ Body: { email: string } }>(
+    '/auth/forgot-password',
+    { schema: { body: forgotSchema } },
+    async (req, reply) => {
+      const email = normalizeEmail(req.body.email);
+      const [user] = await sql`SELECT id FROM users WHERE email = ${email}`;
+
+      if (user) {
+        const token = newToken();
+        await sql`
+          INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+          VALUES (${user.id}, ${hashToken(token)}, now() + interval '1 hour')`;
+        try {
+          await mailer.send({
+            to: email,
+            subject: 'Redefinir sua senha do Pulso',
+            text:
+              `Você pediu para redefinir sua senha do Pulso.\n\n` +
+              `Use este código no app (válido por 1 hora):\n\n${token}\n\n` +
+              `Se não foi você, pode ignorar este e-mail.`,
+          });
+        } catch (err) {
+          req.log.error({ err }, 'falha ao enviar e-mail de recuperação');
+        }
+      }
+
+      return reply.send({ ok: true });
+    },
+  );
+
+  // redefinir a senha com o token recebido por e-mail (uso único, com expiração)
+  app.post<{ Body: { token: string; password: string } }>(
+    '/auth/reset-password',
+    { schema: { body: resetSchema } },
+    async (req, reply) => {
+      const [row] = await sql`
+        SELECT id, user_id
+        FROM password_reset_tokens
+        WHERE token_hash = ${hashToken(req.body.token)}
+          AND used_at IS NULL
+          AND expires_at > now()`;
+      if (!row) {
+        return reply.code(400).send({ error: 'Código inválido ou expirado. Peça um novo.' });
+      }
+
+      await sql.begin(async (tx) => {
+        await tx`UPDATE users SET password_hash = ${hashPassword(req.body.password)} WHERE id = ${row.user_id}`;
+        await tx`UPDATE password_reset_tokens SET used_at = now() WHERE id = ${row.id}`;
+        // por segurança, encerra as sessões abertas: quem trocou a senha entra de novo
+        await tx`DELETE FROM auth_tokens WHERE user_id = ${row.user_id}`;
+      });
+
+      return reply.send({ ok: true });
+    },
+  );
 
   // painel do dono logado (só a própria empresa)
   app.get('/me/dashboard', async (req, reply) => {

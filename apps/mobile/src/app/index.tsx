@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PulsoLogo } from '@/components/logo';
+import { authForgotPassword, authResetPassword, AuthError } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -29,7 +30,7 @@ const MENSAGENS_CARREGANDO = [
   'Quase lá, buscando seus números…',
 ];
 
-type Modo = 'entrar' | 'cadastrar';
+type Modo = 'entrar' | 'cadastrar' | 'esqueci' | 'redefinir';
 
 export default function Login() {
   const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
@@ -38,6 +39,51 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [msg, setMsg] = useState(0);
+  // fluxo de recuperação de senha (estado local — não é sessão)
+  const [codigo, setCodigo] = useState('');
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [erroLocal, setErroLocal] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+
+  async function enviarCodigo() {
+    if (email.trim().length === 0 || ocupado) return;
+    setOcupado(true);
+    setErroLocal(null);
+    setAviso(null);
+    try {
+      await authForgotPassword(email.trim());
+      setAviso('Se houver conta com esse e-mail, enviamos um código. Confira sua caixa de entrada.');
+      setModo('redefinir');
+    } catch (e) {
+      setErroLocal(e instanceof AuthError ? e.message : 'Não consegui enviar agora.');
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function redefinir() {
+    if (codigo.trim().length === 0 || senha.length < 8 || ocupado) return;
+    setOcupado(true);
+    setErroLocal(null);
+    setAviso(null);
+    try {
+      await authResetPassword(codigo.trim(), senha);
+      setSenha('');
+      setCodigo('');
+      setModo('entrar');
+      setAviso('Senha alterada! Agora entre com a nova senha.');
+    } catch (e) {
+      setErroLocal(e instanceof AuthError ? e.message : 'Não consegui redefinir agora.');
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  function irPara(m: Modo) {
+    setModo(m);
+    setErroLocal(null);
+    setAviso(null);
+  }
 
   // Abertura do app: se já havia sessão salva, entra direto no painel.
   useEffect(() => {
@@ -85,6 +131,7 @@ export default function Login() {
   }
 
   const cadastrando = modo === 'cadastrar';
+  const autenticando = modo === 'entrar' || modo === 'cadastrar';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -101,83 +148,157 @@ export default function Login() {
         </View>
 
         <View style={styles.form}>
-          {cadastrando && (
+          {aviso && <Text style={styles.avisoTexto}>{aviso}</Text>}
+
+          {autenticando && (
             <>
-              <Text style={styles.label}>NOME DO SEU NEGÓCIO</Text>
+              {cadastrando && (
+                <>
+                  <Text style={styles.label}>NOME DO SEU NEGÓCIO</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={negocio}
+                    onChangeText={setNegocio}
+                    placeholder="Ex.: Clínica Sorriso"
+                    placeholderTextColor={colors.cinza}
+                  />
+                </>
+              )}
+
+              <Text style={styles.label}>E-MAIL</Text>
               <TextInput
                 style={styles.input}
-                value={negocio}
-                onChangeText={setNegocio}
-                placeholder="Ex.: Clínica Sorriso"
+                value={email}
+                onChangeText={setEmail}
+                placeholder="voce@suaempresa.com.br"
                 placeholderTextColor={colors.cinza}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
               />
+
+              <Text style={styles.label}>SENHA</Text>
+              <TextInput
+                style={styles.input}
+                value={senha}
+                onChangeText={setSenha}
+                placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
+                placeholderTextColor={colors.cinza}
+                secureTextEntry
+              />
+
+              <Pressable
+                style={({ pressed }) => [styles.botao, (pressed || !podeEnviar) && styles.pressionado]}
+                onPress={enviar}
+                disabled={carregando || !podeEnviar}
+              >
+                {carregando ? (
+                  <View style={styles.carregandoLinha}>
+                    <ActivityIndicator color={colors.papel} />
+                    <Text style={styles.botaoTexto}>{cadastrando ? 'Criando…' : 'Entrando…'}</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.botaoTexto}>{cadastrando ? 'Criar conta' : 'Entrar'}</Text>
+                )}
+              </Pressable>
+
+              {/* demonstração sempre à mão, abaixo do login, pra testar sem criar conta */}
+              {!carregando && (
+                <Pressable
+                  onPress={verDemonstracao}
+                  style={({ pressed }) => [styles.demoBtn, pressed && styles.pressionado]}
+                >
+                  <Text style={styles.demoBtnTexto}>Ver demonstração (sem conta)</Text>
+                </Pressable>
+              )}
+
+              {carregando ? (
+                <Text style={styles.carregandoMsg}>{MENSAGENS_CARREGANDO[msg]}</Text>
+              ) : erro ? (
+                <Text style={styles.erroTexto}>{erro}</Text>
+              ) : (
+                <>
+                  <Pressable onPress={() => irPara(cadastrando ? 'entrar' : 'cadastrar')} hitSlop={8} style={styles.trocaModo}>
+                    <Text style={styles.trocaModoTexto}>
+                      {cadastrando ? 'Já tenho conta. Entrar' : 'Ainda não tem conta? Criar agora'}
+                    </Text>
+                  </Pressable>
+                  {modo === 'entrar' && (
+                    <Pressable onPress={() => irPara('esqueci')} hitSlop={8} style={styles.trocaModo}>
+                      <Text style={styles.linkSecundario}>Esqueci minha senha</Text>
+                    </Pressable>
+                  )}
+                </>
+              )}
             </>
           )}
 
-          <Text style={styles.label}>E-MAIL</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="voce@suaempresa.com.br"
-            placeholderTextColor={colors.cinza}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-          />
-
-          <Text style={styles.label}>SENHA</Text>
-          <TextInput
-            style={styles.input}
-            value={senha}
-            onChangeText={setSenha}
-            placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
-            placeholderTextColor={colors.cinza}
-            secureTextEntry
-          />
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.botao,
-              (pressed || !podeEnviar) && styles.pressionado,
-            ]}
-            onPress={enviar}
-            disabled={carregando || !podeEnviar}
-          >
-            {carregando ? (
-              <View style={styles.carregandoLinha}>
-                <ActivityIndicator color={colors.papel} />
-                <Text style={styles.botaoTexto}>{cadastrando ? 'Criando…' : 'Entrando…'}</Text>
-              </View>
-            ) : (
-              <Text style={styles.botaoTexto}>{cadastrando ? 'Criar conta' : 'Entrar'}</Text>
-            )}
-          </Pressable>
-
-          {/* demonstração sempre à mão, abaixo do login, pra testar sem criar conta */}
-          {!carregando && (
-            <Pressable
-              onPress={verDemonstracao}
-              style={({ pressed }) => [styles.demoBtn, pressed && styles.pressionado]}
-            >
-              <Text style={styles.demoBtnTexto}>Ver demonstração (sem conta)</Text>
-            </Pressable>
+          {modo === 'esqueci' && (
+            <>
+              <Text style={styles.instrucao}>
+                Digite seu e-mail e enviaremos um código para você criar uma senha nova.
+              </Text>
+              <Text style={styles.label}>E-MAIL</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="voce@suaempresa.com.br"
+                placeholderTextColor={colors.cinza}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+              />
+              <Pressable
+                style={({ pressed }) => [styles.botao, (pressed || ocupado) && styles.pressionado]}
+                onPress={enviarCodigo}
+                disabled={ocupado || email.trim().length === 0}
+              >
+                <Text style={styles.botaoTexto}>{ocupado ? 'Enviando…' : 'Enviar código'}</Text>
+              </Pressable>
+              {erroLocal && <Text style={styles.erroTexto}>{erroLocal}</Text>}
+              <Pressable onPress={() => irPara('entrar')} hitSlop={8} style={styles.trocaModo}>
+                <Text style={styles.trocaModoTexto}>Voltar para entrar</Text>
+              </Pressable>
+            </>
           )}
 
-          {carregando ? (
-            <Text style={styles.carregandoMsg}>{MENSAGENS_CARREGANDO[msg]}</Text>
-          ) : erro ? (
-            <Text style={styles.erroTexto}>{erro}</Text>
-          ) : (
-            <Pressable
-              onPress={() => setModo(cadastrando ? 'entrar' : 'cadastrar')}
-              hitSlop={8}
-              style={styles.trocaModo}
-            >
-              <Text style={styles.trocaModoTexto}>
-                {cadastrando ? 'Já tenho conta. Entrar' : 'Ainda não tem conta? Criar agora'}
+          {modo === 'redefinir' && (
+            <>
+              <Text style={styles.instrucao}>
+                Cole o código que enviamos no seu e-mail e escolha a nova senha.
               </Text>
-            </Pressable>
+              <Text style={styles.label}>CÓDIGO DO E-MAIL</Text>
+              <TextInput
+                style={styles.input}
+                value={codigo}
+                onChangeText={setCodigo}
+                placeholder="cole o código aqui"
+                placeholderTextColor={colors.cinza}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <Text style={styles.label}>NOVA SENHA</Text>
+              <TextInput
+                style={styles.input}
+                value={senha}
+                onChangeText={setSenha}
+                placeholder="mín. 8 caracteres"
+                placeholderTextColor={colors.cinza}
+                secureTextEntry
+              />
+              <Pressable
+                style={({ pressed }) => [styles.botao, (pressed || ocupado) && styles.pressionado]}
+                onPress={redefinir}
+                disabled={ocupado || codigo.trim().length === 0 || senha.length < 8}
+              >
+                <Text style={styles.botaoTexto}>{ocupado ? 'Salvando…' : 'Redefinir senha'}</Text>
+              </Pressable>
+              {erroLocal && <Text style={styles.erroTexto}>{erroLocal}</Text>}
+              <Pressable onPress={() => irPara('entrar')} hitSlop={8} style={styles.trocaModo}>
+                <Text style={styles.trocaModoTexto}>Voltar para entrar</Text>
+              </Pressable>
+            </>
           )}
         </View>
       </KeyboardAvoidingView>
@@ -270,4 +391,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 14,
   },
+  avisoTexto: {
+    fontFamily: fonts.corpo,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.okEscuro,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  instrucao: {
+    fontFamily: fonts.corpo,
+    fontSize: 13.5,
+    lineHeight: 20,
+    color: colors.cinza,
+    marginBottom: 4,
+  },
+  linkSecundario: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.cinza },
 });
