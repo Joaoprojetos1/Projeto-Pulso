@@ -6,6 +6,7 @@ import { writeDiagnosis } from '../ai/diagnosis-writer';
 import { writeWeekly, type WeeklyFacts } from '../ai/weekly-writer';
 import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import { writeAlert, type AlertWriterModel } from '../ai/writer';
+import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 import type { PushMessage, PushSender } from '../push';
@@ -262,36 +263,27 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
   };
 }
 
-export function registerSnapshots(
-  app: FastifyInstance,
+/**
+ * Roda o motor para uma empresa e persiste o snapshot do dia (indicadores +
+ * diagnóstico + resumo da semana + alertas), entregando no celular os alertas
+ * sérios ainda não avisados. Fonte ÚNICA usada tanto pela rota pública
+ * (/companies/:id/snapshots) quanto pela rota do dono logado (/me/setup).
+ * REGRA: nenhuma conta financeira aqui — o cálculo é todo do core.
+ */
+export async function computeAndStore(
   sql: Sql,
-  alertWriter: AlertWriterModel | null = null,
-  pushSender: PushSender | null = null,
+  company: CompanyRow,
+  asOf: string,
+  alertWriter: AlertWriterModel | null,
+  pushSender: PushSender | null,
+  log?: { error: (obj: unknown, msg?: string) => void },
 ) {
-  app.post<{ Params: { id: string }; Body: { asOf?: string } | undefined }>(
-    '/companies/:id/snapshots',
-    {
-      schema: {
-        params: companyParamsSchema,
-        body: {
-          type: ['object', 'null'],
-          additionalProperties: false,
-          properties: { asOf: { type: 'string', pattern: DATE_PATTERN } },
-        },
-      },
-    },
-    async (req, reply) => {
-      const company = await findCompany(sql, req.params.id);
-      if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
+  // lido antes de recalcular: o recálculo do dia apaga os alertas (e o pushed_at)
+  const jaAvisado = pushSender
+    ? await recentlyPushedRuleKeys(sql, company.id)
+    : new Set<string>();
 
-      const asOf = req.body?.asOf ?? new Date().toISOString().slice(0, 10);
-
-      // lido antes de recalcular: o recálculo do dia apaga os alertas (e o pushed_at)
-      const jaAvisado = pushSender
-        ? await recentlyPushedRuleKeys(sql, company.id)
-        : new Set<string>();
-
-      const snap = await loadCompanySnapshot(sql, company, asOf);
+  const snap = await loadCompanySnapshot(sql, company, asOf);
       const indicators = computeAll(snap);
       const alerts = evaluate(indicators);
 
@@ -389,36 +381,62 @@ export function registerSnapshots(
         return s.id as string;
       });
 
-      // medição do consumo da IA (best-effort): nunca derruba o snapshot
-      try {
-        await recordAiUsage(sql, company.id, 'alert_writer', aiUsage);
-      } catch (err) {
-        app.log.error({ err }, 'falha ao registrar consumo de IA');
-      }
+  // medição do consumo da IA (best-effort): nunca derruba o snapshot
+  try {
+    await recordAiUsage(sql, company.id, 'alert_writer', aiUsage);
+  } catch (err) {
+    log?.error({ err }, 'falha ao registrar consumo de IA');
+  }
 
-      // entrega no celular (best-effort): nunca derruba o snapshot
-      if (pushSender) {
-        try {
-          await notifyNewAlerts(sql, pushSender, company.id, gravados, jaAvisado);
-        } catch (err) {
-          app.log.error({ err }, 'falha ao enviar push dos alertas');
-        }
-      }
+  // entrega no celular (best-effort): nunca derruba o snapshot
+  if (pushSender) {
+    try {
+      await notifyNewAlerts(sql, pushSender, company.id, gravados, jaAvisado);
+    } catch (err) {
+      log?.error({ err }, 'falha ao enviar push dos alertas');
+    }
+  }
 
-      return reply.code(201).send({
-        snapshotId,
-        asOf,
-        coreVersion: CORE_VERSION,
-        diagnosis: diagnosisStored,
-        alerts: written.map(({ alert: a, text }) => ({
-          ruleKey: a.ruleKey,
-          severity: a.severity,
-          facts: a.facts,
-          textTitle: text.title,
-          textBody: text.body,
-          modelVersion: text.modelVersion,
-        })),
-      });
+  return {
+    snapshotId,
+    asOf,
+    coreVersion: CORE_VERSION,
+    diagnosis: diagnosisStored,
+    alerts: written.map(({ alert: a, text }) => ({
+      ruleKey: a.ruleKey,
+      severity: a.severity,
+      facts: a.facts,
+      textTitle: text.title,
+      textBody: text.body,
+      modelVersion: text.modelVersion,
+    })),
+  };
+}
+
+export function registerSnapshots(
+  app: FastifyInstance,
+  sql: Sql,
+  alertWriter: AlertWriterModel | null = null,
+  pushSender: PushSender | null = null,
+) {
+  app.post<{ Params: { id: string }; Body: { asOf?: string } | undefined }>(
+    '/companies/:id/snapshots',
+    {
+      schema: {
+        params: companyParamsSchema,
+        body: {
+          type: ['object', 'null'],
+          additionalProperties: false,
+          properties: { asOf: { type: 'string', pattern: DATE_PATTERN } },
+        },
+      },
+    },
+    async (req, reply) => {
+      const company = await findCompany(sql, req.params.id);
+      if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
+      const asOf = req.body?.asOf ?? new Date().toISOString().slice(0, 10);
+      const result = await computeAndStore(sql, company, asOf, alertWriter, pushSender, app.log);
+      return reply.code(201).send(result);
     },
   );
 
@@ -468,6 +486,74 @@ export function registerSnapshots(
           actedAt: a.acted_at,
         })),
       };
+    },
+  );
+
+  // ---- Insumo do dono logado: caixa hoje + custo fixo → o motor gira ----
+  // Onboarding MÍNIMO. Com as Contas (a receber/pagar) já cadastradas, estes
+  // dois números bastam para a projeção de caixa e os alertas rodarem numa
+  // conta real, sem depender do import de arquivo do especialista. NENHUMA
+  // conta aqui: só guardamos os números e chamamos o mesmo motor.
+  app.get('/me/setup', async (req, reply) => {
+    const company = await companyFromRequest(sql, req);
+    if (!company) return reply.code(401).send({ error: 'Faça login.' });
+
+    const [bal] = await sql`
+      SELECT observed_on::text AS observed_on, balance_cents
+      FROM cash_balances WHERE company_id = ${company.id}
+      ORDER BY observed_on DESC LIMIT 1`;
+    const [planned] = await sql`
+      SELECT count(*)::int AS count FROM planned_entries
+      WHERE company_id = ${company.id} AND status = 'prevista'`;
+    const [snap] = await sql`
+      SELECT 1 FROM indicator_snapshots WHERE company_id = ${company.id} LIMIT 1`;
+
+    return {
+      name: company.name,
+      cashBalanceCents: (bal?.balance_cents as number | undefined) ?? null,
+      cashBalanceOn: (bal?.observed_on as string | undefined) ?? null,
+      fixedCostCents: company.declared_fixed_cost_cents ?? null,
+      plannedCount: (planned?.count as number | undefined) ?? 0,
+      hasSnapshot: Boolean(snap),
+    };
+  });
+
+  app.post<{ Body: { cashBalanceCents: number; fixedCostCents: number } }>(
+    '/me/setup',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['cashBalanceCents', 'fixedCostCents'],
+          additionalProperties: false,
+          properties: {
+            cashBalanceCents: { type: 'integer' }, // pode ser negativo: cheque especial
+            fixedCostCents: { type: 'integer', minimum: 0 },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login.' });
+
+      const today = new Date().toISOString().slice(0, 10);
+      await sql`
+        INSERT INTO cash_balances (company_id, observed_on, balance_cents)
+        VALUES (${company.id}, ${today}, ${req.body.cashBalanceCents})
+        ON CONFLICT (company_id, observed_on)
+        DO UPDATE SET balance_cents = EXCLUDED.balance_cents`;
+      await sql`
+        UPDATE companies SET declared_fixed_cost_cents = ${req.body.fixedCostCents}
+        WHERE id = ${company.id}`;
+
+      // o motor lê o custo fixo do objeto company; atualizamos a cópia local
+      company.declared_fixed_cost_cents = req.body.fixedCostCents;
+      await computeAndStore(sql, company, today, alertWriter, pushSender, app.log);
+
+      // devolve o painel já recalculado, para o app mostrar o resultado na hora
+      const dash = await buildDashboard(sql, company);
+      return reply.code(201).send(dash ?? { company: toCompanyJson(company), snapshot: null, alerts: [] });
     },
   );
 }
