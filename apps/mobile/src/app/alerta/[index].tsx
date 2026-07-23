@@ -6,19 +6,29 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { acoesParaAlerta } from '@/lib/acoes';
+import { markAlertActed, markAlertOpened } from '@/lib/api';
 import { rotuloFact, valorFact } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, severityLabel, type Severity } from '@/theme';
 
 export default function DetalheAlerta() {
   const { index } = useLocalSearchParams<{ index: string }>();
-  const { dashboard } = usePulso();
+  const { dashboard, token, fonte } = usePulso();
+  const [agiu, setAgiu] = useState(false);
 
   const alerta = dashboard?.alerts[Number(index)] ?? null;
+  const alertaId = alerta?.id ?? null;
+  const demo = fonte === 'demo';
+
+  // abrir o alerta pelo painel marca VISTO (métrica do piloto). Demo não envia.
+  useEffect(() => {
+    if (!demo && token && alertaId) void markAlertOpened(token, alertaId);
+  }, [demo, token, alertaId]);
 
   if (!alerta) {
     return (
@@ -73,6 +83,27 @@ export default function DetalheAlerta() {
             </View>
           ))}
         </View>
+
+        {/* fechar o ciclo: o dono marca que agiu (sem culpa, sem modal) */}
+        {!demo && alertaId && (
+          <Pressable
+            onPress={() => {
+              if (agiu || alerta.actedAt) return;
+              setAgiu(true);
+              if (token) void markAlertActed(token, alertaId);
+            }}
+            disabled={agiu || !!alerta.actedAt}
+            style={({ pressed }) => [
+              styles.fiz,
+              (agiu || alerta.actedAt) && styles.fizFeito,
+              pressed && styles.pressionado,
+            ]}
+          >
+            <Text style={[styles.fizTexto, (agiu || alerta.actedAt) && styles.fizTextoFeito]}>
+              {agiu || alerta.actedAt ? 'Você marcou que agiu ✓' : 'Fiz algo com isso'}
+            </Text>
+          </Pressable>
+        )}
 
         <Pressable
           style={({ pressed }) => [styles.cta, pressed && styles.pressionado]}
@@ -176,12 +207,24 @@ const styles = StyleSheet.create({
   passoNum: { fontFamily: fonts.displayMedio, fontSize: 12, color: colors.papel },
   passoTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 14, lineHeight: 20, color: colors.tinta },
 
+  fiz: {
+    borderWidth: 1,
+    borderColor: colors.mata,
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  fizFeito: { borderColor: colors.linha, backgroundColor: '#F0FBF6' },
+  fizTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.mata },
+  fizTextoFeito: { color: colors.okEscuro },
+
   cta: {
     backgroundColor: colors.mata,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 18,
+    marginTop: 12,
   },
   pressionado: { opacity: 0.85 },
   ctaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },

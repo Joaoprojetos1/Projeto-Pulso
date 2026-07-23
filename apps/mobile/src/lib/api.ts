@@ -15,6 +15,11 @@ export interface AlertJson {
   facts: Record<string, number | string | null>;
   textTitle: string | null;
   textBody: string | null;
+  /** Presentes quando o alerta vem do servidor (não na demonstração). */
+  id?: string;
+  createdAt?: string;
+  openedAt?: string | null;
+  actedAt?: string | null;
 }
 
 export interface IndicatorJson {

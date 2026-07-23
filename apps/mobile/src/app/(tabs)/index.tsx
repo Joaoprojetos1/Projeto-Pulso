@@ -359,7 +359,14 @@ export default function Dashboard() {
                 style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]}
               />
               <View style={styles.alertaMiolo}>
-                <Text style={styles.alertaTitulo}>{a.textTitle ?? a.ruleKey}</Text>
+                <View style={styles.alertaTituloLinha}>
+                  {fonte !== 'demo' && !a.openedAt && (
+                    <View
+                      style={[styles.naoLidoPonto, { backgroundColor: severityColor[a.severity as Severity] }]}
+                    />
+                  )}
+                  <Text style={styles.alertaTitulo}>{a.textTitle ?? a.ruleKey}</Text>
+                </View>
                 {a.textBody ? (
                   <Text style={styles.alertaCorpo} numberOfLines={2}>
                     {a.textBody}
@@ -666,7 +673,9 @@ const styles = StyleSheet.create({
   pressionado: { opacity: 0.9, transform: [{ scale: 0.98 }] },
   barra: { width: 7, borderRadius: 4 },
   alertaMiolo: { flex: 1, gap: 2 },
-  alertaTitulo: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta },
+  alertaTituloLinha: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  naoLidoPonto: { width: 8, height: 8, borderRadius: 4 },
+  alertaTitulo: { flex: 1, fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta },
   alertaCorpo: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza },
 
   verHistorico: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },

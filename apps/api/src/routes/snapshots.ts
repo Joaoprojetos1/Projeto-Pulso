@@ -207,7 +207,8 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     LIMIT 1`;
 
   const alertRows = await sql`
-    SELECT rule_key, severity::text AS severity, facts, text_title, text_body, created_at
+    SELECT id, rule_key, severity::text AS severity, facts, text_title, text_body,
+           created_at, opened_at, acted_at
     FROM alerts
     WHERE snapshot_id = ${snapshot.id}
     ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END, created_at`;
@@ -227,12 +228,16 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     // diagnóstico do momento (null nos snapshots antigos, anteriores à 0008)
     diagnosis: snapshot.diagnosis ?? null,
     alerts: alertRows.map((a) => ({
+      // id + opened/acted para o app marcar lido/agido a partir do próprio painel
+      id: a.id,
       ruleKey: a.rule_key,
       severity: a.severity,
       facts: a.facts,
       textTitle: a.text_title,
       textBody: a.text_body,
       createdAt: a.created_at,
+      openedAt: a.opened_at,
+      actedAt: a.acted_at,
     })),
   };
 }
