@@ -81,6 +81,27 @@ interface CreateBody {
   recurrence?: 'none' | 'monthly';
 }
 
+const editSchema = {
+  type: 'object',
+  required: ['amountCents', 'dueOn'],
+  additionalProperties: false,
+  properties: {
+    amountCents: { type: 'integer', minimum: 1 },
+    dueOn: { type: 'string', pattern: DATE_PATTERN },
+    counterparty: { type: 'string', maxLength: 200 },
+    category: { type: 'string', maxLength: 80 },
+    recurrence: { enum: ['none', 'monthly'] },
+  },
+} as const;
+
+interface EditBody {
+  amountCents: number;
+  dueOn: string;
+  counterparty?: string;
+  category?: string;
+  recurrence?: 'none' | 'monthly';
+}
+
 export function registerPlanned(app: FastifyInstance, sql: Sql) {
   // cadastrar uma conta prevista (a pagar ou a receber)
   app.post<{ Body: CreateBody }>(
@@ -99,6 +120,32 @@ export function registerPlanned(app: FastifyInstance, sql: Sql) {
                   category, recurrence::text AS recurrence, status::text AS status,
                   confirmed_on::text AS confirmed_on, created_at`;
       return reply.code(201).send(toContaJson(row as unknown as ContaRow));
+    },
+  );
+
+  // editar uma conta ainda PREVISTA (valor, data, contraparte, categoria, recorrência).
+  // Conta já confirmada (graduada) não se edita — vira verdade e sai do planejamento.
+  app.patch<{ Params: { id: string }; Body: EditBody }>(
+    '/me/contas/:id',
+    { schema: { params: idParams, body: editSchema } },
+    async (req, reply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login.' });
+
+      const b = req.body;
+      const [row] = await sql`
+        UPDATE planned_entries SET
+          amount_cents = ${b.amountCents},
+          due_on = ${b.dueOn},
+          counterparty = ${b.counterparty ?? null},
+          category = ${b.category ?? null},
+          recurrence = ${b.recurrence ?? 'none'}
+        WHERE id = ${req.params.id} AND company_id = ${company.id} AND status = 'prevista'
+        RETURNING id, kind::text AS kind, amount_cents, due_on::text AS due_on, counterparty,
+                  category, recurrence::text AS recurrence, status::text AS status,
+                  confirmed_on::text AS confirmed_on, created_at`;
+      if (!row) return reply.code(404).send({ error: 'Conta não encontrada ou já confirmada.' });
+      return toContaJson(row as unknown as ContaRow);
     },
   );
 

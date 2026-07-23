@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   confirmarConta,
   criarConta,
+  editarConta,
   excluirConta,
   fetchContas,
   type ContaJson,
@@ -60,6 +61,25 @@ function reaisParaCents(txt: string): number | null {
   return Math.round(n * 100);
 }
 
+/** Data livre digitada (DD/MM/AAAA) para ISO; null se inválida. */
+function ddmmParaIso(txt: string): string | null {
+  const m = txt.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, d, mo, y] = m;
+  const iso = `${y}-${mo}-${d}`;
+  const dt = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(dt.getTime())) return null;
+  if (dt.getUTCDate() !== Number(d) || dt.getUTCMonth() + 1 !== Number(mo)) return null;
+  return iso;
+}
+function isoParaDDMM(iso: string): string {
+  const [y, mo, d] = iso.split('-');
+  return `${d}/${mo}/${y}`;
+}
+function centsParaCampo(cents: number): string {
+  return (cents / 100).toFixed(2).replace('.', ',');
+}
+
 const rotuloStatus: Record<ContaJson['status'], string> = {
   prevista: 'Prevista',
   vencida: 'Venceu, confirmar?',
@@ -78,6 +98,7 @@ export default function Contas() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [editando, setEditando] = useState<ContaJson | null>(null);
 
   const carregar = useCallback(async () => {
     if (!token) return;
@@ -131,19 +152,24 @@ export default function Contas() {
         contentContainerStyle={styles.lista}
         refreshControl={<RefreshControl refreshing={carregando} onRefresh={carregar} />}
       >
-        {mostrarForm && (
-          <NovaContaForm
+        {(mostrarForm || editando) && (
+          <ContaForm
             visao={visao}
             token={token}
+            conta={editando ?? undefined}
             onPronto={() => {
               setMostrarForm(false);
+              setEditando(null);
               void carregar();
             }}
-            onCancelar={() => setMostrarForm(false)}
+            onCancelar={() => {
+              setMostrarForm(false);
+              setEditando(null);
+            }}
           />
         )}
 
-        {!mostrarForm && (
+        {!mostrarForm && !editando && (
           <Pressable
             style={({ pressed }) => [styles.novo, pressed && styles.pressionado]}
             onPress={() => setMostrarForm(true)}
@@ -164,7 +190,16 @@ export default function Contas() {
         )}
 
         {contas.map((c) => (
-          <ContaCard key={c.id} conta={c} token={token} onMudou={carregar} />
+          <ContaCard
+            key={c.id}
+            conta={c}
+            token={token}
+            onMudou={carregar}
+            onEditar={(alvo) => {
+              setMostrarForm(false);
+              setEditando(alvo);
+            }}
+          />
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -179,7 +214,17 @@ function Aba({ ativo, onPress, texto }: { ativo: boolean; onPress: () => void; t
   );
 }
 
-function ContaCard({ conta, token, onMudou }: { conta: ContaJson; token: string; onMudou: () => void }) {
+function ContaCard({
+  conta,
+  token,
+  onMudou,
+  onEditar,
+}: {
+  conta: ContaJson;
+  token: string;
+  onMudou: () => void;
+  onEditar: (c: ContaJson) => void;
+}) {
   const [ocupado, setOcupado] = useState(false);
 
   async function confirmar() {
@@ -238,6 +283,9 @@ function ContaCard({ conta, token, onMudou }: { conta: ContaJson; token: string;
               </Text>
             )}
           </Pressable>
+          <Pressable onPress={() => onEditar(conta)} hitSlop={8} disabled={ocupado} style={styles.excluir}>
+            <Ionicons name="pencil-outline" size={18} color={colors.cinza} />
+          </Pressable>
           <Pressable onPress={excluir} hitSlop={8} disabled={ocupado} style={styles.excluir}>
             <Ionicons name="trash-outline" size={18} color={colors.cinza} />
           </Pressable>
@@ -247,44 +295,57 @@ function ContaCard({ conta, token, onMudou }: { conta: ContaJson; token: string;
   );
 }
 
-function NovaContaForm({
+function ContaForm({
   visao,
   token,
+  conta,
   onPronto,
   onCancelar,
 }: {
   visao: ContaKind;
   token: string;
+  conta?: ContaJson;
   onPronto: () => void;
   onCancelar: () => void;
 }) {
-  const [valor, setValor] = useState('');
-  const [quem, setQuem] = useState('');
-  const [categoria, setCategoria] = useState<string | null>(null);
+  const editando = !!conta;
+  const [valor, setValor] = useState(conta ? centsParaCampo(conta.amountCents) : '');
+  const [quem, setQuem] = useState(conta?.counterparty ?? '');
+  const [categoria, setCategoria] = useState<string | null>(conta?.category ?? null);
   const [prazoDias, setPrazoDias] = useState(30);
-  const [recorrente, setRecorrente] = useState(false);
+  const [dataManual, setDataManual] = useState(conta ? isoParaDDMM(conta.dueOn) : '');
+  const [recorrente, setRecorrente] = useState(conta?.recurrence === 'monthly');
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const cents = reaisParaCents(valor);
-  const pode = cents !== null && !salvando;
+  // a data digitada (se válida) vence os atalhos de prazo
+  const isoManual = dataManual.trim() ? ddmmParaIso(dataManual) : null;
+  const dataManualInvalida = dataManual.trim().length > 0 && isoManual === null;
+  const dueOn = isoManual ?? emIso(prazoDias);
+  const pode = cents !== null && !dataManualInvalida && !salvando;
 
   async function salvar() {
     if (cents === null) {
       setErro('Informe um valor válido.');
       return;
     }
+    if (dataManualInvalida) {
+      setErro('Data inválida. Use o formato DD/MM/AAAA.');
+      return;
+    }
     setSalvando(true);
     setErro(null);
+    const dados = {
+      amountCents: cents,
+      dueOn,
+      counterparty: quem.trim() || undefined,
+      category: categoria ?? undefined,
+      recurrence: (recorrente ? 'monthly' : 'none') as 'monthly' | 'none',
+    };
     try {
-      await criarConta(token, {
-        kind: visao,
-        amountCents: cents,
-        dueOn: emIso(prazoDias),
-        counterparty: quem.trim() || undefined,
-        category: categoria ?? undefined,
-        recurrence: recorrente ? 'monthly' : 'none',
-      });
+      if (conta) await editarConta(token, conta.id, dados);
+      else await criarConta(token, { kind: visao, ...dados });
       onPronto();
     } catch {
       setErro('Não consegui salvar agora. Tente de novo.');
@@ -295,7 +356,9 @@ function NovaContaForm({
   return (
     <Animated.View entering={FadeIn.duration(160)} style={styles.form}>
       <Text style={styles.formTitulo}>
-        Nova conta {visao === 'receivable' ? 'a receber' : 'a pagar'}
+        {editando
+          ? 'Editar conta'
+          : `Nova conta ${visao === 'receivable' ? 'a receber' : 'a pagar'}`}
       </Text>
 
       <Text style={styles.label}>VALOR (R$)</Text>
@@ -344,7 +407,16 @@ function NovaContaForm({
           </Pressable>
         ))}
       </View>
-      <Text style={styles.dataEscolhida}>Vai lançar para {dataBR(emIso(prazoDias))}</Text>
+      <TextInput
+        style={[styles.input, { marginTop: 8 }, dataManualInvalida && styles.inputErro]}
+        value={dataManual}
+        onChangeText={setDataManual}
+        placeholder="ou digite uma data: DD/MM/AAAA"
+        placeholderTextColor={colors.cinza}
+      />
+      <Text style={styles.dataEscolhida}>
+        {dataManualInvalida ? 'Data inválida — use DD/MM/AAAA' : `Data prevista: ${dataBR(dueOn)}`}
+      </Text>
 
       <Pressable style={styles.natureza} onPress={() => setRecorrente((v) => !v)}>
         <Ionicons
@@ -371,7 +443,7 @@ function NovaContaForm({
           {salvando ? (
             <ActivityIndicator color={colors.papel} size="small" />
           ) : (
-            <Text style={styles.salvarTexto}>Salvar previsão</Text>
+            <Text style={styles.salvarTexto}>{editando ? 'Salvar alterações' : 'Salvar previsão'}</Text>
           )}
         </Pressable>
       </View>
@@ -502,6 +574,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.tinta,
   },
+  inputErro: { borderColor: colors.critico },
   chipsLinha: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   chip: {
     borderWidth: 1,

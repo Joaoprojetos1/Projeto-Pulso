@@ -465,6 +465,25 @@ export async function criarConta(token: string, conta: NovaConta): Promise<Conta
   return (await res.json()) as ContaJson;
 }
 
+export interface EditarConta {
+  amountCents: number;
+  dueOn: string;
+  counterparty?: string;
+  category?: string;
+  recurrence?: ContaRecorrencia;
+}
+
+/** Edita uma conta ainda prevista (não graduada). */
+export async function editarConta(token: string, id: string, conta: EditarConta): Promise<ContaJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/contas/${id}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(conta),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao editar conta`);
+  return (await res.json()) as ContaJson;
+}
+
 /** Graduação: o dono confirma que a conta aconteceu (previsto → realizado). */
 export async function confirmarConta(
   token: string,

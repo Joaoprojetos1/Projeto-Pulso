@@ -142,4 +142,47 @@ describe('contas previstas (a pagar e a receber)', () => {
     });
     expect(res.statusCode).toBe(400);
   });
+
+  it('edita uma conta prevista (valor, data, contraparte, recorrência)', async () => {
+    const criada = await app.inject({
+      method: 'POST',
+      url: '/me/contas',
+      headers: auth.authorization(),
+      payload: { kind: 'payable', amountCents: 100_000, dueOn: '2999-02-01', counterparty: 'Antigo' },
+    });
+    const id = criada.json().id as string;
+
+    const editada = await app.inject({
+      method: 'PATCH',
+      url: `/me/contas/${id}`,
+      headers: auth.authorization(),
+      payload: { amountCents: 250_000, dueOn: '2999-03-15', counterparty: 'Novo Fornecedor', recurrence: 'monthly' },
+    });
+    expect(editada.statusCode).toBe(200);
+    const c = editada.json();
+    expect(c.amountCents).toBe(250_000);
+    expect(c.dueOn).toBe('2999-03-15');
+    expect(c.counterparty).toBe('Novo Fornecedor');
+    expect(c.natureza).toBe('recorrente');
+    expect(c.status).toBe('prevista'); // continua previsão
+  });
+
+  it('não edita conta já confirmada (graduada)', async () => {
+    const criada = await app.inject({
+      method: 'POST',
+      url: '/me/contas',
+      headers: auth.authorization(),
+      payload: { kind: 'receivable', amountCents: 300_000, dueOn: '2026-07-10' },
+    });
+    const id = criada.json().id as string;
+    await app.inject({ method: 'POST', url: `/me/contas/${id}/confirmar`, headers: auth.authorization(), payload: {} });
+
+    const editar = await app.inject({
+      method: 'PATCH',
+      url: `/me/contas/${id}`,
+      headers: auth.authorization(),
+      payload: { amountCents: 999_000, dueOn: '2999-01-01' },
+    });
+    expect(editar.statusCode).toBe(404);
+  });
 });
