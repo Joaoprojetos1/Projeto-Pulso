@@ -36,6 +36,8 @@ interface Mensagem {
   id: string;
   de: 'voce' | 'pulso';
   texto: string;
+  /** true quando o envio falhou: a bolha vira "tocar para reenviar". */
+  falhou?: boolean;
 }
 
 // sugestões de partida — perguntas que o Pulso sabe responder bem
@@ -72,9 +74,6 @@ const RESPOSTA_DEMO =
   'Na demonstração eu respondo as perguntas de caixa com os números do exemplo. ' +
   'Tente: "Quando meu caixa zera?", "Quem me deve?" ou "Dá pra pagar as contas do mês?". ' +
   'Com sua conta ligada, eu converso sobre os seus próprios números.';
-
-const RESPOSTA_ERRO =
-  'Não consegui falar com o servidor agora. Tente de novo em instantes. Seus alertas continuam no painel.';
 
 const MESES = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -116,6 +115,35 @@ export default function Chat() {
     setTimeout(() => lista.current?.scrollToEnd({ animated: true }), 60);
   }
 
+  /** Envia o histórico ao servidor. Em falha, marca a última pergunta como
+   *  "não enviada" (reenvio inline) em vez de uma bolha de erro. */
+  async function despachar(historico: Mensagem[]) {
+    if (!token) return;
+    setPensando(true);
+    rolar();
+    try {
+      const turns: ChatTurnJson[] = historico
+        .filter((m) => m.id !== 'boas-vindas' && !m.falhou)
+        .map((m) => ({ role: m.de === 'voce' ? 'user' : 'assistant', content: m.texto }));
+      const resposta = await sendMyChat(token, turns);
+      setMensagens([...historico, { id: `p-${Date.now()}`, de: 'pulso', texto: resposta }]);
+    } catch (e) {
+      if (e instanceof QuotaError) {
+        setMensagens([...historico, { id: `p-${Date.now()}`, de: 'pulso', texto: mensagemDeCota(e) }]);
+      } else {
+        // sem bolha de erro nem alert(): a própria pergunta vira "tocar para reenviar"
+        setMensagens(
+          historico.map((m, i) =>
+            i === historico.length - 1 && m.de === 'voce' ? { ...m, falhou: true } : m,
+          ),
+        );
+      }
+    } finally {
+      setPensando(false);
+      rolar();
+    }
+  }
+
   async function enviar(valorDireto?: string) {
     const limpo = (valorDireto ?? texto).trim();
     if (!limpo || pensando) return;
@@ -134,21 +162,15 @@ export default function Chat() {
       return;
     }
 
-    setPensando(true);
-    try {
-      // histórico no formato do servidor (sem a mensagem de boas-vindas)
-      const turns: ChatTurnJson[] = minhas
-        .filter((m) => m.id !== 'boas-vindas')
-        .map((m) => ({ role: m.de === 'voce' ? 'user' : 'assistant', content: m.texto }));
-      const resposta = await sendMyChat(token, turns);
-      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: resposta }]);
-    } catch (e) {
-      const texto = e instanceof QuotaError ? mensagemDeCota(e) : RESPOSTA_ERRO;
-      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto }]);
-    } finally {
-      setPensando(false);
-      rolar();
-    }
+    await despachar(minhas);
+  }
+
+  /** Toca na pergunta não enviada para reenviar, sem redigitar. */
+  function reenviar(m: Mensagem) {
+    if (pensando) return;
+    const historico = mensagens.map((x) => (x.id === m.id ? { ...x, falhou: false } : x));
+    setMensagens(historico);
+    void despachar(historico);
   }
 
   return (
@@ -166,13 +188,23 @@ export default function Chat() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.lista}
           renderItem={({ item }) => (
-            <Animated.View
-              entering={FadeInDown.duration(220)}
-              style={[styles.msg, item.de === 'voce' ? styles.msgVoce : styles.msgPulso]}
-            >
-              <Text style={item.de === 'voce' ? styles.msgTextoVoce : styles.msgTextoPulso}>
-                {item.texto}
-              </Text>
+            <Animated.View entering={FadeInDown.duration(220)} style={styles.msgWrap}>
+              <View
+                style={[
+                  styles.msg,
+                  item.de === 'voce' ? styles.msgVoce : styles.msgPulso,
+                  item.falhou && styles.msgFalhou,
+                ]}
+              >
+                <Text style={item.de === 'voce' ? styles.msgTextoVoce : styles.msgTextoPulso}>
+                  {item.texto}
+                </Text>
+              </View>
+              {item.falhou && (
+                <Pressable onPress={() => reenviar(item)} hitSlop={6}>
+                  <Text style={styles.reenviar}>não enviada · tocar para reenviar</Text>
+                </Pressable>
+              )}
             </Animated.View>
           )}
           ListFooterComponent={pensando ? <Digitando /> : null}
@@ -227,7 +259,17 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   lista: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
+  msgWrap: { width: '100%' },
   msg: { maxWidth: '86%', borderRadius: 14, paddingHorizontal: 13, paddingVertical: 10 },
+  msgFalhou: { opacity: 0.6 },
+  reenviar: {
+    alignSelf: 'flex-end',
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    letterSpacing: 0.2,
+    color: colors.critico,
+    marginTop: 3,
+  },
   msgVoce: {
     alignSelf: 'flex-end',
     backgroundColor: colors.mata,
