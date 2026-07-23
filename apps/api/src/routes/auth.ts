@@ -132,7 +132,7 @@ export function registerAuth(
           await tx`INSERT INTO auth_tokens (token_hash, user_id) VALUES (${hashToken(token)}, ${u.id})`;
           return c as CompanyRow;
         });
-        return reply.code(201).send({ token, email, company: toCompanyJson(company) });
+        return reply.code(201).send({ token, email, role: 'owner', company: toCompanyJson(company) });
       } catch (err) {
         // corrida entre dois cadastros com o mesmo e-mail: o UNIQUE segura
         if ((err as { code?: string }).code === '23505') {
@@ -150,7 +150,7 @@ export function registerAuth(
     async (req, reply) => {
       const email = normalizeEmail(req.body.email);
       const [user] = await sql`
-        SELECT u.id, u.password_hash,
+        SELECT u.id, u.password_hash, u.role,
                c.id AS c_id, c.name, c.cnpj, c.niche, c.declared_fixed_cost_cents, c.created_at
         FROM users u JOIN companies c ON c.id = u.company_id
         WHERE u.email = ${email}`;
@@ -171,7 +171,12 @@ export function registerAuth(
         declared_fixed_cost_cents: (user.declared_fixed_cost_cents as number | null) ?? null,
         created_at: user.created_at as Date,
       };
-      return reply.send({ token, email, company: toCompanyJson(company) });
+      return reply.send({
+        token,
+        email,
+        role: (user.role as string) ?? 'owner',
+        company: toCompanyJson(company),
+      });
     },
   );
 

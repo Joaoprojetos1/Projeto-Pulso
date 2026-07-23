@@ -63,6 +63,10 @@ async function seed(nome: string, snap: CompanySnapshot): Promise<string> {
 const tesouraId = await seed('Clínica Horizonte', clinicaTesoura);
 const saudavelId = await seed('Clínica Vida Plena', clinicaSaudavel);
 
+// marca como demonstração: a área de operação (admin) nunca deve tratar dado
+// de teste como cliente real.
+await sql`UPDATE companies SET is_demo = true WHERE id IN (${tesouraId}, ${saudavelId})`;
+
 console.log('Clínicas de demonstração prontas:');
 console.log(`  Clínica Horizonte (tesoura):    ${tesouraId}`);
 console.log(`  Clínica Vida Plena (saudável):  ${saudavelId}`);

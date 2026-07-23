@@ -106,8 +106,26 @@ describe('recuperação de senha', () => {
   });
 });
 
+// cria um dono, promove a admin e devolve o token de sessão (para as rotas /admin)
+async function adminToken(email: string): Promise<string> {
+  const signup = await app.inject({
+    method: 'POST',
+    url: '/auth/signup',
+    payload: { businessName: 'Operação', email, password: 'senha-admin-123' },
+  });
+  await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
+  const login = await app.inject({
+    method: 'POST',
+    url: '/auth/login',
+    payload: { email, password: 'senha-admin-123' },
+  });
+  void signup;
+  return login.json().token as string;
+}
+
 describe('GET /admin/pilot-metrics', () => {
   it('conta, por empresa, os sinais do piloto nos últimos 30 dias', async () => {
+    const token = await adminToken('op-pilot@pulso.com');
     const [c] = await sql`INSERT INTO companies (name) VALUES ('Clínica Piloto') RETURNING id`;
     const id = c.id as string;
 
@@ -131,7 +149,11 @@ describe('GET /admin/pilot-metrics', () => {
       INSERT INTO planned_entries (company_id, kind, amount_cents, due_on, status, confirmed_on)
       VALUES (${id}, 'receivable', 2000, '2026-07-10', 'realizada', current_date)`;
 
-    const res = await app.inject({ method: 'GET', url: '/admin/pilot-metrics' });
+    const res = await app.inject({
+      method: 'GET',
+      url: '/admin/pilot-metrics',
+      headers: { authorization: `Bearer ${token}` },
+    });
     expect(res.statusCode).toBe(200);
     const mine = res.json().metrics.find((m: { companyId: string }) => m.companyId === id);
     expect(mine.last30Days).toEqual({

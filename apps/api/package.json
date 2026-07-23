@@ -9,6 +9,7 @@
     "start": "tsx src/index.ts",
     "db": "tsx scripts/dev-db.ts",
     "seed": "tsx scripts/seed-demo.ts",
+    "promote-admin": "tsx scripts/promote-admin.ts",
     "migrate": "tsx src/migrate.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

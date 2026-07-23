@@ -96,6 +96,22 @@ function toImportPayload(snap: CompanySnapshot) {
   };
 }
 
+// cria um dono, promove a admin e devolve o token de sessão (rotas /admin)
+async function makeAdmin(email: string): Promise<string> {
+  await app.inject({
+    method: 'POST',
+    url: '/auth/signup',
+    payload: { businessName: 'Operação', email, password: 'senha-admin-123' },
+  });
+  await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
+  const login = await app.inject({
+    method: 'POST',
+    url: '/auth/login',
+    payload: { email, password: 'senha-admin-123' },
+  });
+  return login.json().token as string;
+}
+
 async function setupCompany(name: string, snap: CompanySnapshot): Promise<string> {
   const created = await app.inject({ method: 'POST', url: '/companies', payload: { name } });
   const companyId = created.json().id as string;
@@ -160,7 +176,12 @@ describe('medição do consumo da IA', () => {
   });
 
   it('GET /admin/ai-usage agrega por empresa, tipo, modelo e mês', async () => {
-    const res = await app.inject({ method: 'GET', url: '/admin/ai-usage' });
+    const token = await makeAdmin('op-aiusage@pulso.com');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/admin/ai-usage',
+      headers: { authorization: `Bearer ${token}` },
+    });
     expect(res.statusCode).toBe(200);
 
     const usage = res.json().usage as Array<{
@@ -193,17 +214,37 @@ describe('medição do consumo da IA', () => {
     expect(chat!.totalTokens).toBe(CHAT_USAGE.inputTokens + CHAT_USAGE.outputTokens);
   });
 
-  it('a guarda do endpoint: com PULSO_ADMIN_TOKEN setado, exige o header', async () => {
-    process.env.PULSO_ADMIN_TOKEN = 'segredo-interno';
+  it('a guarda do endpoint: sem login e como dono comum responde 404; admin vê', async () => {
+    // sem token: 404 (não revela que a área existe)
+    const anon = await app.inject({ method: 'GET', url: '/admin/ai-usage' });
+    expect(anon.statusCode).toBe(404);
 
-    const semHeader = await app.inject({ method: 'GET', url: '/admin/ai-usage' });
-    expect(semHeader.statusCode).toBe(401);
-
-    const comHeader = await app.inject({
+    // dono comum (role owner): também 404
+    await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: { businessName: 'Dona Comum', email: 'dona-comum@pulso.com', password: 'senha-comum-123' },
+    });
+    const ownerLogin = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email: 'dona-comum@pulso.com', password: 'senha-comum-123' },
+    });
+    const ownerToken = ownerLogin.json().token as string;
+    const asOwner = await app.inject({
       method: 'GET',
       url: '/admin/ai-usage',
-      headers: { 'x-admin-token': 'segredo-interno' },
+      headers: { authorization: `Bearer ${ownerToken}` },
     });
-    expect(comHeader.statusCode).toBe(200);
+    expect(asOwner.statusCode).toBe(404);
+
+    // admin: 200
+    const token = await makeAdmin('op-guard@pulso.com');
+    const asAdmin = await app.inject({
+      method: 'GET',
+      url: '/admin/ai-usage',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(asAdmin.statusCode).toBe(200);
   });
 });

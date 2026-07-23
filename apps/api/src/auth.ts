@@ -61,3 +61,51 @@ export async function companyFromRequest(
     WHERE t.token_hash = ${hashToken(token)}`;
   return (row as CompanyRow | undefined) ?? null;
 }
+
+export type UserRole = 'owner' | 'admin';
+
+/** Usuário logado com o papel (owner/admin) e a empresa dele. */
+export interface AuthedUser {
+  userId: string;
+  email: string;
+  role: UserRole;
+  company: CompanyRow;
+}
+
+/**
+ * Como companyFromRequest, mas devolve também o usuário e o PAPEL.
+ * O papel vem sempre do banco (nunca de um token que o cliente carrega) — é
+ * o que sustenta o guard do admin. Retorna null sem token válido.
+ */
+export async function userFromRequest(
+  sql: Sql,
+  req: FastifyRequest,
+): Promise<AuthedUser | null> {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) return null;
+  const token = header.slice('Bearer '.length).trim();
+  if (!token) return null;
+
+  const [row] = await sql`
+    SELECT u.id AS user_id, u.email, u.role,
+           c.id, c.name, c.cnpj, c.niche, c.declared_fixed_cost_cents, c.created_at
+    FROM auth_tokens t
+    JOIN users u     ON u.id = t.user_id
+    JOIN companies c ON c.id = u.company_id
+    WHERE t.token_hash = ${hashToken(token)}`;
+  if (!row) return null;
+
+  return {
+    userId: row.user_id as string,
+    email: row.email as string,
+    role: row.role as UserRole,
+    company: {
+      id: row.id as string,
+      name: row.name as string,
+      cnpj: (row.cnpj as string | null) ?? null,
+      niche: row.niche as string,
+      declared_fixed_cost_cents: (row.declared_fixed_cost_cents as number | null) ?? null,
+      created_at: row.created_at as Date,
+    },
+  };
+}
