@@ -122,6 +122,11 @@ describe('fluxo completo: clínica da tesoura', () => {
     // sem chave de IA nos testes, o texto padrão assume — o alerta nunca fica mudo
     expect(runway.textTitle).toMatch(/29 de julho/);
     expect(runway.modelVersion).toBe('template-v1');
+
+    // diagnóstico do momento: caixa zerando cedo → estágio sério, com texto e drivers
+    expect(['pressao', 'critico', 'uti']).toContain(body.diagnosis.stage);
+    expect(body.diagnosis.text.title).toBeTruthy();
+    expect(body.diagnosis.drivers.map((d: { premissa: string }) => d.premissa)).toContain('P2');
   });
 
   it('dashboard: devolve o último snapshot com o pior alerta primeiro', async () => {
@@ -134,6 +139,9 @@ describe('fluxo completo: clínica da tesoura', () => {
     expect(body.alerts[0].severity).toBe('critical');
     // a auditoria viaja junto: os inputs do indicador estão no payload
     expect(body.snapshot.indicators.cash_projection.inputs.openingBalanceCents).toBe(1_500_000);
+    // o diagnóstico também é exposto no dashboard
+    expect(body.diagnosis).toBeTruthy();
+    expect(['pressao', 'critico', 'uti']).toContain(body.diagnosis.stage);
   });
 
   it('recalcular o mesmo dia substitui os alertas em vez de duplicar', async () => {

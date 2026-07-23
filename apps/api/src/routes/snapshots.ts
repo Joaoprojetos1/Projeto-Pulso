@@ -1,7 +1,8 @@
-import { computeAll, CORE_VERSION, evaluate } from '@pulso/core';
-import type { CompanySnapshot } from '@pulso/core';
+import { computeAll, CORE_VERSION, diagnose, evaluate } from '@pulso/core';
+import type { CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
+import { writeDiagnosis } from '../ai/diagnosis-writer';
 import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import { writeAlert, type AlertWriterModel } from '../ai/writer';
 import type { Sql } from '../db';
@@ -150,13 +151,47 @@ function montarComparativos(atual: Payload, anterior: Payload) {
 }
 
 /**
+ * Histórico para o diagnóstico: resume os snapshots ANTERIORES (indicadores +
+ * o estágio já gravado) para as premissas que dependem de períodos anteriores
+ * (P3 tesoura, P4 média móvel do ciclo, P5 margem caindo). O core segue puro —
+ * ele recebe isto pronto, nunca busca nada.
+ */
+async function loadDiagnosisHistory(
+  sql: Sql,
+  companyId: string,
+  asOf: string,
+): Promise<{ points: DiagnosisHistoryPoint[] }> {
+  const rows = await sql`
+    SELECT as_of::text AS as_of, payload, diagnosis
+    FROM indicator_snapshots
+    WHERE company_id = ${companyId} AND as_of < ${asOf}
+    ORDER BY as_of DESC
+    LIMIT 3`;
+
+  // rows vêm do mais recente ao mais antigo; o core espera do mais ANTIGO ao recente
+  const points: DiagnosisHistoryPoint[] = rows.reverse().map((r) => {
+    const p = r.payload as Payload;
+    const stage = (r.diagnosis as { stage?: DiagnosisStage } | null)?.stage ?? null;
+    return {
+      asOf: r.as_of as string,
+      ncgCents: valorInd(p, 'ncg'),
+      revenueCents: valorInd(p, 'revenue_current'),
+      cashCycleDays: valorInd(p, 'cash_cycle'),
+      contributionMargin: valorInd(p, 'contribution_margin'),
+      stage,
+    };
+  });
+  return { points };
+}
+
+/**
  * Monta a resposta do dashboard (último snapshot + alertas ordenados).
  * Retorna null quando a empresa ainda não tem nenhum cálculo (conta nova).
  * Fonte única usada tanto pela rota pública quanto pela rota logada (/me).
  */
 export async function buildDashboard(sql: Sql, company: CompanyRow) {
   const [snapshot] = await sql`
-    SELECT id, as_of::text AS as_of, core_version, payload, computed_at
+    SELECT id, as_of::text AS as_of, core_version, payload, diagnosis, computed_at
     FROM indicator_snapshots
     WHERE company_id = ${company.id}
     ORDER BY as_of DESC
@@ -189,6 +224,8 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
       snapshot.payload as Payload,
       (anterior?.payload as Payload) ?? null,
     ),
+    // diagnóstico do momento (null nos snapshots antigos, anteriores à 0008)
+    diagnosis: snapshot.diagnosis ?? null,
     alerts: alertRows.map((a) => ({
       ruleKey: a.rule_key,
       severity: a.severity,
@@ -233,6 +270,11 @@ export function registerSnapshots(
       const indicators = computeAll(snap);
       const alerts = evaluate(indicators);
 
+      // diagnóstico do momento: o core julga a partir dos indicadores + o
+      // histórico dos snapshots anteriores (resumido pela API).
+      const history = await loadDiagnosisHistory(sql, company.id, asOf);
+      const diag = diagnose(indicators, history);
+
       // a voz do Pulso: a IA (ou o template) redige a partir dos facts —
       // e de NADA além dos facts
       const profile = { name: company.name, niche: company.niche };
@@ -244,6 +286,13 @@ export function registerSnapshots(
         })),
       );
 
+      // a voz do diagnóstico (mesmo writer + fiscal dos alertas).
+      // NÃO medimos esta chamada em ai_usage por ora: a métrica de metering trata
+      // kind='alert_writer' como "um por alerta". Se o custo do diagnóstico
+      // precisar entrar, criar um kind='diagnosis' dedicado (enum + migração).
+      const diagText = await writeDiagnosis(alertWriter, diag, profile);
+      const diagnosisStored = { ...diag, text: diagText };
+
       const gravados: Array<{
         id: string;
         ruleKey: string;
@@ -253,11 +302,13 @@ export function registerSnapshots(
       }> = [];
       const snapshotId = await sql.begin(async (tx) => {
         const [s] = await tx`
-          INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload)
-          VALUES (${company.id}, ${asOf}, ${CORE_VERSION}, ${tx.json(indicators as never)})
+          INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload, diagnosis)
+          VALUES (${company.id}, ${asOf}, ${CORE_VERSION}, ${tx.json(indicators as never)},
+                  ${tx.json(diagnosisStored as never)})
           ON CONFLICT (company_id, as_of)
           DO UPDATE SET core_version = EXCLUDED.core_version,
                         payload = EXCLUDED.payload,
+                        diagnosis = EXCLUDED.diagnosis,
                         computed_at = now()
           RETURNING id`;
 
@@ -301,6 +352,7 @@ export function registerSnapshots(
         snapshotId,
         asOf,
         coreVersion: CORE_VERSION,
+        diagnosis: diagnosisStored,
         alerts: written.map(({ alert: a, text }) => ({
           ruleKey: a.ruleKey,
           severity: a.severity,

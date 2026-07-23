@@ -38,6 +38,36 @@ interface Tend {
   bom: boolean;
 }
 
+// Diagnóstico: rótulo e severidade por estágio. Cor: saudável=vivo,
+// atenção/pressão=alerta, crítico/uti=crítico (severityColor do tema).
+const STAGE_LABEL: Record<string, string> = {
+  saudavel: 'Saudável',
+  atencao: 'Atenção',
+  pressao: 'Pressão',
+  critico: 'Crítico',
+  uti: 'UTI',
+};
+const STAGE_SEV: Record<string, Severity> = {
+  saudavel: 'ok',
+  atencao: 'warn',
+  pressao: 'warn',
+  critico: 'critical',
+  uti: 'critical',
+};
+
+// Driver (premissa) → frase de dono. Só rótulo fixo, sem cálculo (app burro).
+const PREMISSA_LABEL: Record<string, string> = {
+  P1: 'Sua reserva de caixa está baixa',
+  P2: 'O caixa projetado pode zerar em breve',
+  P3: 'Você vende mais, mas o dinheiro fica preso (efeito tesoura)',
+  P4: 'Seu ciclo de caixa piorou',
+  P5: 'Sua margem de contribuição está apertada',
+  P6: 'A receita está perto do ponto de equilíbrio',
+  P7: 'Seu faturamento está concentrado num cliente só',
+  P8: 'Há inadimplência alta na sua carteira',
+  caixa_negativo: 'Seu caixa está negativo hoje',
+};
+
 /** Tendência atual × anterior. `menorEhMelhor` inverte o julgamento (ex.: ciclo). */
 function tendencia(
   atual: number | null | undefined,
@@ -56,6 +86,8 @@ export default function Dashboard() {
   const { dashboard, fonte, carregando, carregar } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
+  // "por que esse momento?" do diagnóstico aberto?
+  const [diagAberto, setDiagAberto] = useState(false);
 
   if (!dashboard) {
     // enquanto busca sem dados ainda, mostra o "esqueleto" (não uma tela branca)
@@ -163,6 +195,10 @@ export default function Dashboard() {
   ];
   const chipAberto = miniCards.find((c) => c.id === abertoChip) ?? null;
 
+  // diagnóstico do momento (o servidor manda pronto; o app só desenha)
+  const diag = dashboard.diagnosis ?? null;
+  const diagCor = diag ? severityColor[STAGE_SEV[diag.stage] ?? 'ok'] : colors.vivo;
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
@@ -186,6 +222,46 @@ export default function Dashboard() {
         {fonte === 'demo' && (
           <View style={styles.selo}>
             <Text style={styles.seloTexto}>DEMONSTRAÇÃO · DADOS FICTÍCIOS</Text>
+          </View>
+        )}
+
+        {/* diagnóstico do momento — o elemento principal */}
+        {diag && (
+          <View style={styles.diag}>
+            <View style={styles.diagTopo}>
+              <View style={[styles.diagBadge, { backgroundColor: diagCor }]}>
+                <Text style={styles.diagBadgeTexto}>{STAGE_LABEL[diag.stage] ?? diag.stage}</Text>
+              </View>
+              {diag.transitions.direction === 'piorou' && (
+                <Text style={[styles.diagTend, { color: colors.alerta }]}>↑ piorou no mês</Text>
+              )}
+              {diag.transitions.direction === 'melhorou' && (
+                <Text style={[styles.diagTend, { color: colors.okEscuro }]}>↓ melhorou no mês</Text>
+              )}
+            </View>
+            <Text style={styles.diagTitulo}>{diag.text.title}</Text>
+            {diag.text.body ? <Text style={styles.diagCorpo}>{diag.text.body}</Text> : null}
+            {diag.drivers.length > 0 && (
+              <Pressable
+                onPress={() => setDiagAberto((v) => !v)}
+                style={({ pressed }) => pressed && styles.pressionado}
+                hitSlop={6}
+              >
+                <Text style={styles.diagPorque}>
+                  {diagAberto ? 'ocultar' : 'por que esse momento?'}
+                </Text>
+              </Pressable>
+            )}
+            {diagAberto && diag.drivers.length > 0 && (
+              <Animated.View entering={FadeIn.duration(180)} style={styles.diagDrivers}>
+                <Text style={styles.explicaRotulo}>DE ONDE VEM ESSE NÚMERO</Text>
+                {diag.drivers.map((d) => (
+                  <Text key={d.premissa} style={styles.diagDriverItem}>
+                    • {PREMISSA_LABEL[d.premissa] ?? d.premissa}
+                  </Text>
+                ))}
+              </Animated.View>
+            )}
           </View>
         )}
 
@@ -411,6 +487,44 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   seloTexto: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
+
+  diag: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 18,
+    padding: 16,
+    gap: 6,
+  },
+  diagTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  diagBadge: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, alignSelf: 'flex-start' },
+  diagBadgeTexto: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: colors.papel,
+    textTransform: 'uppercase',
+  },
+  diagTend: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.3 },
+  diagTitulo: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.tinta,
+    letterSpacing: -0.3,
+    marginTop: 2,
+  },
+  diagCorpo: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.cinza },
+  diagPorque: {
+    fontFamily: fonts.corpoMedio,
+    fontSize: 12,
+    color: colors.mata,
+    marginTop: 2,
+    textDecorationLine: 'underline',
+  },
+  diagDrivers: { marginTop: 6, gap: 4 },
+  diagDriverItem: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.tinta },
 
   cash: {
     marginHorizontal: 16,

@@ -17,6 +17,7 @@ const MIGRATIONS: Array<[name: string, file: string]> = [
   ['0005_interest', '0005_interest.sql'],
   ['0006_ai_usage', '0006_ai_usage.sql'],
   ['0007_chat_quota', '0007_chat_quota.sql'],
+  ['0008_diagnosis', '0008_diagnosis.sql'],
 ];
 
 export async function migrate(sql: Sql): Promise<string[]> {

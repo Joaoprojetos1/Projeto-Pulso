@@ -41,6 +41,27 @@ export interface Comparativos {
   revenue_current: Comparativo;
 }
 
+export type DiagnosisStage = 'saudavel' | 'atencao' | 'pressao' | 'critico' | 'uti';
+
+export interface DiagnosisDriver {
+  premissa: string;
+  stage: DiagnosisStage;
+  facts: Record<string, number | string | boolean | null>;
+}
+
+/** O "momento" da empresa, calculado no servidor. */
+export interface DiagnosisJson {
+  stage: DiagnosisStage;
+  drivers: DiagnosisDriver[];
+  transitions: {
+    previousStage: DiagnosisStage | null;
+    direction: 'melhorou' | 'piorou' | 'igual' | null;
+  };
+  facts: { unavailable: Record<string, string>; [k: string]: unknown };
+  /** Texto redigido (voz do Pulso). */
+  text: { title: string; body: string; modelVersion: string };
+}
+
 export interface DashboardJson {
   company: { id: string; name: string; niche: string };
   snapshot: {
@@ -51,6 +72,8 @@ export interface DashboardJson {
   };
   /** Tendência atual × anterior dos indicadores de topo (quando há histórico). */
   comparativos?: Comparativos;
+  /** Diagnóstico do momento (null em snapshots antigos ou conta nova). */
+  diagnosis?: DiagnosisJson | null;
   alerts: AlertJson[];
 }
 
@@ -232,10 +255,17 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
     company: { id: string; name: string; niche: string };
     snapshot: DashboardJson['snapshot'] | null;
     comparativos?: Comparativos;
+    diagnosis?: DiagnosisJson | null;
     alerts: AlertJson[];
   };
   const dashboard: DashboardJson | null = body.snapshot
-    ? { company: body.company, snapshot: body.snapshot, comparativos: body.comparativos, alerts: body.alerts }
+    ? {
+        company: body.company,
+        snapshot: body.snapshot,
+        comparativos: body.comparativos,
+        diagnosis: body.diagnosis ?? null,
+        alerts: body.alerts,
+      }
     : null;
   return { companyId: body.company.id, companyName: body.company.name, dashboard };
 }

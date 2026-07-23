@@ -84,6 +84,18 @@ export const DEMO_DASHBOARD: DashboardJson = {
     contribution_margin: { atual: 0.75, anterior: 0.8 }, // margem caiu
     revenue_current: { atual: 6_680_000, anterior: 5_880_000 }, // receita subiu
   },
+  // diagnóstico do exemplo — coerente com o caixa zerando em ~14 dias (UTI)
+  diagnosis: {
+    stage: 'uti',
+    drivers: [{ premissa: 'P2', stage: 'uti', facts: { zeroInDays: 14, zeroOn: '2026-07-29' } }],
+    transitions: { previousStage: 'critico', direction: 'piorou' },
+    facts: { unavailable: {}, cashBalanceCents: 2_130_000, firedPremissas: ['P2', 'P7'] },
+    text: {
+      title: 'Seu caixa está em emergência',
+      body: 'No ritmo de hoje o caixa pode zerar em 29 de julho. Priorize antecipar recebimentos e renegociar prazos agora.',
+      modelVersion: 'demo',
+    },
+  },
   alerts: [
     {
       ruleKey: 'cash_runway',
