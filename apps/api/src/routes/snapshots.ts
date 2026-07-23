@@ -3,6 +3,7 @@ import type { CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pu
 import type { FastifyInstance } from 'fastify';
 
 import { writeDiagnosis } from '../ai/diagnosis-writer';
+import { writeWeekly, type WeeklyFacts } from '../ai/weekly-writer';
 import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import { writeAlert, type AlertWriterModel } from '../ai/writer';
 import type { Sql } from '../db';
@@ -191,7 +192,7 @@ async function loadDiagnosisHistory(
  */
 export async function buildDashboard(sql: Sql, company: CompanyRow) {
   const [snapshot] = await sql`
-    SELECT id, as_of::text AS as_of, core_version, payload, diagnosis, computed_at
+    SELECT id, as_of::text AS as_of, core_version, payload, diagnosis, weekly_summary, computed_at
     FROM indicator_snapshots
     WHERE company_id = ${company.id}
     ORDER BY as_of DESC
@@ -227,6 +228,8 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     ),
     // diagnóstico do momento (null nos snapshots antigos, anteriores à 0008)
     diagnosis: snapshot.diagnosis ?? null,
+    // resumo da semana (null quando não há snapshot anterior de >= 5 dias)
+    weeklySummary: snapshot.weekly_summary ?? null,
     alerts: alertRows.map((a) => ({
       // id + opened/acted para o app marcar lido/agido a partir do próprio painel
       id: a.id,
@@ -298,6 +301,36 @@ export function registerSnapshots(
       const diagText = await writeDiagnosis(alertWriter, diag, profile);
       const diagnosisStored = { ...diag, text: diagText };
 
+      // Resumo da semana: se existe um snapshot de >= 5 dias antes, o writer redige
+      // o que mudou (não medido em ai_usage, como o diagnóstico — ver nota acima).
+      const [prevSemana] = await sql`
+        SELECT as_of::text AS as_of, payload
+        FROM indicator_snapshots
+        WHERE company_id = ${company.id} AND as_of <= (${asOf}::date - 5)
+        ORDER BY as_of DESC
+        LIMIT 1`;
+      let weeklyStored: unknown = null;
+      if (prevSemana) {
+        const prevPayload = prevSemana.payload as Payload;
+        const ivNow = (k: string): number | null => {
+          const v = (indicators[k] as { value?: unknown } | undefined)?.value;
+          return typeof v === 'number' ? v : null;
+        };
+        const facts: WeeklyFacts = {
+          cashNowCents: ivNow('cash_balance'),
+          cashPrevCents: valorInd(prevPayload, 'cash_balance'),
+          cashCycleNow: ivNow('cash_cycle'),
+          cashCyclePrev: valorInd(prevPayload, 'cash_cycle'),
+          revenueNowCents: ivNow('revenue_current'),
+          revenuePrevCents: valorInd(prevPayload, 'revenue_current'),
+          daysBetween: Math.round(
+            (Date.parse(`${asOf}T00:00:00Z`) - Date.parse(`${prevSemana.as_of}T00:00:00Z`)) / 86_400_000,
+          ),
+        };
+        const weeklyText = await writeWeekly(alertWriter, facts, profile);
+        weeklyStored = { text: weeklyText, facts, comparedTo: prevSemana.as_of };
+      }
+
       const gravados: Array<{
         id: string;
         ruleKey: string;
@@ -307,13 +340,15 @@ export function registerSnapshots(
       }> = [];
       const snapshotId = await sql.begin(async (tx) => {
         const [s] = await tx`
-          INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload, diagnosis)
+          INSERT INTO indicator_snapshots (company_id, as_of, core_version, payload, diagnosis, weekly_summary)
           VALUES (${company.id}, ${asOf}, ${CORE_VERSION}, ${tx.json(indicators as never)},
-                  ${tx.json(diagnosisStored as never)})
+                  ${tx.json(diagnosisStored as never)},
+                  ${weeklyStored ? tx.json(weeklyStored as never) : null})
           ON CONFLICT (company_id, as_of)
           DO UPDATE SET core_version = EXCLUDED.core_version,
                         payload = EXCLUDED.payload,
                         diagnosis = EXCLUDED.diagnosis,
+                        weekly_summary = EXCLUDED.weekly_summary,
                         computed_at = now()
           RETURNING id`;
 

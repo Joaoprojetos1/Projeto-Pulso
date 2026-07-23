@@ -67,6 +67,20 @@ export interface DiagnosisJson {
   text: { title: string; body: string; modelVersion: string };
 }
 
+export interface WeeklySummaryJson {
+  text: { title: string; body: string; modelVersion: string };
+  facts: {
+    cashNowCents: number | null;
+    cashPrevCents: number | null;
+    cashCycleNow: number | null;
+    cashCyclePrev: number | null;
+    revenueNowCents: number | null;
+    revenuePrevCents: number | null;
+    daysBetween: number;
+  };
+  comparedTo: string;
+}
+
 export interface DashboardJson {
   company: { id: string; name: string; niche: string };
   snapshot: {
@@ -79,6 +93,8 @@ export interface DashboardJson {
   comparativos?: Comparativos;
   /** Diagnóstico do momento (null em snapshots antigos ou conta nova). */
   diagnosis?: DiagnosisJson | null;
+  /** Resumo da semana (null quando não há snapshot anterior de >= 5 dias). */
+  weeklySummary?: WeeklySummaryJson | null;
   alerts: AlertJson[];
 }
 
@@ -290,6 +306,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
     snapshot: DashboardJson['snapshot'] | null;
     comparativos?: Comparativos;
     diagnosis?: DiagnosisJson | null;
+    weeklySummary?: WeeklySummaryJson | null;
     alerts: AlertJson[];
   };
   const dashboard: DashboardJson | null = body.snapshot
@@ -298,6 +315,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
         snapshot: body.snapshot,
         comparativos: body.comparativos,
         diagnosis: body.diagnosis ?? null,
+        weeklySummary: body.weeklySummary ?? null,
         alerts: body.alerts,
       }
     : null;

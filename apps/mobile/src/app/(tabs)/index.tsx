@@ -27,6 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
 import { PulseLine } from '@/components/pulse-line';
+import { WeeklyCard } from '@/components/weekly-card';
 import type { CashProjectionPoint } from '@/lib/api';
 import { brl, dataBR, dias, pct } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
@@ -232,6 +233,9 @@ export default function Dashboard() {
             </Text>
           </View>
         )}
+
+        {/* resumo da semana — o que mudou desde a semana passada */}
+        {dashboard.weeklySummary && <WeeklyCard summary={dashboard.weeklySummary} />}
 
         {/* diagnóstico do momento — o elemento principal */}
         {diag && (
