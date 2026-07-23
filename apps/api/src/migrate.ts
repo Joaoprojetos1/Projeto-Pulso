@@ -21,6 +21,7 @@ const MIGRATIONS: Array<[name: string, file: string]> = [
   ['0009_chat_history', '0009_chat_history.sql'],
   ['0010_password_reset', '0010_password_reset.sql'],
   ['0011_weekly_summary', '0011_weekly_summary.sql'],
+  ['0012_interest_lead', '0012_interest_lead.sql'],
 ];
 
 export async function migrate(sql: Sql): Promise<string[]> {
