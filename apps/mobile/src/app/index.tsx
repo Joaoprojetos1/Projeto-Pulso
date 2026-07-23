@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -139,6 +140,12 @@ export default function Login() {
         style={styles.wrap}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollConteudo}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
         <View style={styles.hero}>
           <PulsoLogo size={44} color={colors.papel} />
           <Text style={styles.claim}>
@@ -301,6 +308,7 @@ export default function Login() {
             </>
           )}
         </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -310,6 +318,9 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.mata },
   centro: { justifyContent: 'center', alignItems: 'center' },
   wrap: { flex: 1 },
+  // flexGrow:1 deixa o herói ocupar o espaço quando sobra, mas permite ROLAR
+  // até os campos quando o teclado sobe (A1 — teclado não cobre a digitação).
+  scrollConteudo: { flexGrow: 1 },
   hero: {
     flex: 1,
     justifyContent: 'center',
