@@ -456,9 +456,16 @@ export interface CashProjection {
 export function projectCash(
   snap: CompanySnapshot,
   horizons: number[] = [30, 60, 90],
+  // Gancho de SIMULAÇÃO (ver simulate.ts). Opcional e aditivo: sem ele, o
+  // comportamento é EXATAMENTE o de sempre. Quando presente, substitui o custo
+  // fixo mensal usado na projeção — é o único jeito de modelar um CORTE de custo
+  // fixo, já que um lançamento nunca é negativo. Nada mais muda.
+  opts: { fixedCostOverrideCents?: Cents | null } = {},
 ): Indicator<CashProjection[]> {
   const balance = cashBalance(snap);
   const fixed = monthlyFixedCost(snap);
+  const fixedValue =
+    opts.fixedCostOverrideCents !== undefined ? opts.fixedCostOverrideCents : fixed.value;
   const pmr = averageReceivableDays(snap);
 
   if (balance.value === null) {
@@ -519,7 +526,7 @@ export function projectCash(
     }
 
     // custo fixo diluído por dia
-    if (fixed.value !== null) running -= Math.round(fixed.value / 30);
+    if (fixedValue !== null) running -= Math.round(fixedValue / 30);
 
     // contas previstas do dono que se movem neste dia
     const planned = plannedByDay.get(day);
@@ -542,7 +549,7 @@ export function projectCash(
     inputs: {
       openingBalanceCents: balance.value,
       avgLatenessDays: latenessDays,
-      monthlyFixedCostCents: fixed.value,
+      monthlyFixedCostCents: fixedValue,
       openReceivablesCount: open.filter((e) => e.kind === 'receivable').length,
       openPayablesCount: open.filter((e) => e.kind === 'payable').length,
       pmrDays: pmr.value,

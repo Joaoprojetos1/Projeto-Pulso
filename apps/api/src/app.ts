@@ -14,6 +14,7 @@ import { registerData } from './routes/data';
 import { registerDevices } from './routes/devices';
 import { registerInterest } from './routes/interest';
 import { registerPlanned } from './routes/planned';
+import { registerSimulate } from './routes/simulate';
 import { registerSnapshots } from './routes/snapshots';
 
 export interface AppOptions {
@@ -43,6 +44,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerCompanies(app, sql);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
+  registerSimulate(app, sql);
   registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
 

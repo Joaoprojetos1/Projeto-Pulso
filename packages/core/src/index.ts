@@ -10,3 +10,4 @@ export * from './indicators';
 export * from './planned';
 export * from './diagnosis';
 export * from './rules';
+export * from './simulate';

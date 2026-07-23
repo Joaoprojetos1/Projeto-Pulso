@@ -17,7 +17,7 @@ import type { PushMessage, PushSender } from '../push';
  * soma de dinheiro aparecer neste arquivo, ela está no lugar errado.
  */
 
-async function loadCompanySnapshot(
+export async function loadCompanySnapshot(
   sql: Sql,
   company: CompanyRow,
   asOf: string,
