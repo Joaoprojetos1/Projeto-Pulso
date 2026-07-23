@@ -312,6 +312,39 @@ export async function sendMyChat(token: string, messages: ChatTurnJson[]): Promi
   return body.reply;
 }
 
+/* --------------- Histórico de alertas (lido / agido) --------------- */
+
+export interface AlertHistoryJson extends AlertJson {
+  id: string;
+  createdAt: string;
+  openedAt: string | null;
+  actedAt: string | null;
+}
+
+/** Histórico de alertas do dono (todos os snapshots, mais recente primeiro). */
+export async function fetchMyAlerts(token: string, limit = 50): Promise<AlertHistoryJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/alerts?limit=${limit}`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos alertas`);
+  return ((await res.json()) as { alerts: AlertHistoryJson[] }).alerts;
+}
+
+/** Marca visto/agido. Best-effort: é métrica do piloto, nunca atrapalha o uso. */
+async function marcarAlerta(token: string, id: string, acao: 'opened' | 'acted'): Promise<void> {
+  try {
+    await fetchWithWake(`${apiBase()}/me/alerts/${id}/${acao}`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // silencioso de propósito
+  }
+}
+export const markAlertOpened = (token: string, id: string) => marcarAlerta(token, id, 'opened');
+export const markAlertActed = (token: string, id: string) => marcarAlerta(token, id, 'acted');
+
 /* --------------- Contas previstas (a pagar / a receber) --------------- */
 
 export type ContaKind = 'receivable' | 'payable';

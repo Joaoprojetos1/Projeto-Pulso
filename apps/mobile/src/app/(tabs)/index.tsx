@@ -3,7 +3,7 @@
  * O app não calcula NADA: busca o JSON do servidor e desenha.
  */
 
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -370,6 +370,15 @@ export default function Dashboard() {
           ))}
         </View>
 
+        {fonte !== 'demo' && (
+          <Pressable
+            onPress={() => router.push('/historico' as Href)}
+            style={({ pressed }) => [styles.verHistorico, pressed && styles.pressionado]}
+          >
+            <Text style={styles.verHistoricoTexto}>Ver histórico de alertas →</Text>
+          </Pressable>
+        )}
+
         <Text style={styles.rodape}>
           Atualizado em {dataBR(dashboard.snapshot.asOf)} · motor v{dashboard.snapshot.coreVersion}
         </Text>
@@ -659,6 +668,9 @@ const styles = StyleSheet.create({
   alertaMiolo: { flex: 1, gap: 2 },
   alertaTitulo: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta },
   alertaCorpo: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza },
+
+  verHistorico: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },
+  verHistoricoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.mata },
 
   rodape: {
     fontFamily: fonts.mono,

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import type { ChatModel, ChatTurn } from '../ai/chat';
 import {
@@ -10,7 +10,7 @@ import {
   verifyPassword,
 } from '../auth';
 import type { Sql } from '../db';
-import { toCompanyJson, type CompanyRow } from '../http';
+import { toCompanyJson, UUID_PATTERN, type CompanyRow } from '../http';
 import { resolveMailer, type Mailer } from '../mailer';
 import { QuotaExceededError, quotaExceededPayload } from '../quota';
 import { converse } from '../services/conversation';
@@ -276,4 +276,71 @@ export function registerAuth(
       }
     },
   );
+
+  // histórico de alertas do dono (todos os snapshots, mais recente primeiro).
+  // É o que responde a pergunta central do piloto: o dono vê e age no alerta?
+  app.get<{ Querystring: { limit?: number } }>(
+    '/me/alerts',
+    {
+      schema: {
+        querystring: {
+          type: 'object',
+          additionalProperties: false,
+          properties: { limit: { type: 'integer', minimum: 1, maximum: 200 } },
+        },
+      },
+    },
+    async (req, reply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login para ver seus alertas.' });
+
+      const limit = req.query.limit ?? 50;
+      const rows = await sql`
+        SELECT id, rule_key, severity::text AS severity, facts, text_title, text_body,
+               created_at, opened_at, acted_at
+        FROM alerts
+        WHERE company_id = ${company.id}
+        ORDER BY created_at DESC
+        LIMIT ${limit}`;
+
+      return {
+        alerts: rows.map((a) => ({
+          id: a.id,
+          ruleKey: a.rule_key,
+          severity: a.severity,
+          facts: a.facts,
+          textTitle: a.text_title,
+          textBody: a.text_body,
+          createdAt: a.created_at,
+          openedAt: a.opened_at,
+          actedAt: a.acted_at,
+        })),
+      };
+    },
+  );
+
+  // marca visto/agido — idempotente (o COALESCE preserva o primeiro registro).
+  // São as métricas 2 e 3 do piloto (o dono ABRIU / o dono AGIU).
+  const marcar = (coluna: 'opened_at' | 'acted_at') =>
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login.' });
+      const [row] =
+        coluna === 'opened_at'
+          ? await sql`UPDATE alerts SET opened_at = COALESCE(opened_at, now())
+                      WHERE id = ${req.params.id} AND company_id = ${company.id} RETURNING id`
+          : await sql`UPDATE alerts SET acted_at = COALESCE(acted_at, now())
+                      WHERE id = ${req.params.id} AND company_id = ${company.id} RETURNING id`;
+      if (!row) return reply.code(404).send({ error: 'Alerta não encontrado.' });
+      return reply.send({ ok: true });
+    };
+
+  const alertaIdParams = {
+    type: 'object',
+    required: ['id'],
+    properties: { id: { type: 'string', pattern: UUID_PATTERN } },
+  } as const;
+
+  app.post<{ Params: { id: string } }>('/me/alerts/:id/opened', { schema: { params: alertaIdParams } }, marcar('opened_at'));
+  app.post<{ Params: { id: string } }>('/me/alerts/:id/acted', { schema: { params: alertaIdParams } }, marcar('acted_at'));
 }
