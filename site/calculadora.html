@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora do efeito tesoura · Pulso</title>
+<meta name="description" content="Estime em segundos quando o caixa do seu negócio pode apertar. Cálculo no seu navegador, sem cadastro." />
+<meta name="theme-color" content="#37373F" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2042%2024'%3E%3Cpath%20d='M1,12H12L15.5,12L18,5L20.5,12H24L27,12L29.5,3L32,21L34.5,12L37,12H41'%20fill='none'%20stroke='%2323C883'%20stroke-width='3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="pagina.css" />
+</head>
+<body>
+
+<header class="page-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Pulso, início">
+      <svg width="26" height="20" viewBox="0 0 42 24" fill="none" aria-hidden="true">
+        <path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="var(--vivo)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Pulso
+    </a>
+    <a class="back" href="index.html">← Voltar ao site</a>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="wrap wide">
+    <span class="eyebrow">Calculadora grátis</span>
+    <h1>Quando o seu caixa pode apertar?</h1>
+    <p class="muted">Preencha quatro números do seu negócio e veja uma estimativa de quando o caixa tende a ficar no vermelho — o "efeito tesoura", quando você vende mas o dinheiro demora a chegar. O cálculo roda aqui no seu navegador, sem cadastro e sem enviar nada.</p>
+
+    <div class="calc-grid">
+      <form id="calc-form" novalidate>
+        <div class="field">
+          <label for="caixa">Caixa hoje (R$)</label>
+          <input class="inp" id="caixa" type="number" inputmode="numeric" min="0" step="100" value="21300" />
+          <span class="hint">Quanto você tem em conta agora.</span>
+        </div>
+        <div class="field">
+          <label for="faturamento">Faturamento por mês (R$)</label>
+          <input class="inp" id="faturamento" type="number" inputmode="numeric" min="0" step="100" value="66800" />
+          <span class="hint">Quanto você vende num mês, em média.</span>
+        </div>
+        <div class="field">
+          <label for="prazo">Prazo médio que dá aos clientes (dias)</label>
+          <input class="inp" id="prazo" type="number" inputmode="numeric" min="0" max="180" step="1" value="46" />
+          <span class="hint">Quantos dias, em média, até o cliente pagar.</span>
+        </div>
+        <div class="field">
+          <label for="custo">Custo fixo por mês (R$)</label>
+          <input class="inp" id="custo" type="number" inputmode="numeric" min="0" step="100" value="34200" />
+          <span class="hint">Aluguel, equipe, impostos — o que sai todo mês.</span>
+        </div>
+      </form>
+
+      <aside class="result" aria-live="polite">
+        <div class="r-k">Estimativa de aperto</div>
+        <div class="r-v" id="r-data">—</div>
+        <div class="r-sub" id="r-sub">Preencha os campos ao lado.</div>
+
+        <svg class="calc-svg" id="calc-svg" viewBox="0 0 460 120" preserveAspectRatio="none" aria-hidden="true">
+          <line id="zeroline" x1="0" x2="460" y1="60" y2="60" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4" />
+          <path id="curve" d="" fill="none" stroke="var(--pulse-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+          <circle id="zerodot" r="4" fill="var(--critico)" style="display:none" />
+        </svg>
+        <div class="calc-legend"><span>hoje</span><span>+30d</span><span>+60d</span><span>+90d</span></div>
+        <p class="calc-svg-label muted" id="curve-label" style="font-size:.8rem;margin-top:6px"></p>
+
+        <div class="disclaimer">
+          <b>Estimativa simplificada.</b> Este cálculo usa um modelo de projeção simples e não considera todos os detalhes do seu negócio. O Pulso calcula com os <b>seus dados reais</b>, todo dia, e avisa antes do aperto.
+        </div>
+
+        <div class="email-cta">
+          <label for="calc-email" class="r-k">Receba a análise completa por e-mail</label>
+          <form class="email-row" id="calc-email-form" novalidate>
+            <input class="inp" id="calc-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
+            <button class="btn btn-primary" type="submit">Quero</button>
+          </form>
+          <p class="email-msg" id="calc-email-msg" role="status"></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="page-foot">
+  <div class="wrap">
+    <nav class="foot-links" aria-label="Rodapé">
+      <a href="index.html">Início</a>
+      <a href="privacidade.html">Privacidade</a>
+      <a href="termos.html">Termos</a>
+      <a href="https://wa.me/553194287877?text=Oi%2C%20preciso%20de%20suporte%20do%20Pulso." target="_blank" rel="noopener">Suporte no WhatsApp</a>
+    </nav>
+    <span class="foot-note">Pulso · Estimativa simplificada · o cálculo real usa os seus dados.</span>
+  </div>
+</footer>
+
+<script>
+  // ---------------------------------------------------------------
+  // Projeção SIMPLIFICADA do efeito tesoura — 100% no navegador, sem servidor.
+  //
+  // Modelo (documentado): a cada dia sai o custo fixo (custo/30). A receita das
+  // vendas do dia só ENTRA `prazo` dias depois. Então, por `prazo` dias, você
+  // sangra custo sem a receita correspondente — é aí que o caixa aperta mesmo
+  // com o negócio dando lucro no papel.
+  //
+  //   caixa(d) = caixaHoje − (custo/30)·d + (faturamento/30)·max(0, d − prazo)
+  //
+  // Isto é uma ESTIMATIVA. O core do Pulso projeta com os lançamentos reais,
+  // o atraso real de cada cliente e as contas previstas. Aqui não há IA.
+  // ---------------------------------------------------------------
+  (function () {
+    var H = 90; // horizonte em dias
+    var els = {
+      caixa: document.getElementById('caixa'),
+      faturamento: document.getElementById('faturamento'),
+      prazo: document.getElementById('prazo'),
+      custo: document.getElementById('custo'),
+      rData: document.getElementById('r-data'),
+      rSub: document.getElementById('r-sub'),
+      curve: document.getElementById('curve'),
+      zerodot: document.getElementById('zerodot'),
+      zeroline: document.getElementById('zeroline'),
+      curveLabel: document.getElementById('curve-label'),
+    };
+
+    function num(el) { var v = parseFloat(el.value); return isFinite(v) && v >= 0 ? v : 0; }
+    function reais(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+    function dataEm(dias) {
+      var d = new Date();
+      d.setDate(d.getDate() + dias);
+      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+    }
+
+    function projetar() {
+      var caixa = num(els.caixa), fat = num(els.faturamento), prazo = Math.round(num(els.prazo)), custo = num(els.custo);
+      var custoDia = custo / 30, recDia = fat / 30;
+      var serie = [], zeroDia = null;
+      for (var d = 0; d <= H; d++) {
+        var v = caixa - custoDia * d + recDia * Math.max(0, d - prazo);
+        serie.push(v);
+        if (zeroDia === null && d >= 1 && v < 0) zeroDia = d;
+      }
+      return { serie: serie, zeroDia: zeroDia, menor: Math.min.apply(null, serie) };
+    }
+
+    function desenhar(serie) {
+      var W = 460, HH = 120, pad = 8;
+      var vals = serie.slice();
+      var hi = Math.max.apply(null, vals), lo = Math.min.apply(null, vals);
+      if (hi === lo) { hi += 1; lo -= 1; }
+      // garante o zero visível na escala quando a curva cruza o vermelho
+      if (lo > 0) lo = 0;
+      if (hi < 0) hi = 0;
+      function y(v) { return pad + (hi - v) / (hi - lo) * (HH - 2 * pad); }
+      function x(d) { return d / H * W; }
+      var dpath = '';
+      for (var d = 0; d < serie.length; d++) {
+        dpath += (d === 0 ? 'M' : 'L') + x(d).toFixed(1) + ',' + y(serie[d]).toFixed(1) + ' ';
+      }
+      els.curve.setAttribute('d', dpath.trim());
+      els.zeroline.setAttribute('y1', y(0).toFixed(1));
+      els.zeroline.setAttribute('y2', y(0).toFixed(1));
+      return { x: x, y: y };
+    }
+
+    function atualizar() {
+      var r = projetar();
+      var map = desenhar(r.serie);
+      var vermelho = r.zeroDia !== null;
+      els.rData.classList.toggle('risco', vermelho);
+      els.rData.classList.toggle('ok', !vermelho);
+
+      if (vermelho) {
+        els.rData.textContent = dataEm(r.zeroDia);
+        els.rData.setAttribute('title', 'dia +' + r.zeroDia);
+        els.rSub.textContent = 'No ritmo de hoje, o caixa fica negativo em cerca de ' + r.zeroDia + ' dias.';
+        els.zerodot.style.display = '';
+        els.zerodot.setAttribute('cx', map.x(r.zeroDia).toFixed(1));
+        els.zerodot.setAttribute('cy', map.y(0).toFixed(1));
+      } else {
+        els.rData.textContent = 'Sem aperto em 90 dias';
+        els.rSub.textContent = 'Neste modelo simples, o caixa não fica negativo nos próximos 90 dias. O menor ponto é ' + reais(r.menor) + '.';
+        els.zerodot.style.display = 'none';
+      }
+      els.curveLabel.textContent = 'Menor caixa projetado no período: ' + reais(r.menor) + '.';
+    }
+
+    ['caixa', 'faturamento', 'prazo', 'custo'].forEach(function (k) {
+      els[k].addEventListener('input', atualizar);
+    });
+    atualizar();
+
+    // ---- e-mail: entra na lista de espera com origem 'calculadora' ----
+    var API = 'https://pulso-api-9byl.onrender.com/interesse';
+    var eform = document.getElementById('calc-email-form');
+    var einput = document.getElementById('calc-email');
+    var emsg = document.getElementById('calc-email-msg');
+    var enviando = false;
+    function emostra(t, cls) { emsg.textContent = t; emsg.className = 'email-msg ' + (cls || ''); }
+    eform.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (enviando) return;
+      var email = (einput.value || '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { emostra('Confira o e-mail e tente de novo.', 'erro'); einput.focus(); return; }
+      enviando = true; emostra('Enviando...', '');
+      fetch(API, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: email, source: 'calculadora' })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('falhou');
+        eform.reset();
+        emostra('Pronto! A gente te manda a análise completa e avisa quando o app abrir.', 'ok');
+      }).catch(function () {
+        emostra('Não consegui salvar agora. Tente de novo em instantes.', 'erro');
+      }).then(function () { enviando = false; });
+    });
+  })();
+</script>
+
+</body>
+</html>

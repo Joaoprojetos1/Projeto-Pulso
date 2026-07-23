@@ -497,6 +497,7 @@
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="#como">Como funciona</a>
       <a class="navlink" href="#vigia">O que ele monitora</a>
+      <a class="navlink" href="calculadora.html">Calculadora</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
       <a class="btn btn-primary" href="#lista">Entrar na lista</a>
@@ -512,6 +513,7 @@
   <nav class="sheet" aria-label="Menu">
     <a class="m-link" href="#como">Como funciona</a>
     <a class="m-link" href="#vigia">O que ele monitora</a>
+    <a class="m-link" href="calculadora.html">Calculadora</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
     <a class="btn btn-primary" href="#lista">Entrar na lista de espera</a>
@@ -766,7 +768,7 @@
       <div class="plans-grid reveal stagger">
         <div class="plan">
           <span class="p-name">Essencial</span>
-          <div class="p-price">R$ 97<small> /mês</small></div>
+          <div class="p-price"><span data-preco="essencial">R$ 97</span><small> /mês</small></div>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitor de caixa, todo dia</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Avisos no WhatsApp e no app</li>
@@ -778,7 +780,7 @@
         <div class="plan destaque">
           <span class="p-tag">Mais escolhido</span>
           <span class="p-name">Crescimento</span>
-          <div class="p-price">R$ 147<small> /mês</small></div>
+          <div class="p-price"><span data-preco="crescimento">R$ 147</span><small> /mês</small></div>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Essencial</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Contas a pagar e a receber</li>
@@ -788,7 +790,7 @@
         </div>
         <div class="plan">
           <span class="p-name">Pro</span>
-          <div class="p-price">R$ 197<small> /mês</small></div>
+          <div class="p-price"><span data-preco="pro">R$ 197</span><small> /mês</small></div>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Crescimento</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os indicadores do motor</li>
@@ -811,7 +813,7 @@
       <div class="faq-list reveal">
         <details class="faq-item">
           <summary>Quanto custa? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Três planos: <strong>Essencial R$ 97</strong>, <strong>Crescimento R$ 147</strong> e <strong>Pro R$ 197</strong> por mês. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade. A assinatura acontece dentro do app; entre na lista de espera e a gente avisa quando ele abrir.</div>
+          <div class="faq-body">Três planos: <strong>Essencial <span data-preco="essencial">R$ 97</span></strong>, <strong>Crescimento <span data-preco="crescimento">R$ 147</span></strong> e <strong>Pro <span data-preco="pro">R$ 197</span></strong> por mês. Veja o que cada um inclui na <a href="#planos" style="color:var(--pulse-ink);font-weight:600;">seção de Planos</a>. Sem fidelidade. A assinatura acontece dentro do app; entre na lista de espera e a gente avisa quando ele abrir.</div>
         </details>
         <details class="faq-item">
           <summary>Como o Pulso pega meus números? <span class="plus" aria-hidden="true"></span></summary>
@@ -858,11 +860,13 @@
       Pulso
     </a>
     <nav class="foot-links" aria-label="Rodapé">
-      <a href="#seguranca">Privacidade e segurança</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="privacidade.html">Política de privacidade</a>
+      <a href="termos.html">Termos de uso</a>
       <a href="#faq">Perguntas frequentes</a>
       <a href="https://wa.me/553194287877?text=Oi%2C%20preciso%20de%20suporte%20do%20Pulso." target="_blank" rel="noopener">Suporte no WhatsApp</a>
     </nav>
-    <!-- TODO(rodape): inserir o CNPJ real e o link da politica de privacidade quando existirem. -->
+    <!-- TODO(rodape): inserir o CNPJ real no lugar de "a definir" quando existir. -->
     <span class="foot-note">Pulso · CNPJ a definir · Seus dados são seus, nunca compartilhamos.</span>
   </div>
 </footer>
@@ -995,6 +999,8 @@
     });
   })();
 </script>
+<!-- preços: fonte única (site/precos.js). Preenche os data-preco dos planos e do FAQ. -->
+<script src="precos.js"></script>
 
 </body>
 </html>
