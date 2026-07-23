@@ -33,7 +33,7 @@ class FakeAlertWriter implements AlertWriterModel {
   }
 }
 
-const CHAT_USAGE = { model: 'claude-opus-4-8', inputTokens: 512, outputTokens: 120 };
+const CHAT_USAGE = { model: 'claude-sonnet-4-6', inputTokens: 512, outputTokens: 120 };
 class FakeChatModel implements ChatModel {
   async reply() {
     return {

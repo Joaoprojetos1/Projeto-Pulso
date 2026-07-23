@@ -115,7 +115,7 @@ describe('askPulso', () => {
 
   it('medição: resposta boa registra uma chamada de consumo', async () => {
     const usos: unknown[] = [];
-    const usage = { model: 'claude-opus-4-8', inputTokens: 340, outputTokens: 88 };
+    const usage = { model: 'claude-sonnet-4-6', inputTokens: 340, outputTokens: 88 };
     const model: ChatModel = {
       reply: vi.fn(async () => ({
         text: 'Seu caixa zera em 29 de julho. Vale rever os 36 dias de recebimento.',
@@ -129,7 +129,7 @@ describe('askPulso', () => {
 
   it('medição: número inventado descarta a resposta mas conta as DUAS chamadas', async () => {
     const usos: unknown[] = [];
-    const usage = { model: 'claude-opus-4-8', inputTokens: 340, outputTokens: 90 };
+    const usage = { model: 'claude-sonnet-4-6', inputTokens: 340, outputTokens: 90 };
     const model: ChatModel = {
       reply: vi.fn(async () => ({
         text: 'Pegue um empréstimo de R$ 80.000 e resolva.',

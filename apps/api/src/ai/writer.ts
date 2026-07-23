@@ -20,6 +20,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { AlertFact } from '@pulso/core';
 
 import { checkGrounding } from './grounding';
+import { ALERT_MODEL } from './models';
 import { TEMPLATE_VERSION, templateFor, type AlertText } from './templates';
 import type { AiCallUsage, UsageSink } from './usage';
 
@@ -157,7 +158,7 @@ export class AnthropicAlertWriter implements AlertWriterModel {
 
   constructor(opts: { apiKey?: string; model?: string } = {}) {
     this.client = new Anthropic(opts.apiKey ? { apiKey: opts.apiKey } : undefined);
-    this.model = opts.model ?? process.env.PULSO_AI_MODEL ?? 'claude-opus-4-8';
+    this.model = opts.model ?? ALERT_MODEL;
   }
 
   async write(prompt: AlertPrompt): Promise<WrittenAlert> {

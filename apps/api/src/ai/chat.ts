@@ -15,6 +15,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 import { checkGroundingDeep } from './grounding';
+import { CHAT_MODEL } from './models';
 import type { AiCallUsage, UsageSink } from './usage';
 import type { CompanyProfile } from './writer';
 
@@ -139,7 +140,7 @@ export class AnthropicChatModel implements ChatModel {
 
   constructor(opts: { apiKey?: string; model?: string } = {}) {
     this.client = new Anthropic(opts.apiKey ? { apiKey: opts.apiKey } : undefined);
-    this.model = opts.model ?? process.env.PULSO_AI_MODEL ?? 'claude-opus-4-8';
+    this.model = opts.model ?? CHAT_MODEL;
   }
 
   async reply(prompt: { system: string; turns: ChatTurn[] }): Promise<ChatReply> {
