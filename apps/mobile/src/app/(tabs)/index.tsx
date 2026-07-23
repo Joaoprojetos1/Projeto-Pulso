@@ -324,6 +324,15 @@ export default function Dashboard() {
           )}
         </View>
 
+        {fonte !== 'demo' && (
+          <Pressable
+            onPress={() => router.push('/simular' as Href)}
+            style={({ pressed }) => [styles.simular, pressed && styles.pressionado]}
+          >
+            <Text style={styles.simularTexto}>Simular um cenário · e se…? →</Text>
+          </Pressable>
+        )}
+
         {/* chips de indicadores — tocáveis, abrem "de onde vem esse número" */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
           {miniCards.map((c) => (
@@ -680,6 +689,17 @@ const styles = StyleSheet.create({
 
   verHistorico: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },
   verHistoricoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.mata },
+  simular: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.vivo,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  simularTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.mata },
 
   rodape: {
     fontFamily: fonts.mono,

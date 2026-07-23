@@ -96,6 +96,26 @@ describe('simulate — cada tipo de delta', () => {
     expect(r.applied).toHaveLength(1);
     expect(r.simulated.zeroOn).toBeNull(); // o reforço evita a zeragem
   });
+
+  it('delayLargestPayable: o core acha o maior pagamento em aberto e o adia', () => {
+    // pay1 (R$ 8.000) é o maior; adiar 10 dias empurra a zeragem de 20 para 30/jun
+    const r = simulate(base, [{ type: 'delayLargestPayable', days: 10 }]);
+    expect(r.applied).toHaveLength(1);
+    expect(r.original.zeroOn).toBe('2026-06-20');
+    expect(r.simulated.zeroOn).toBe('2026-06-30');
+  });
+
+  it('anticipateLargestReceivable: o core acha o maior recebível e o antecipa', () => {
+    // rec1 (R$ 7.000) chega em 15/jul; antecipar 40 dias o traz para antes de 20/jun
+    const r = simulate(base, [{ type: 'anticipateLargestReceivable', days: 40 }]);
+    expect(r.applied).toHaveLength(1);
+    expect(r.simulated.zeroOn).toBeNull();
+  });
+
+  it('sem lançamento em aberto do tipo, o delta semântico é ignorado', () => {
+    const r = simulate(baseFixed, [{ type: 'delayLargestPayable', days: 10 }]);
+    expect(r.ignored).toHaveLength(1);
+  });
 });
 
 describe('simulate — ADIA vs ANTECIPA a zeragem', () => {

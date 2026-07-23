@@ -18,8 +18,22 @@ import type { Cents, CompanySnapshot, EntryKind, IsoDate, PlannedEntry } from '.
 export type SimulationDelta =
   | { type: 'delayPayable'; entryId: string; days: number }
   | { type: 'anticipateReceivable'; entryId: string; days: number }
+  // versões SEMÂNTICAS: o app não conhece ids de lançamento, então pede "o maior".
+  // O core resolve contra o snapshot (maior em aberto por valor) — o app não calcula.
+  | { type: 'delayLargestPayable'; days: number }
+  | { type: 'anticipateLargestReceivable'; days: number }
   | { type: 'adjustFixedCost'; deltaCents: Cents }
   | { type: 'addPlanned'; kind: EntryKind; amountCents: Cents; dueOn: IsoDate };
+
+/** Maior lançamento EM ABERTO de um tipo (por valor). null se não houver. */
+function largestOpen(snap: CompanySnapshot, kind: EntryKind) {
+  return snap.entries
+    .filter((e) => e.kind === kind && e.settledOn === null)
+    .reduce<CompanySnapshot['entries'][number] | null>(
+      (maior, e) => (maior === null || e.amountCents > maior.amountCents ? e : maior),
+      null,
+    );
+}
 
 /** Um ponto da curva de caixa: o dia e o saldo projetado nele. */
 export interface SimulationPoint {
@@ -122,6 +136,22 @@ export function simulate(
         const e = copy.entries.find((x) => x.id === d.entryId && x.kind === 'receivable');
         if (e && Number.isFinite(d.days) && d.days > 0) {
           e.dueOn = addDays(e.dueOn, -Math.round(d.days));
+          applied.push(d);
+        } else ignored.push(d);
+        break;
+      }
+      case 'delayLargestPayable': {
+        const alvo = largestOpen(copy, 'payable');
+        if (alvo && Number.isFinite(d.days) && d.days > 0) {
+          alvo.dueOn = addDays(alvo.dueOn, Math.round(d.days));
+          applied.push(d);
+        } else ignored.push(d);
+        break;
+      }
+      case 'anticipateLargestReceivable': {
+        const alvo = largestOpen(copy, 'receivable');
+        if (alvo && Number.isFinite(d.days) && d.days > 0) {
+          alvo.dueOn = addDays(alvo.dueOn, -Math.round(d.days));
           applied.push(d);
         } else ignored.push(d);
         break;

@@ -62,6 +62,7 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="historico" />
+        <Stack.Screen name="simular" />
         <Stack.Screen
           name="alerta/[index]"
           // o alerta sobe como um painel, deslizando de baixo

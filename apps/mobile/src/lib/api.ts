@@ -350,6 +350,47 @@ async function marcarAlerta(token: string, id: string, acao: 'opened' | 'acted')
 export const markAlertOpened = (token: string, id: string) => marcarAlerta(token, id, 'opened');
 export const markAlertActed = (token: string, id: string) => marcarAlerta(token, id, 'acted');
 
+/* --------------- Simulação "e se" (determinística, sem IA) --------------- */
+
+export type SimulationDelta =
+  | { type: 'delayLargestPayable'; days: number }
+  | { type: 'anticipateLargestReceivable'; days: number }
+  | { type: 'adjustFixedCost'; deltaCents: number }
+  | { type: 'addPlanned'; kind: ContaKind; amountCents: number; dueOn: string };
+
+export interface SimulationPoint {
+  day: string;
+  cents: number;
+}
+export interface SimulationCurve {
+  curve: SimulationPoint[];
+  zeroOn: string | null;
+}
+export interface SimulationResult {
+  asOf: string;
+  horizonDays: number;
+  original: SimulationCurve;
+  simulated: SimulationCurve;
+  applied: SimulationDelta[];
+  ignored: SimulationDelta[];
+}
+
+/** Roda a simulação no servidor (o core calcula; nada é alterado de verdade). */
+export async function sendSimulate(
+  token: string,
+  deltas: SimulationDelta[],
+  horizonDays = 90,
+): Promise<SimulationResult> {
+  const res = await fetchWithWake(`${apiBase()}/me/simulate`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ deltas, horizonDays }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} na simulação`);
+  return ((await res.json()) as { simulation: SimulationResult }).simulation;
+}
+
 /* --------------- Contas previstas (a pagar / a receber) --------------- */
 
 export type ContaKind = 'receivable' | 'payable';
