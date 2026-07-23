@@ -9,6 +9,50 @@
 
 ---
 
+## ▶ O QUE FAZER AGORA (consolidado 22/07) — leia primeiro
+
+**Feito e no ar:** cota de chat, modelo de IA por superfície, medição de consumo
+da IA, diagnóstico P1–P8, memória do chat, cérebro×canal + stub WhatsApp, Fase 2
+das contas previstas na projeção, recuperação de senha, métricas do piloto,
+histórico de alertas + lido/agido, cache offline do dashboard, simulador "e-se"
+(core+API), site (CTA da demo + calculadora tesoura + páginas legais + preço em
+fonte única), demo web (docs/app) republicada. **Backlog restante = itens 12–18.**
+
+**Regra:** fazer o trabalho OTA-safe primeiro; tudo que é módulo nativo vai junto
+num ÚNICO APK novo quando o João topar.
+
+### 1) Caminho crítico do piloto (pessoas, não código) — perseguir já
+1. **Parser do CSV real — TRAVA o piloto.** Depende do arquivo-modelo do Marco.
+   Sem ele, nenhuma empresa real entra. Prioridade nº 1.
+2. **Push (Firebase/FCM)** — é o coração da promessa ("avisa antes"). Depende do
+   João (criar projeto Firebase → `google-services.json`) e de UM APK novo.
+3. **Revisão jurídica** das páginas legais + preencher CNPJ/DPO/data (hoje
+   `[a definir]`) antes de publicar em loja.
+
+### 2) Código que dá pra fazer AGORA sem APK (OTA-safe), em ordem
+1. **Item 13 — UI do "e se".** core+API prontos (`POST /me/simulate`); falta só a
+   tela (chips + 2 curvas real/simulada + rótulo "SIMULAÇÃO · nada foi alterado").
+   Maior valor, menor risco.
+2. **Item 16 — resumo da semana.** writer modo `'weekly'` (server, fiscalizado) +
+   card "Sua semana" no dashboard.
+3. **Item 14 — gráfico com scrubbing.** expor a curva diária no `/me/dashboard` +
+   arrastar o dedo mostra data · valor (2 séries, casa com o 13).
+4. **Item 12 b/c** — reenvio inline no chat + deep link `/alerta/:id` (sem
+   `alert()` nativo).
+
+### 3) Juntar num ÚNICO APK novo (quando o João quiser)
+FCM/push + háptico (12a) + "mandar pro contador" (15) + biometria (17a) + date
+picker das contas (17b).
+
+### 4) Fórmula nova — validar desenho com o Marco ANTES de codar
+**Fase 2 do motor de contas** (previsto→projeção com recorrência; vencida empurra
+a data, nunca assume entrada; cascata). Pré-requisito do "impacto na projeção"
+(item 17) e alimenta o gráfico (item 14). Também: calibração dos limiares P1–P8.
+
+> Detalhe de cada item, decisões pendentes e coordenação: seções abaixo.
+
+---
+
 ## 🆕 ATUALIZAÇÃO 22/07 — backlog itens 12–18 + decisões (handoff)
 
 > Várias sessões rodaram em paralelo. O que segue é o estado do backlog grande
