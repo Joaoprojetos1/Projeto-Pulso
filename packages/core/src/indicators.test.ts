@@ -13,7 +13,7 @@ import {
   projectCash,
   type CashProjection,
 } from './indicators';
-import { balance, entry, snapshot } from './testkit';
+import { balance, entry, planned, snapshot } from './testkit';
 
 // ---------------------------------------------------------------
 // 01 — Saldo de caixa
@@ -359,5 +359,55 @@ describe('projectCash', () => {
     // Auditoria: projeta pelo atraso REAL (15d), não pela data prometida.
     expect(ind.inputs.avgLatenessDays).toBe(15);
     expect(ind.inputs.openingBalanceCents).toBe(800000);
+  });
+});
+
+// ---------------------------------------------------------------
+// 02 (Fase 2) — Projeção considerando as contas PREVISTAS do dono
+// ---------------------------------------------------------------
+describe('projectCash + contas previstas (Fase 2)', () => {
+  it('Dona Maria: uma conta a pagar prevista AGRAVA — faz o caixa zerar onde não zerava', () => {
+    // Sem considerar o previsto, o caixa dela fica de pé (a mentira atual do produto).
+    const base = snapshot({
+      asOf: '2026-07-15',
+      declaredFixedCostCents: 0, // isola o efeito da conta prevista
+      balances: [balance('2026-07-10', 2_000_000)], // R$ 20.000
+    });
+    expect(projectCash(base).value).not.toBeNull();
+    const semPrevista = (projectCash(base).value as CashProjection[]).find((p) => p.horizonDays === 90)!;
+    expect(semPrevista.zeroOn).toBeNull();
+
+    // Ela cadastrou a folha: R$ 25.000 a pagar em 05/08. Agora a verdade aparece.
+    const comPrevista = snapshot({
+      ...base,
+      planned: [planned({ kind: 'payable', amountCents: 2_500_000, dueOn: '2026-08-05' })],
+    });
+    const ind = projectCash(comPrevista);
+    const at90 = (ind.value as CashProjection[]).find((p) => p.horizonDays === 90)!;
+    expect(at90.zeroOn).toBe('2026-08-05');
+    expect(at90.projectedCents).toBeLessThan(0);
+    // provenance para o "de onde vem esse número"
+    expect(ind.inputs.plannedCount).toBe(1);
+    expect(ind.inputs.plannedTotalCents).toBe(2_500_000);
+  });
+
+  it('um recebível grande previsto ADIA a zeragem para fora do horizonte', () => {
+    // Baseline: sangria de custo fixo zera o caixa em 05/08.
+    const base = snapshot({
+      asOf: '2026-07-15',
+      declaredFixedCostCents: 3_000_000, // R$ 100/dia... R$ 3.000/mês → R$ 100k? (R$ 1.000/dia)
+      balances: [balance('2026-07-10', 2_000_000)],
+    });
+    const semPrevisto = (projectCash(base).value as CashProjection[]).find((p) => p.horizonDays === 90)!;
+    expect(semPrevisto.zeroOn).toBe('2026-08-05');
+
+    // O dono sabe de um recebível grande chegando: R$ 90.000 em 16/07.
+    const comPrevisto = snapshot({
+      ...base,
+      planned: [planned({ kind: 'receivable', amountCents: 9_000_000, dueOn: '2026-07-16' })],
+    });
+    const at90 = (projectCash(comPrevisto).value as CashProjection[]).find((p) => p.horizonDays === 90)!;
+    expect(at90.zeroOn).toBeNull(); // a zeragem foi empurrada para fora dos 90 dias
+    expect(at90.projectedCents).toBeGreaterThan(0);
   });
 });

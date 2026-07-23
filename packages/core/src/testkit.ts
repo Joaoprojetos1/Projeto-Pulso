@@ -4,9 +4,27 @@
  * ficarem legíveis — só o que importa em cada caso aparece no teste.
  */
 
-import type { CashBalance, CompanySnapshot, Entry } from './types';
+import type { CashBalance, CompanySnapshot, Entry, PlannedEntry } from './types';
 
 let seq = 0;
+
+/** Conta prevista com defaults sensatos — só o que importa no teste aparece. */
+export function planned(
+  p: Partial<PlannedEntry> & Pick<PlannedEntry, 'kind' | 'amountCents' | 'dueOn'>,
+): PlannedEntry {
+  seq += 1;
+  return {
+    id: p.id ?? `p${seq}`,
+    kind: p.kind,
+    amountCents: p.amountCents,
+    dueOn: p.dueOn,
+    recurrence: p.recurrence ?? 'none',
+    status: p.status ?? 'prevista',
+    confirmedOn: p.confirmedOn ?? null,
+    counterparty: p.counterparty,
+    category: p.category,
+  };
+}
 
 export function entry(
   e: Partial<Entry> & Pick<Entry, 'kind' | 'amountCents'>,
@@ -37,6 +55,7 @@ export function snapshot(
     asOf: over.asOf,
     entries: over.entries ?? [],
     balances: over.balances ?? [],
+    planned: over.planned ?? [],
     declaredFixedCostCents: over.declaredFixedCostCents,
   };
 }

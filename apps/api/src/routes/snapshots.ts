@@ -32,6 +32,16 @@ async function loadCompanySnapshot(
     FROM cash_balances WHERE company_id = ${company.id}
     ORDER BY observed_on`;
 
+  // Fase 2: contas PREVISTAS alimentam a projeção. Só as 'prevista' importam —
+  // a confirmada já virou realidade e vive em `entries` (a dedup R5 do core
+  // também barra, mas nem carregamos o irrelevante).
+  const plannedRows = await sql`
+    SELECT id::text AS id, kind::text AS kind, amount_cents, due_on::text AS due_on,
+           counterparty, category, recurrence::text AS recurrence, status::text AS status,
+           confirmed_on::text AS confirmed_on
+    FROM planned_entries
+    WHERE company_id = ${company.id} AND status = 'prevista'`;
+
   return {
     asOf,
     entries: entryRows.map((r) => ({
@@ -48,6 +58,17 @@ async function loadCompanySnapshot(
     balances: balanceRows.map((r) => ({
       observedOn: r.observed_on as string,
       balanceCents: r.balance_cents as number,
+    })),
+    planned: plannedRows.map((r) => ({
+      id: r.id as string,
+      kind: r.kind as 'receivable' | 'payable',
+      amountCents: r.amount_cents as number,
+      dueOn: r.due_on as string,
+      recurrence: r.recurrence as 'none' | 'monthly',
+      status: r.status as 'prevista' | 'realizada',
+      confirmedOn: (r.confirmed_on as string | null) ?? null,
+      counterparty: (r.counterparty as string | null) ?? undefined,
+      category: (r.category as string | null) ?? undefined,
     })),
     declaredFixedCostCents: company.declared_fixed_cost_cents ?? undefined,
   };

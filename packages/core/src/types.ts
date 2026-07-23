@@ -31,11 +31,36 @@ export interface CashBalance {
   balanceCents: Cents;
 }
 
+export type PlannedStatus = 'prevista' | 'realizada';
+export type PlannedRecurrence = 'none' | 'monthly';
+
+/**
+ * Conta PREVISTA — a camada de planejamento do dono (a pagar / a receber).
+ *
+ * SEPARAÇÃO INVIOLÁVEL: nunca se mistura com `Entry` (o REALIZADO, a verdade do
+ * extrato). Uma conta prevista só "vira verdade" ao ser confirmada (status
+ * 'realizada' + confirmedOn); enquanto 'prevista', é planejamento — e é isso
+ * que a projeção de caixa passa a considerar (ver planned.ts).
+ */
+export interface PlannedEntry {
+  id: string;
+  kind: EntryKind;
+  amountCents: Cents; // sempre positivo; o sinal vem de `kind`
+  dueOn: IsoDate; // data prevista
+  recurrence: PlannedRecurrence;
+  status: PlannedStatus;
+  confirmedOn: IsoDate | null; // data real na graduação (só quando 'realizada')
+  counterparty?: string;
+  category?: string;
+}
+
 /** Tudo que o core precisa saber sobre uma empresa. */
 export interface CompanySnapshot {
   asOf: IsoDate;
   entries: Entry[];
   balances: CashBalance[];
+  /** Contas previstas do dono. Alimentam a projeção de caixa (Fase 2). */
+  planned?: PlannedEntry[];
   /** Custo fixo declarado no onboarding, quando não dá pra inferir dos lançamentos. */
   declaredFixedCostCents?: Cents;
 }

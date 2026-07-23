@@ -5,6 +5,8 @@
  * Quando falta dado, devolve value:null com motivo. NUNCA estima.
  */
 
+import { addDays, daysBetween } from './dates';
+import { fusePlannedIntoProjection } from './planned';
 import type {
   Cents,
   CompanySnapshot,
@@ -16,19 +18,8 @@ import type {
 
 export const CORE_VERSION = '0.1.0';
 
-// ---------------------------------------------------------------
-// Utilitários de data (UTC puro, sem timezone — datas de negócio)
-// ---------------------------------------------------------------
-
-export function daysBetween(a: IsoDate, b: IsoDate): number {
-  const ms = Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`);
-  return Math.round(ms / 86_400_000);
-}
-
-export function addDays(d: IsoDate, n: number): IsoDate {
-  const t = Date.parse(`${d}T00:00:00Z`) + n * 86_400_000;
-  return new Date(t).toISOString().slice(0, 10);
-}
+// Utilitários de data em ./dates (reaproveitados por planned.ts sem criar
+// dependência circular); o index reexporta ./dates para quem consome @pulso/core.
 
 const inWindow = (d: IsoDate, from: IsoDate, to: IsoDate) => d >= from && d <= to;
 
@@ -425,6 +416,21 @@ export function projectCash(
 
   // Constrói a curva dia a dia até o maior horizonte.
   const maxH = Math.max(...horizons);
+
+  // Fase 2: as contas PREVISTAS do dono entram na curva (realista, não otimista).
+  // A fusão (planned.ts) devolve os movimentos já com a data e o sinal certos;
+  // aqui só somamos por dia. As confirmadas não entram (o realizado já está em
+  // `entries`). O atraso médio usado é o MESMO da projeção (latenessDays).
+  const fusion = fusePlannedIntoProjection(snap.planned ?? [], {
+    asOf: snap.asOf,
+    avgLatenessDays: latenessDays,
+    maxHorizonDays: maxH,
+  });
+  const plannedByDay = new Map<IsoDate, Cents>();
+  for (const ev of fusion.events) {
+    plannedByDay.set(ev.day, (plannedByDay.get(ev.day) ?? 0) + ev.deltaCents);
+  }
+
   let running = balance.value;
   let zeroOn: IsoDate | null = null;
   const curve = new Map<number, Cents>();
@@ -443,6 +449,10 @@ export function projectCash(
 
     // custo fixo diluído por dia
     if (fixed.value !== null) running -= Math.round(fixed.value / 30);
+
+    // contas previstas do dono que se movem neste dia
+    const planned = plannedByDay.get(day);
+    if (planned) running += planned;
 
     if (running < 0 && zeroOn === null) zeroOn = day;
     curve.set(d, running);
@@ -465,6 +475,9 @@ export function projectCash(
       openReceivablesCount: open.filter((e) => e.kind === 'receivable').length,
       openPayablesCount: open.filter((e) => e.kind === 'payable').length,
       pmrDays: pmr.value,
+      // Fase 2: quantas previstas entraram e quanto somam (para "de onde vem")
+      plannedCount: fusion.plannedCount,
+      plannedTotalCents: fusion.plannedTotalCents,
       zeroOn,
     },
   };

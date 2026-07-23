@@ -84,6 +84,12 @@ export default function Dashboard() {
   const saldoHoje = (ind.cash_balance?.value ?? null) as number | null;
   const zeroOn = projecao?.find((p) => p.zeroOn)?.zeroOn ?? null;
 
+  // Fase 2: quantas contas previstas o servidor considerou na projeção (o app
+  // só mostra o número que vem pronto — "de onde vem esse número").
+  const projInputs = (ind.cash_projection?.inputs ?? {}) as Record<string, number | string | null>;
+  const plannedCount = typeof projInputs.plannedCount === 'number' ? projInputs.plannedCount : 0;
+  const plannedTotal = typeof projInputs.plannedTotalCents === 'number' ? projInputs.plannedTotalCents : 0;
+
   const ciclo = (ind.cash_cycle?.value ?? null) as number | null;
   const margem = (ind.contribution_margin?.value ?? null) as number | null;
   const receita = (ind.revenue_current?.value ?? null) as number | null;
@@ -204,6 +210,13 @@ export default function Dashboard() {
               </>
             )}
           </Text>
+          {plannedCount > 0 && (
+            <Text style={styles.cashPrevistas}>
+              Considera {plannedCount}{' '}
+              {plannedCount === 1 ? 'lançamento previsto seu' : 'lançamentos previstos seus'} ·{' '}
+              {brl(plannedTotal)}
+            </Text>
+          )}
           <PulseLine points={curva} color={saudavel ? colors.vivo : colors.critico} />
           {/* legenda do tempo sob o gráfico: horizontes que o servidor mandou */}
           {curva.length >= 2 && (
@@ -420,6 +433,13 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   cashDetalhe: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata },
+  cashPrevistas: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    letterSpacing: 0.3,
+    color: colors.rotuloSobreMata,
+    marginTop: 2,
+  },
   cashOk: { fontFamily: fonts.corpoForte, color: colors.vivo },
   cashRuim: { fontFamily: fonts.corpoForte, color: '#F0A196' },
 
