@@ -214,9 +214,12 @@ export class AuthError extends Error {
   }
 }
 
+export type UserRole = 'owner' | 'admin';
+
 export interface AuthResult {
   token: string;
   email: string;
+  role?: UserRole;
   company: { id: string; name: string; niche?: string };
 }
 
@@ -292,6 +295,8 @@ export async function authLogout(token: string): Promise<void> {
 export interface MyDashboard {
   companyId: string;
   companyName: string;
+  /** Papel do dono logado (owner por padrão; admin vê a área de operação). */
+  role: UserRole;
   /** null = conta nova, ainda sem dados (mostra o estado de "vazio"). */
   dashboard: DashboardJson | null;
 }
@@ -304,6 +309,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (!res.ok) throw new Error(`HTTP ${res.status} no painel`);
   const body = (await res.json()) as {
+    role?: UserRole;
     company: { id: string; name: string; niche: string };
     snapshot: DashboardJson['snapshot'] | null;
     comparativos?: Comparativos;
@@ -323,7 +329,54 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
         alerts: body.alerts,
       }
     : null;
-  return { companyId: body.company.id, companyName: body.company.name, dashboard };
+  return {
+    companyId: body.company.id,
+    companyName: body.company.name,
+    role: body.role ?? 'owner',
+    dashboard,
+  };
+}
+
+/* --------------- Insumo do motor: caixa hoje + custo fixo --------------- */
+
+export interface MySetup {
+  name: string;
+  /** null = ainda não informado. */
+  cashBalanceCents: number | null;
+  cashBalanceOn: string | null;
+  fixedCostCents: number | null;
+  /** quantas contas (a receber/pagar) já foram cadastradas. */
+  plannedCount: number;
+  /** o motor já rodou alguma vez para esta empresa. */
+  hasSnapshot: boolean;
+}
+
+/** Lê o que o dono já informou (para pré-preencher a tela de configuração). */
+export async function fetchMySetup(token: string): Promise<MySetup> {
+  const res = await fetchWithWake(`${apiBase()}/me/setup`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no setup`);
+  return (await res.json()) as MySetup;
+}
+
+/**
+ * Grava caixa hoje + custo fixo do mês e manda o motor recalcular. O app não
+ * calcula nada: manda os dois números; o servidor roda o core e devolve o painel.
+ */
+export async function saveMySetup(
+  token: string,
+  cashBalanceCents: number,
+  fixedCostCents: number,
+): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/setup`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ cashBalanceCents, fixedCostCents }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
 /** Conversa do dono logado. */
@@ -505,4 +558,183 @@ export async function excluirConta(token: string, id: string): Promise<void> {
     headers: authHeader(token),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} ao excluir conta`);
+}
+
+/* ============================ Área de operação (admin) ============================
+ * Só para operadores (papel admin). O app segue burro: busca JSON e desenha —
+ * nenhuma conta financeira aqui. Todas as rotas exigem o token; o servidor
+ * responde 404 se o token não for de um admin (a área nem se revela).
+ */
+
+/** 404 vindo de uma rota /admin = "você não é admin" (ou não existe). */
+export class NaoAutorizadoError extends Error {
+  constructor() {
+    super('Área restrita à operação.');
+    this.name = 'NaoAutorizadoError';
+  }
+}
+
+async function adminGet<T>(token: string, path: string): Promise<T> {
+  const res = await fetchWithWake(`${apiBase()}${path}`, { headers: authHeader(token) });
+  if (res.status === 404) throw new NaoAutorizadoError();
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
+  return (await res.json()) as T;
+}
+
+async function adminWrite<T>(
+  token: string,
+  method: 'POST' | 'PATCH',
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const res = await fetchWithWake(`${apiBase()}${path}`, {
+    method,
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(body ?? {}),
+  });
+  if (res.status === 404) throw new NaoAutorizadoError();
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
+  return (await res.json()) as T;
+}
+
+export interface AdminOverviewRow {
+  companyId: string;
+  name: string;
+  plan: string;
+  chatQuota: number;
+  isDemo: boolean;
+  stage: DiagnosisStage | null;
+  lastImportAt: string | null;
+  daysSinceImport: number | null;
+  unopenedAlerts: number;
+  chatQuestionsMonth: number;
+}
+
+export function fetchAdminOverview(token: string): Promise<AdminOverviewRow[]> {
+  return adminGet<{ companies: AdminOverviewRow[] }>(token, '/admin/overview').then((b) => b.companies);
+}
+
+export interface AdminDossier {
+  company: {
+    id: string;
+    name: string;
+    cnpj: string | null;
+    niche: string;
+    plan: string;
+    isDemo: boolean;
+    chatQuota: number;
+    createdAt: string;
+  };
+  snapshot: {
+    asOf: string;
+    coreVersion: string;
+    computedAt: string;
+    indicators: Record<string, IndicatorJson>;
+    diagnosis: DiagnosisJson | null;
+  } | null;
+  users: Array<{ id: string; email: string; role: string }>;
+  alerts: Array<{
+    id: string;
+    ruleKey: string;
+    severity: 'ok' | 'warn' | 'critical';
+    createdAt: string;
+    openedAt: string | null;
+    actedAt: string | null;
+  }>;
+  imports: Array<{
+    source: string;
+    periodStart: string;
+    periodEnd: string;
+    rowCount: number;
+    importedAt: string;
+  }>;
+  planned: Array<{ kind: ContaKind; status: string; count: number; totalCents: number }>;
+  aiUsageMonth: Array<{
+    kind: string;
+    model: string;
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  }>;
+}
+
+export function fetchAdminCompany(token: string, id: string): Promise<AdminDossier> {
+  return adminGet<AdminDossier>(token, `/admin/companies/${id}`);
+}
+
+export interface PatchEmpresa {
+  name?: string;
+  chatQuota?: number;
+  plan?: string;
+}
+
+export function patchAdminCompany(
+  token: string,
+  id: string,
+  patch: PatchEmpresa,
+): Promise<{ id: string; name: string; plan: string; chatQuota: number }> {
+  return adminWrite(token, 'PATCH', `/admin/companies/${id}`, patch);
+}
+
+export function reprocessAdminCompany(token: string, id: string): Promise<{ snapshotId: string }> {
+  return adminWrite(token, 'POST', `/admin/companies/${id}/reprocess`);
+}
+
+export function resetSenhaUsuario(token: string, userId: string): Promise<{ ok: boolean }> {
+  return adminWrite(token, 'POST', `/admin/users/${userId}/reset-password`);
+}
+
+export type LeadStatus = 'novo' | 'contatado' | 'convertido' | 'descartado';
+export interface AdminLead {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
+  source: string | null;
+  status: LeadStatus;
+  createdAt: string;
+}
+
+export function fetchAdminLeads(token: string, q?: string): Promise<AdminLead[]> {
+  const query = q ? `?q=${encodeURIComponent(q)}` : '';
+  return adminGet<{ leads: AdminLead[] }>(token, `/admin/leads${query}`).then((b) => b.leads);
+}
+
+export function patchLeadStatus(
+  token: string,
+  id: string,
+  status: LeadStatus,
+): Promise<{ id: string; status: LeadStatus }> {
+  return adminWrite(token, 'PATCH', `/admin/leads/${id}`, { status });
+}
+
+export interface AdminAiUsageRow {
+  companyId: string;
+  companyName: string | null;
+  kind: string;
+  model: string;
+  month: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export function fetchAdminAiUsage(token: string): Promise<AdminAiUsageRow[]> {
+  return adminGet<{ usage: AdminAiUsageRow[] }>(token, '/admin/ai-usage').then((b) => b.usage);
+}
+
+export interface AdminHealth {
+  lastSnapshotAt: string | null;
+  importsLast7Days: number;
+  activeCompaniesLast30Days: number;
+  realCompanies: number;
+  coreVersion: string;
+}
+
+export function fetchAdminHealth(token: string): Promise<AdminHealth> {
+  return adminGet<AdminHealth>(token, '/admin/health');
 }

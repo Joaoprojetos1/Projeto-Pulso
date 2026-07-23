@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, type Href } from 'expo-router';
 
+import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function TabsLayout() {
+  const { ehAdmin } = usePulso();
   return (
     <Tabs
       screenOptions={{
@@ -51,6 +53,18 @@ export default function TabsLayout() {
           title: 'Conta',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      {/* Operação: só aparece para operadores (admin). Para os demais o href é
+          null, então a aba nem existe. A tela também se protege ao abrir. */}
+      <Tabs.Screen
+        name="operacao"
+        options={{
+          title: 'Operação',
+          href: ehAdmin ? ('/operacao' as Href) : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="construct-outline" size={size} color={color} />
           ),
         }}
       />

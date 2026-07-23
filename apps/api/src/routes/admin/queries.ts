@@ -112,6 +112,10 @@ export async function companyDossier(sql: Sql, companyId: string) {
     FROM imports WHERE company_id = ${companyId}
     ORDER BY imported_at DESC LIMIT 50`;
 
+  const users = await sql`
+    SELECT id::text AS id, email, role FROM users
+    WHERE company_id = ${companyId} ORDER BY created_at`;
+
   const planned = await sql`
     SELECT kind::text AS kind, status::text AS status,
            count(*)::int AS n, coalesce(sum(amount_cents), 0)::bigint AS total_cents
@@ -148,6 +152,7 @@ export async function companyDossier(sql: Sql, companyId: string) {
           diagnosis: snapshot.diagnosis ?? null,
         }
       : null,
+    users: users.map((u) => ({ id: u.id as string, email: u.email as string, role: u.role as string })),
     alerts: alerts.map((a) => ({
       id: a.id,
       ruleKey: a.rule_key,

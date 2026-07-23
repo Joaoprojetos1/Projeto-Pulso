@@ -17,6 +17,7 @@ import {
   AuthError,
   fetchMyDashboard,
   type DashboardJson,
+  type UserRole,
 } from './api';
 import { DEMO_DASHBOARD } from './demo';
 import { registrarParaAvisos } from './push';
@@ -32,6 +33,10 @@ interface PulsoState {
   companyId: string | null;
   /** Token da sessão (rotas /me). Null em demonstração. */
   token: string | null;
+  /** Papel do dono logado. 'owner' por padrão; 'admin' vê a área de operação. */
+  role: UserRole | null;
+  /** Atalho: o dono logado é operador (admin) e NÃO está em demonstração. */
+  ehAdmin: boolean;
   carregando: boolean;
   /** Mensagem de erro da última tentativa (login/carga), ou null. */
   erro: string | null;
@@ -59,6 +64,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [fonte, setFonte] = useState<Fonte | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [restaurando, setRestaurando] = useState(true);
@@ -76,6 +82,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const limparSessao = useCallback(async () => {
     tokenRef.current = null;
     setToken(null);
+    setRole(null);
     setDashboard(null);
     setFonte(null);
     setCompanyId(null);
@@ -100,9 +107,10 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setCarregando(true);
     setErro(null);
     try {
-      const { dashboard: dash, companyId: id } = await fetchMyDashboard(t);
+      const { dashboard: dash, companyId: id, role: papel } = await fetchMyDashboard(t);
       setDashboard(dash);
       setCompanyId(id);
+      setRole(papel);
       setFonte('servidor');
       setLogado(true);
       setMostrandoCache(false); // dado fresco do servidor substitui o cache
@@ -161,6 +169,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setDashboard(DEMO_DASHBOARD);
     setFonte('demo');
     setCompanyId(null);
+    setRole(null); // demonstração nunca é admin
     setErro(null);
     setLogado(true);
     setMostrandoCache(false); // demonstração não é cache de servidor
@@ -217,6 +226,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       fonte,
       companyId,
       token,
+      role,
+      ehAdmin: role === 'admin' && fonte === 'servidor',
       carregando,
       erro,
       restaurando,
@@ -233,6 +244,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       fonte,
       companyId,
       token,
+      role,
       carregando,
       erro,
       restaurando,

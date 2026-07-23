@@ -7,6 +7,7 @@ import {
   hashToken,
   newToken,
   normalizeEmail,
+  userFromRequest,
   verifyPassword,
 } from '../auth';
 import type { Sql } from '../db';
@@ -248,17 +249,19 @@ export function registerAuth(
     },
   );
 
-  // painel do dono logado (só a própria empresa)
+  // painel do dono logado (só a própria empresa).
+  // Devolve também o PAPEL (owner/admin) para o app decidir se mostra a área de
+  // operação — importante na sessão restaurada, quando não há login fresco.
   app.get('/me/dashboard', async (req, reply) => {
-    const company = await companyFromRequest(sql, req);
-    if (!company) return reply.code(401).send({ error: 'Faça login para ver seu painel.' });
+    const user = await userFromRequest(sql, req);
+    if (!user) return reply.code(401).send({ error: 'Faça login para ver seu painel.' });
 
-    const dash = await buildDashboard(sql, company);
+    const dash = await buildDashboard(sql, user.company);
     if (!dash) {
       // conta nova, ainda sem dados: 200 com o retrato "vazio" (não é erro)
-      return reply.send({ company: toCompanyJson(company), snapshot: null, alerts: [] });
+      return reply.send({ role: user.role, company: toCompanyJson(user.company), snapshot: null, alerts: [] });
     }
-    return dash;
+    return { role: user.role, ...dash };
   });
 
   // conversa do dono logado
