@@ -278,7 +278,7 @@ export default function Login() {
               >
                 {carregando ? (
                   <View style={styles.carregandoLinha}>
-                    <ActivityIndicator color={colors.papel} />
+                    <ActivityIndicator color={colors.mata} />
                     <Text style={styles.botaoTexto}>{cadastrando ? 'Criando…' : 'Entrando…'}</Text>
                   </View>
                 ) : (
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   olho: { paddingLeft: 8, paddingVertical: 6 },
   botao: {
-    backgroundColor: colors.mata,
+    backgroundColor: colors.vivo,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   botaoTexto: {
     fontFamily: fonts.displayMedio,
     fontSize: 16,
-    color: colors.papel,
+    color: '#06231A',
   },
   carregandoLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   carregandoMsg: {
