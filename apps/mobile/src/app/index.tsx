@@ -6,10 +6,12 @@
 
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -20,10 +22,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Heartbeat } from '@/components/heartbeat';
 import { PulsoLogo } from '@/components/logo';
 import { authForgotPassword, authResetPassword, AuthError } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
+
+const VERSAO_APP = Constants.expoConfig?.version ?? '';
+const TERMOS_URL = 'https://pulso-site.onrender.com/termos.html';
+const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
 // O servidor no plano grátis "dorme"; a 1ª visita leva ~30-50s pra acordar.
 const MENSAGENS_CARREGANDO = [
@@ -32,11 +39,11 @@ const MENSAGENS_CARREGANDO = [
   'Quase lá, buscando seus números…',
 ];
 
-type Modo = 'entrar' | 'cadastrar' | 'esqueci' | 'redefinir';
+type Modo = 'boas-vindas' | 'entrar' | 'cadastrar' | 'esqueci' | 'redefinir';
 
 export default function Login() {
   const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
-  const [modo, setModo] = useState<Modo>('entrar');
+  const [modo, setModo] = useState<Modo>('boas-vindas');
   const [negocio, setNegocio] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -148,7 +155,56 @@ export default function Login() {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
+        {modo === 'boas-vindas' ? (
+          <View style={styles.boasVindas}>
+            <View style={styles.bvHero}>
+              <PulsoLogo size={54} color={colors.papel} />
+              <Heartbeat color={colors.vivo} width={96} height={30} />
+              <Text style={styles.bvClaim}>Saiba antes do caixa apertar.</Text>
+              <Text style={styles.bvSub}>
+                O Pulso acompanha o dinheiro do seu negócio e te avisa, em português claro, quando o
+                caixa vai apertar.
+              </Text>
+            </View>
+            <View style={styles.bvBotoes}>
+              <Pressable
+                style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
+                onPress={() => irPara('cadastrar')}
+              >
+                <Text style={styles.botaoTexto}>Criar conta</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.botaoLinha, pressed && styles.pressionado]}
+                onPress={() => irPara('entrar')}
+              >
+                <Text style={styles.botaoLinhaTexto}>Já tenho conta</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.demoDestaque, pressed && styles.pressionado]}
+                onPress={verDemonstracao}
+              >
+                <Heartbeat color={colors.vivo} width={22} height={12} />
+                <Text style={styles.demoDestaqueTexto}>Ver o Pulso funcionando</Text>
+              </Pressable>
+            </View>
+            <View style={styles.bvRodape}>
+              <Pressable onPress={() => Linking.openURL(TERMOS_URL)} hitSlop={8}>
+                <Text style={styles.bvLink}>Termos</Text>
+              </Pressable>
+              <Text style={styles.bvLinkSep}>·</Text>
+              <Pressable onPress={() => Linking.openURL(PRIVACIDADE_URL)} hitSlop={8}>
+                <Text style={styles.bvLink}>Privacidade</Text>
+              </Pressable>
+              {VERSAO_APP ? <Text style={styles.bvVersao}>v{VERSAO_APP}</Text> : null}
+            </View>
+          </View>
+        ) : (
+        <>
         <View style={styles.hero}>
+          <Pressable onPress={() => irPara('boas-vindas')} hitSlop={8} style={styles.voltarInicio}>
+            <Ionicons name="chevron-back" size={20} color={colors.papelSobreMata} />
+            <Text style={styles.voltarInicioTexto}>Início</Text>
+          </Pressable>
           <PulsoLogo size={44} color={colors.papel} />
           <Text style={styles.claim}>
             O sinal vital do seu negócio. O Pulso avisa <Text style={styles.claimForte}>antes</Text>{' '}
@@ -329,6 +385,8 @@ export default function Login() {
             </>
           )}
         </View>
+        </>
+        )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -342,6 +400,23 @@ const styles = StyleSheet.create({
   // flexGrow:1 deixa o herói ocupar o espaço quando sobra, mas permite ROLAR
   // até os campos quando o teclado sobe (A1 — teclado não cobre a digitação).
   scrollConteudo: { flexGrow: 1 },
+  // ---- tela de boas-vindas (porta de entrada, 3 caminhos) ----
+  boasVindas: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 28, paddingTop: 44, paddingBottom: 24, gap: 24, minHeight: 560 },
+  bvHero: { flex: 1, justifyContent: 'center', alignItems: 'flex-start', gap: 16 },
+  bvClaim: { fontFamily: fonts.display, fontSize: 34, lineHeight: 38, color: colors.papel, letterSpacing: -0.6 },
+  bvSub: { fontFamily: fonts.corpo, fontSize: 15, lineHeight: 22, color: colors.papelSobreMata, maxWidth: '94%' },
+  bvBotoes: { gap: 10 },
+  botaoLinha: { borderWidth: 1.5, borderColor: 'rgba(245,244,242,0.35)', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
+  botaoLinhaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
+  demoDestaque: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12 },
+  demoDestaqueTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.vivo },
+  bvRodape: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  bvLink: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.papelSobreMata },
+  bvLinkSep: { color: colors.rotuloSobreMata, fontSize: 12.5 },
+  bvVersao: { fontFamily: fonts.mono, fontSize: 11, color: colors.rotuloSobreMata, marginLeft: 6 },
+  voltarInicio: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start', marginBottom: 6 },
+  voltarInicioTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.papelSobreMata },
+
   hero: {
     flex: 1,
     justifyContent: 'center',
