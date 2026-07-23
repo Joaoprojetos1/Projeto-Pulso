@@ -21,6 +21,7 @@ import type { AlertFact } from '@pulso/core';
 
 import { checkGrounding } from './grounding';
 import { TEMPLATE_VERSION, templateFor, type AlertText } from './templates';
+import type { AiCallUsage, UsageSink } from './usage';
 
 export interface CompanyProfile {
   name: string;
@@ -34,6 +35,8 @@ export interface AlertPrompt {
 
 export interface WrittenAlert extends AlertText {
   modelVersion: string;
+  /** Consumo desta chamada (só a implementação real preenche; medição). */
+  usage?: AiCallUsage;
 }
 
 /** Interface do modelo — nos testes entra um dublê, em produção a Anthropic. */
@@ -99,11 +102,15 @@ function bodyWithinLimit(body: string): boolean {
 /**
  * Redige o texto de um alerta. Com `model` null (sem chave de API),
  * ou se o modelo falhar/inventar número após 1 retry, usa o template.
+ *
+ * `onUsage` (opcional) recebe o consumo de CADA chamada ao modelo — inclusive
+ * a que o fiscal reprova antes do retry. É só medição: não muda a decisão.
  */
 export async function writeAlert(
   model: AlertWriterModel | null,
   alert: AlertFact,
   profile: CompanyProfile,
+  onUsage?: UsageSink,
 ): Promise<WrittenAlert> {
   const fallback: WrittenAlert = { ...templateFor(alert), modelVersion: TEMPLATE_VERSION };
   if (!model) return fallback;
@@ -118,6 +125,9 @@ export async function writeAlert(
       // erro de API: o SDK já fez os retries de transporte; não insistimos
       return fallback;
     }
+
+    // a chamada aconteceu e gastou tokens: registra ANTES do veredito do fiscal
+    if (out.usage) onUsage?.(out.usage);
 
     const grounded = checkGrounding(`${out.title}\n${out.body}`, alert.facts);
     if (grounded.ok && bodyWithinLimit(out.body)) return out;
@@ -165,6 +175,15 @@ export class AnthropicAlertWriter implements AlertWriterModel {
 
     const text = res.content.find((b) => b.type === 'text')?.text ?? '';
     const parsed = JSON.parse(text) as AlertText;
-    return { title: parsed.title, body: parsed.body, modelVersion: res.model };
+    return {
+      title: parsed.title,
+      body: parsed.body,
+      modelVersion: res.model,
+      usage: {
+        model: res.model,
+        inputTokens: res.usage.input_tokens,
+        outputTokens: res.usage.output_tokens,
+      },
+    };
   }
 }

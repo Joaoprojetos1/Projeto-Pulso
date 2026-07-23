@@ -15,6 +15,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 import { checkGroundingDeep } from './grounding';
+import type { AiCallUsage, UsageSink } from './usage';
 import type { CompanyProfile } from './writer';
 
 export interface ChatTurn {
@@ -34,6 +35,8 @@ export interface ChatContext {
 export interface ChatReply {
   text: string;
   modelVersion: string;
+  /** Consumo desta chamada (só a implementação real preenche; medição). */
+  usage?: AiCallUsage;
 }
 
 /** Interface do modelo — dublê nos testes, Anthropic em produção. */
@@ -94,6 +97,7 @@ export async function askPulso(
   model: ChatModel | null,
   ctx: ChatContext,
   turns: ChatTurn[],
+  onUsage?: UsageSink,
 ): Promise<ChatReply> {
   if (!model) return { text: NO_MODEL_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
 
@@ -109,6 +113,9 @@ export async function askPulso(
     } catch {
       return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
     }
+
+    // a chamada aconteceu e gastou tokens: registra ANTES do veredito do fiscal
+    if (out.usage) onUsage?.(out.usage);
 
     // o fiscal: números da resposta têm que existir no retrato
     const grounded = checkGroundingDeep(out.text, {
@@ -149,6 +156,14 @@ export class AnthropicChatModel implements ChatModel {
 
     const text = res.content.find((b) => b.type === 'text')?.text ?? '';
     if (!text.trim()) throw new Error('Resposta vazia do modelo.');
-    return { text, modelVersion: res.model };
+    return {
+      text,
+      modelVersion: res.model,
+      usage: {
+        model: res.model,
+        inputTokens: res.usage.input_tokens,
+        outputTokens: res.usage.output_tokens,
+      },
+    };
   }
 }

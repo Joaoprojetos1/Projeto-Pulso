@@ -7,6 +7,7 @@ import {
   type ChatModel,
   type ChatTurn,
 } from '../ai/chat';
+import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import type { Sql } from '../db';
 import { companyParamsSchema, findCompany } from '../http';
 
@@ -69,6 +70,7 @@ export async function replyForCompany(
     WHERE snapshot_id = ${snapshot.id}
     ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END`;
 
+  const aiUsage: AiCallUsage[] = [];
   const answer = await askPulso(
     chatModel,
     {
@@ -84,7 +86,15 @@ export async function replyForCompany(
       })),
     },
     messages,
+    (u) => aiUsage.push(u),
   );
+
+  // medição do consumo da IA (best-effort): nunca derruba a conversa
+  try {
+    await recordAiUsage(sql, company.id, 'chat', aiUsage);
+  } catch {
+    // medir não pode quebrar responder
+  }
 
   return { reply: answer.text, modelVersion: answer.modelVersion };
 }

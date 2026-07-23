@@ -152,6 +152,46 @@ describe('writeAlert', () => {
 });
 
 // ---------------------------------------------------------------
+// Medição: onUsage registra CADA chamada, inclusive a reprovada
+// ---------------------------------------------------------------
+describe('writeAlert — medição de consumo (onUsage)', () => {
+  function modelComUsage(
+    title: string,
+    body: string,
+    usage = { model: 'claude-opus-4-8', inputTokens: 120, outputTokens: 30 },
+  ): AlertWriterModel {
+    return { write: vi.fn(async () => ({ title, body, modelVersion: usage.model, usage })) };
+  }
+
+  it('texto bom: uma chamada, um registro de consumo', async () => {
+    const usos: unknown[] = [];
+    const model = modelComUsage(
+      'Seu caixa pode zerar em 29 de julho',
+      'No ritmo de hoje, o dinheiro acaba em 29 de julho. Ainda dá tempo de agir.',
+    );
+    await writeAlert(model, RUNWAY, PERFIL, (u) => usos.push(u));
+    expect(usos).toEqual([{ model: 'claude-opus-4-8', inputTokens: 120, outputTokens: 30 }]);
+  });
+
+  it('modelo que INVENTA número: as DUAS chamadas contam, mesmo caindo no template', async () => {
+    const usos: unknown[] = [];
+    const model = modelComUsage(
+      'Seu caixa pode zerar em 29 de julho',
+      'Você vai precisar de R$ 99.000 até lá.', // reprovado pelo fiscal
+    );
+    const out = await writeAlert(model, RUNWAY, PERFIL, (u) => usos.push(u));
+    expect(out.modelVersion).toBe(TEMPLATE_VERSION); // o texto foi descartado
+    expect(usos).toHaveLength(2); // mas o token das duas tentativas foi gasto e medido
+  });
+
+  it('template (sem modelo) não gera consumo', async () => {
+    const usos: unknown[] = [];
+    await writeAlert(null, RUNWAY, PERFIL, (u) => usos.push(u));
+    expect(usos).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------
 // Os templates são corretos por construção
 // ---------------------------------------------------------------
 describe('templates', () => {

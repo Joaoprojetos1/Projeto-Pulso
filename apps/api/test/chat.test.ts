@@ -112,4 +112,33 @@ describe('askPulso', () => {
     const out = await askPulso(null, CTX, pergunta);
     expect(out.text).toBe(NO_MODEL_REPLY);
   });
+
+  it('medição: resposta boa registra uma chamada de consumo', async () => {
+    const usos: unknown[] = [];
+    const usage = { model: 'claude-opus-4-8', inputTokens: 340, outputTokens: 88 };
+    const model: ChatModel = {
+      reply: vi.fn(async () => ({
+        text: 'Seu caixa zera em 29 de julho. Vale rever os 36 dias de recebimento.',
+        modelVersion: usage.model,
+        usage,
+      })),
+    };
+    await askPulso(model, CTX, pergunta, (u) => usos.push(u));
+    expect(usos).toEqual([usage]);
+  });
+
+  it('medição: número inventado descarta a resposta mas conta as DUAS chamadas', async () => {
+    const usos: unknown[] = [];
+    const usage = { model: 'claude-opus-4-8', inputTokens: 340, outputTokens: 90 };
+    const model: ChatModel = {
+      reply: vi.fn(async () => ({
+        text: 'Pegue um empréstimo de R$ 80.000 e resolva.',
+        modelVersion: usage.model,
+        usage,
+      })),
+    };
+    const out = await askPulso(model, CTX, pergunta, (u) => usos.push(u));
+    expect(out.text).toBe(SAFE_REPLY);
+    expect(usos).toHaveLength(2);
+  });
 });

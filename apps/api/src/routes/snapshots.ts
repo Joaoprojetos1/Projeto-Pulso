@@ -2,6 +2,7 @@ import { computeAll, CORE_VERSION, evaluate } from '@pulso/core';
 import type { CompanySnapshot } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
+import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import { writeAlert, type AlertWriterModel } from '../ai/writer';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
@@ -214,8 +215,12 @@ export function registerSnapshots(
       // a voz do Pulso: a IA (ou o template) redige a partir dos facts —
       // e de NADA além dos facts
       const profile = { name: company.name, niche: company.niche };
+      const aiUsage: AiCallUsage[] = [];
       const written = await Promise.all(
-        alerts.map(async (a) => ({ alert: a, text: await writeAlert(alertWriter, a, profile) })),
+        alerts.map(async (a) => ({
+          alert: a,
+          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u)),
+        })),
       );
 
       const gravados: Array<{
@@ -254,6 +259,13 @@ export function registerSnapshots(
         }
         return s.id as string;
       });
+
+      // medição do consumo da IA (best-effort): nunca derruba o snapshot
+      try {
+        await recordAiUsage(sql, company.id, 'alert_writer', aiUsage);
+      } catch (err) {
+        app.log.error({ err }, 'falha ao registrar consumo de IA');
+      }
 
       // entrega no celular (best-effort): nunca derruba o snapshot
       if (pushSender) {
