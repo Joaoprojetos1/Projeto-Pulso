@@ -10,6 +10,7 @@
     "backgroundColor": "#F6F4EE",
     "android": {
       "package": "com.vetorfinancas.pulso",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0E2E2A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

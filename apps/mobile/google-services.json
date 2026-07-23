@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "351073421202",
+    "project_id": "projeto-pulso",
+    "storage_bucket": "projeto-pulso.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351073421202:android:a5cacc1583862c22ac234b",
+        "android_client_info": {
+          "package_name": "com.vetorfinancas.pulso"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZc60jm0A-4c5N3xOX3gAE2Is4S0NkwXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
