@@ -1,10 +1,126 @@
 # Pulso — Próximos passos (handoff)
 
-> Atualizado em 20/07/2026. Leia isto ao começar uma sessão nova.
+> Atualizado em 22/07/2026. Leia isto ao começar uma sessão nova.
+> **Comece pela seção "ATUALIZAÇÃO 22/07" logo abaixo — é o estado mais recente.**
 > Estado atual: tudo no ar. Servidor (Render + Neon), site
 > (pulso-site.onrender.com), app Android instalável (EAS/APK), IA dos alertas
 > ligada (chave Anthropic no Render), marca nova (Pulso, cinza #37373F + verde
 > #23C883, Josefin Sans), comunicação GERAL (não clínica). Sem Oliveira Alves.
+
+---
+
+## 🆕 ATUALIZAÇÃO 22/07 — backlog itens 12–18 + decisões (handoff)
+
+> Várias sessões rodaram em paralelo. O que segue é o estado do backlog grande
+> (itens 12–18) e as decisões pendentes. Concluídos aparecem com o commit.
+
+### ✅ Feito recentemente
+- **Medição de consumo da IA** (commit `a0998cd`): tabela `ai_usage` grava CADA
+  chamada à Anthropic (alerta + chat), inclusive as reprovadas pelo grounding, com
+  o modelo que respondeu e os tokens. Endpoint interno `GET /admin/ai-usage`
+  (agrega por empresa/tipo/modelo/mês; trava opcional por `PULSO_ADMIN_TOKEN`).
+- **Modelo de IA por superfície** (commit `74e457b`): `apps/api/src/ai/models.ts`
+  exporta `ALERT_MODEL` (padrão `claude-opus-4-8`) e `CHAT_MODEL` (padrão
+  `claude-sonnet-4-6`), lidos de `PULSO_ALERT_MODEL` / `PULSO_CHAT_MODEL`. Alerta no
+  Opus, conversa no Sonnet (mais barata). A antiga `PULSO_AI_MODEL` saiu — se estiver
+  setada no Render, apagar. **Conversa fica no Sonnet por ora** (revisar após o piloto,
+  com os dados do `ai_usage`).
+- **Item 13 — Simulador "e se" (core + API)** (commit `df0182c`): `packages/core/src/
+  simulate.ts` (puro, testado) — `simulate(snapshot, deltas)` aplica ajustes
+  hipotéticos (`delayPayable | anticipateReceivable | adjustFixedCost | addPlanned`)
+  a uma CÓPIA e roda o mesmo `projectCash`, devolvendo curva real, curva simulada e
+  as duas datas de zeragem. Sem IA. `POST /me/simulate` no server. `projectCash`
+  ganhou um parâmetro opcional e ADITIVO (`fixedCostOverrideCents`) só para modelar
+  corte de custo fixo — **não muda nenhum resultado existente** (validar com o Marco).
+  67 testes no core, 98 na API.
+- **Item 18 — Site (calculadora + legais + preço único)** (commit `11986fd`):
+  `site/calculadora.html` (efeito tesoura, cálculo simples 100% no navegador, posta
+  na lista com `source:'calculadora'`), `site/privacidade.html` + `site/termos.html`
+  (LGPD completa; **CNPJ/e-mail/DPO/data são placeholders `[a definir]` — revisar
+  com jurídico ANTES de publicar nas lojas**), `site/precos.js` (fonte única dos
+  preços, planos e FAQ preenchem via `data-preco`). `site/pagina.css` compartilhado.
+- Feito por outras sessões (ver git log): motor de **diagnóstico P1–P8**, **chat com
+  memória**, **recuperação de senha**, **métricas do piloto** (`/admin/pilot-metrics`),
+  **histórico de alertas + lido/agido**, **cache offline** do dashboard, **cota de chat**
+  (`0007_chat_quota`, `/me/chat` responde 402 ao estourar), adaptador **stub do WhatsApp**.
+
+### 🔲 Itens do backlog que FALTAM
+
+**Regra de ouro dos módulos nativos:** háptico, captura de imagem, biometria e o
+date picker nativo são MÓDULOS NATIVOS — **não vão por OTA**, exigem **APK novo**.
+O João **não quer APK novo agora** ("ainda vamos mexer"). Quando quiser, **juntar
+tudo num APK só**: Firebase/FCM (push, já pendente) + `expo-haptics` (12) +
+`react-native-view-shot` (15) + `expo-local-authentication` (17) + date picker (17).
+
+- [ ] **Item 12 — Polimento de fluidez (app).** (a) `expo-haptics`: leve ao enviar
+  pergunta no chat e confirmar conta; distinto (`notificationAsync` warning) ao abrir
+  alerta crítico; sutil ao completar o pull-to-refresh — **nada além disso** [NATIVO→APK].
+  (b) **Erros com retry inline**: no chat, mensagem que falhou fica na lista como
+  "não enviada · tocar para reenviar" (reenvia sem redigitar); nas telas de dados,
+  falha de rede mostra botão de retry inline, **nunca `alert()` nativo** [pode ir por OTA].
+  (c) **Deep link** `/alerta/:id` no expo-router, e o handler de push já monta a URL do
+  alerta — quando o push destravar, tocar na notificação cai direto no alerta [OTA].
+- [ ] **Item 13 (parte APP).** Core+API já prontos (acima). Falta a UI: no detalhe da
+  projeção (ou no alerta de caixa), modo "E se" com chips ("adiar maior pagamento 15d",
+  "cortar R$ 1.000 de custo fixo", "antecipar maior recebível"), gráfico com as DUAS
+  curvas (real cheia + simulada tracejada) e as duas datas de zeragem legendadas, botão
+  "limpar", e rótulo "SIMULAÇÃO · nada foi alterado de verdade". Consome `POST /me/simulate`.
+- [ ] **Item 14 — Gráfico interativo (scrubbing).** Evoluir o `PulseLine` do app:
+  arrastar o dedo mostra marcador vertical + balão "data · valor". **Server:** expor a
+  CURVA DIÁRIA da projeção no dashboard (o core já a calcula; o `simulate` já devolve a
+  série `{day, cents}` — dá pra expor no `/me/dashboard` como pontos no Indicator, sem o
+  app interpolar). Suportar 2 séries (real + simulada, casa com o 13). Acessibilidade:
+  `accessibilityLabel` resumindo a projeção. Performance: reanimated, sem re-render por frame.
+- [ ] **Item 15 — "Mandar pro contador" (app).** No detalhe do alerta, botão que gera
+  uma imagem limpa (título, corpo, o "de onde vem esse número" completo, data, wordmark
+  do Pulso + site no rodapé) via `react-native-view-shot` de um componente PRÓPRIO de
+  exportação (não a tela ao vivo), e abre o share sheet nativo. Fundo papel, sem navegação.
+  Na demo, a imagem carrega o selo de dados fictícios. [NATIVO→APK]
+- [ ] **Item 16 — Resumo da semana.** **Server:** ao gerar um snapshot, se existir um
+  anterior de ≥5 dias antes, gerar via writer (modo novo `'weekly'`, fiscalizado pelo
+  grounding com os facts dos DOIS snapshots) um resumo de ≤3 frases (o que mudou em
+  caixa/ciclo/receita e o que observar); gravar junto ao snapshot; fallback por template
+  quando o grounding reprovar (como nos alertas). **App:** card "Sua semana" no topo do
+  dashboard quando houver resumo novo (lido/não-lido controlado localmente), abrindo uma
+  tela simples com o texto e as variações (setas já padronizadas).
+- [ ] **Item 17 — Endurecimento pré-piloto (app).** (a) **Biometria**
+  (`expo-local-authentication`): opção na Conta "Pedir biometria ao abrir" (default
+  ligado quando disponível); ao voltar do background após 2 min, exige de novo; fallback
+  senha; **demo nunca pede** [NATIVO→APK]. (b) **Contas completas na UI** (a API já
+  suporta): date picker de data livre (mantendo os presets como atalhos) [date picker
+  nativo → APK], edição de conta (valor, data, categoria, contraparte), toggle "repete
+  todo mês" (campo `recurrence`). Quando a Fase 2 do motor estiver ativa, mostrar o
+  impacto na projeção ("essa conta muda sua data de risco de 18/set para 30/set") usando
+  o resultado do core, **nunca calculando no app**.
+- [ ] **Item 18 — pendências do site (dependem do João/CEO):** revisão jurídica das
+  páginas legais + preencher CNPJ, e-mail de privacidade/DPO e data de vigência (hoje
+  `[a definir]`); alinhar os valores em `site/precos.js` com a cota (item 2) e o app
+  quando os planos/cota forem fechados; opcional: URL limpa `/privacidade` (rewrite no
+  Render) em vez de `privacidade.html`.
+- [ ] **Fase 2 do motor de contas** (já listada abaixo) — pré-requisito do "impacto na
+  projeção" do item 17 e alimenta o item 14. **É fórmula nova: validar desenho com o Marco.**
+
+### 📌 Decisões pendentes (NÃO são tarefas prontas — dependem de dado/pessoa)
+
+| Decisão | Depende de | Quando |
+|---|---|---|
+| Modelo definitivo do chat (Opus × Sonnet) | 2–4 semanas de `ai_usage` | Após o piloto iniciar |
+| Valores finais de cota por plano | Mesmo dado + preços dos planos | Junto com a cobrança |
+| Calibração dos limiares P1–P8 | Sessão de casos com o Marco | 2ª rodada, não trava |
+| Prescrição por estágio (conteúdo do writer) | Mesma sessão com o Marco | idem |
+| Parser do CSV real | Arquivo-modelo do Marco | **Trava o piloto** |
+| FCM/Firebase para push | Config externa (Marco/conta) | Antes do piloto, se der |
+| Nome da IA (Cora / Vita / Compasso / sem nome) | Decisão de marca | Antes do WhatsApp |
+| Entrada por voz no chat | Validar chat por texto primeiro | Pós-piloto |
+| Dark mode e SEO/conteúdo contínuo | Fôlego | Pós-piloto |
+| Depoimentos no site | 2 frases reais colhidas no piloto | Pós-piloto (**nunca simular**) |
+
+### 🤝 Coordenação (várias sessões ao mesmo tempo)
+- `git pull --rebase` antes de push; **nunca `git add -A` cego** — stage só os arquivos
+  que a sua sessão tocou. Se houver mudança não-sua no working tree, deixe quieta (é de
+  outra sessão) e não a commite.
+- Módulos nativos SÓ entram com APK novo (ver regra de ouro acima). Nunca adicionar um
+  módulo nativo a um update OTA — quebra o app instalado.
 
 ---
 
