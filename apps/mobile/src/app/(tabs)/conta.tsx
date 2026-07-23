@@ -6,9 +6,12 @@
 
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { fetchMySubscription, type MySubscription } from '@/lib/api';
+import { dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -17,9 +20,28 @@ const VERSAO_APP = Constants.expoConfig?.version ?? '—';
 const FEEDBACK_URL =
   'https://wa.me/553194287877?text=' +
   encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
+// checkout no site (sem comissão de loja). from=app avisa a página que veio do app.
+const CHECKOUT_URL = 'https://pulso-site.onrender.com/checkout.html?from=app';
+
+const NOME_PLANO: Record<string, string> = {
+  piloto: 'Piloto',
+  essencial: 'Essencial',
+  crescimento: 'Crescimento',
+  pro: 'Pro',
+};
 
 export default function Conta() {
-  const { dashboard, fonte, sair } = usePulso();
+  const { dashboard, fonte, token, sair } = usePulso();
+  const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    let vivo = true;
+    fetchMySubscription(token)
+      .then((s) => { if (vivo) setAssinatura(s); })
+      .catch(() => { /* silencioso: o cartão cai no texto padrão do piloto */ });
+    return () => { vivo = false; };
+  }, [token]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -51,11 +73,37 @@ export default function Conta() {
 
         <View style={styles.cartao}>
           <Text style={styles.rotulo}>PLANO</Text>
-          <Text style={styles.nome}>Piloto</Text>
-          <Text style={styles.detalhe}>
-            Você faz parte da turma que está construindo o Pulso com a gente. A assinatura, quando
-            chegar, acontece no site do Pulso. Nada de pagamento por aqui.
-          </Text>
+          {assinatura?.active ? (
+            <>
+              <View style={styles.linhaAviso}>
+                <Text style={styles.nome}>{NOME_PLANO[assinatura.plan] ?? assinatura.plan}</Text>
+                <View style={styles.selo}>
+                  <Text style={styles.seloTexto}>ATIVO</Text>
+                </View>
+              </View>
+              <Text style={styles.detalhe}>
+                Sua assinatura está ativa
+                {assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}. Obrigado por fazer parte
+                do Pulso.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.nome}>{NOME_PLANO[assinatura?.plan ?? 'piloto'] ?? 'Piloto'}</Text>
+              <Text style={styles.detalhe}>
+                Você está no piloto. Quando quiser assinar, a cobrança acontece no site do Pulso — sem
+                comissão de loja e sem pagamento dentro do app.
+              </Text>
+              {fonte !== 'demo' && (
+                <Pressable
+                  style={({ pressed }) => [styles.assinar, pressed && styles.pressionado]}
+                  onPress={() => Linking.openURL(CHECKOUT_URL)}
+                >
+                  <Text style={styles.assinarTexto}>Assinar o Pulso</Text>
+                </Pressable>
+              )}
+            </>
+          )}
         </View>
 
         <View style={styles.cartao}>
@@ -149,6 +197,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   feedbackTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.papel },
+  assinar: {
+    backgroundColor: colors.vivo,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  assinarTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: '#06231A' },
   versao: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.6, color: colors.cinza, marginTop: 6 },
 
   sair: {

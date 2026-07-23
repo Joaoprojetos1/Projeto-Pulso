@@ -379,6 +379,27 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Assinatura (entitlement) --------------- */
+
+export interface MySubscription {
+  plan: string;
+  status: 'none' | 'active' | 'canceled' | 'past_due';
+  /** validade da assinatura ('YYYY-MM-DD') ou null (ativa até cancelar). */
+  until: string | null;
+  /** true = pode usar os benefícios do plano. */
+  active: boolean;
+}
+
+/** Lê o plano/estado da assinatura do dono logado (o app destrava a partir disto). */
+export async function fetchMySubscription(token: string): Promise<MySubscription> {
+  const res = await fetchWithWake(`${apiBase()}/me/subscription`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} na assinatura`);
+  return (await res.json()) as MySubscription;
+}
+
 /** Conversa do dono logado. */
 export async function sendMyChat(token: string, messages: ChatTurnJson[]): Promise<string> {
   const res = await fetchWithWake(`${apiBase()}/me/chat`, {

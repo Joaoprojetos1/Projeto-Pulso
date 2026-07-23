@@ -113,6 +113,7 @@
         </div>
 
         <div class="co-h">2. Seus dados</div>
+        <p id="co-appnote" style="display:none;font-size:.85rem;color:var(--pulse-ink);margin:2px 0 8px;font-weight:600;">Use o mesmo e-mail da sua conta do Pulso para a ativação ser automática.</p>
         <form class="co-fields" id="co-form" novalidate>
           <input class="inp" id="co-nome" type="text" autocomplete="name" placeholder="Nome completo" aria-label="Nome completo" required />
           <input class="inp" id="co-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="E-mail" required />
@@ -168,7 +169,16 @@
     planos.forEach(function (el) {
       el.addEventListener('click', function () { selecionar(el.getAttribute('data-plano')); });
     });
-    selecionar('crescimento');
+
+    // veio do app? pré-seleciona o plano do link e pede o mesmo e-mail da conta
+    var params = new URLSearchParams(location.search);
+    var planParam = params.get('plano') || params.get('plan');
+    var inicial = precos[planParam] ? planParam : 'crescimento';
+    if (params.get('from') === 'app') {
+      var nota = document.getElementById('co-appnote');
+      if (nota) nota.style.display = 'block';
+    }
+    selecionar(inicial);
 
     // máscara de telefone BR
     var tel = document.getElementById('co-tel');
