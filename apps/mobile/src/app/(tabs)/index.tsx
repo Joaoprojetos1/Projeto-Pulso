@@ -83,7 +83,7 @@ function tendencia(
 }
 
 export default function Dashboard() {
-  const { dashboard, fonte, carregando, carregar } = usePulso();
+  const { dashboard, fonte, carregando, carregar, mostrandoCache } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
   // "por que esse momento?" do diagnóstico aberto?
@@ -222,6 +222,14 @@ export default function Dashboard() {
         {fonte === 'demo' && (
           <View style={styles.selo}>
             <Text style={styles.seloTexto}>DEMONSTRAÇÃO · DADOS FICTÍCIOS</Text>
+          </View>
+        )}
+
+        {mostrandoCache && (
+          <View style={styles.offline}>
+            <Text style={styles.offlineTexto}>
+              Offline · mostrando o último dado de {dataBR(dashboard.snapshot.asOf)}
+            </Text>
           </View>
         )}
 
@@ -487,6 +495,19 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   seloTexto: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
+
+  offline: {
+    alignSelf: 'flex-start',
+    marginHorizontal: 18,
+    marginBottom: 8,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  offlineTexto: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 0.4, color: colors.cinza },
 
   diag: {
     marginHorizontal: 16,

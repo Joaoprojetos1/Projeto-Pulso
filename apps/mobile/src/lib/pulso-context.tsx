@@ -24,6 +24,7 @@ import { registrarParaAvisos } from './push';
 export type Fonte = 'servidor' | 'demo';
 
 const CHAVE_TOKEN = 'pulso.token';
+const CHAVE_CACHE = 'pulso.cache.dashboard';
 
 interface PulsoState {
   dashboard: DashboardJson | null;
@@ -38,6 +39,8 @@ interface PulsoState {
   restaurando: boolean;
   /** O dono já entrou. */
   logado: boolean;
+  /** O dashboard na tela veio do cache local (offline); o refresh ainda não substituiu. */
+  mostrandoCache: boolean;
   /** Cria a conta (autocadastro). Retorna true se entrou. */
   cadastrar: (businessName: string, email: string, password: string) => Promise<boolean>;
   /** Entra com e-mail e senha. Retorna true se entrou. */
@@ -60,6 +63,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [erro, setErro] = useState<string | null>(null);
   const [restaurando, setRestaurando] = useState(true);
   const [logado, setLogado] = useState(false);
+  const [mostrandoCache, setMostrandoCache] = useState(false);
 
   // ref para o carregar() sempre enxergar o token atual sem recriar a função
   const tokenRef = useRef<string | null>(null);
@@ -76,7 +80,17 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setFonte(null);
     setCompanyId(null);
     setLogado(false);
-    await AsyncStorage.removeItem(CHAVE_TOKEN);
+    setMostrandoCache(false);
+    await AsyncStorage.multiRemove([CHAVE_TOKEN, CHAVE_CACHE]);
+  }, []);
+
+  /** Guarda o último dashboard de servidor, para abrir offline depois. */
+  const salvarCache = useCallback(async (id: string, dash: DashboardJson) => {
+    try {
+      await AsyncStorage.setItem(CHAVE_CACHE, JSON.stringify({ companyId: id, dashboard: dash }));
+    } catch {
+      // cache é conforto, nunca pode quebrar o app
+    }
   }, []);
 
   /** Busca o painel do dono logado. Usa o token guardado (ou o passado). */
@@ -91,6 +105,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       setCompanyId(id);
       setFonte('servidor');
       setLogado(true);
+      setMostrandoCache(false); // dado fresco do servidor substitui o cache
+      if (dash) void salvarCache(id, dash); // guarda p/ abrir offline na próxima
       // registra este celular para receber os avisos (silencioso se falhar)
       void registrarParaAvisos(id);
       return true;
@@ -105,7 +121,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     } finally {
       setCarregando(false);
     }
-  }, [limparSessao]);
+  }, [limparSessao, salvarCache]);
 
   const entrar = useCallback(
     async (email: string, password: string): Promise<boolean> => {
@@ -147,6 +163,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setCompanyId(null);
     setErro(null);
     setLogado(true);
+    setMostrandoCache(false); // demonstração não é cache de servidor
   }, []);
 
   const sair = useCallback(() => {
@@ -164,6 +181,23 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
         if (vivo && salvo) {
           tokenRef.current = salvo;
           setToken(salvo);
+          // mostra o último dashboard conhecido NA HORA — app financeiro não abre vazio
+          try {
+            const bruto = await AsyncStorage.getItem(CHAVE_CACHE);
+            if (vivo && bruto) {
+              const guardado = JSON.parse(bruto) as { companyId: string; dashboard: DashboardJson };
+              if (guardado?.dashboard) {
+                setDashboard(guardado.dashboard);
+                setCompanyId(guardado.companyId);
+                setFonte('servidor');
+                setLogado(true);
+                setMostrandoCache(true);
+              }
+            }
+          } catch {
+            // cache inválido: ignora e segue direto para o fetch
+          }
+          // busca o dado novo por trás; se falhar (offline), o cache continua na tela
           await carregar(salvo);
         }
       } catch {
@@ -187,6 +221,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       erro,
       restaurando,
       logado,
+      mostrandoCache,
       cadastrar,
       entrar,
       carregar: () => carregar(),
@@ -202,6 +237,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       erro,
       restaurando,
       logado,
+      mostrandoCache,
       cadastrar,
       entrar,
       carregar,
