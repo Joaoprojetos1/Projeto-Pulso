@@ -27,7 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sendMyChat, type ChatTurnJson } from '@/lib/api';
+import { QuotaError, sendMyChat, type ChatTurnJson } from '@/lib/api';
 import { responderDeterministico } from '@/lib/perguntas';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
@@ -76,6 +76,27 @@ const RESPOSTA_DEMO =
 const RESPOSTA_ERRO =
   'Não consegui falar com o servidor agora. Tente de novo em instantes. Seus alertas continuam no painel.';
 
+const MESES = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+];
+
+/** 'YYYY-MM-DD' → '1º de agosto' (a cota renova sempre no dia 1º). */
+function dataPorExtenso(iso: string): string {
+  const [, mes, dia] = iso.split('-').map(Number);
+  const nome = MESES[(mes ?? 1) - 1] ?? '';
+  return `${dia ?? 1}º de ${nome}`;
+}
+
+/** Aviso de cota estourada, em linguagem de dono e sem tom punitivo. */
+function mensagemDeCota(e: QuotaError): string {
+  const quando = e.resetsOn ? dataPorExtenso(e.resetsOn) : 'no início do próximo mês';
+  return (
+    `Você usou as ${e.quota} perguntas deste mês. Elas renovam em ${quando}. ` +
+    'Seus alertas e o painel continuam funcionando normalmente.'
+  );
+}
+
 export default function Chat() {
   const { dashboard, token } = usePulso();
   const [texto, setTexto] = useState('');
@@ -121,8 +142,9 @@ export default function Chat() {
         .map((m) => ({ role: m.de === 'voce' ? 'user' : 'assistant', content: m.texto }));
       const resposta = await sendMyChat(token, turns);
       setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: resposta }]);
-    } catch {
-      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto: RESPOSTA_ERRO }]);
+    } catch (e) {
+      const texto = e instanceof QuotaError ? mensagemDeCota(e) : RESPOSTA_ERRO;
+      setMensagens([...minhas, { id: `p-${Date.now()}`, de: 'pulso', texto }]);
     } finally {
       setPensando(false);
       rolar();

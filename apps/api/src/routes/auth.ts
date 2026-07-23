@@ -11,6 +11,7 @@ import {
 } from '../auth';
 import type { Sql } from '../db';
 import { toCompanyJson, type CompanyRow } from '../http';
+import { QuotaExceededError, quotaExceededPayload } from '../quota';
 import { replyForCompany } from './chat';
 import { buildDashboard } from './snapshots';
 
@@ -180,7 +181,14 @@ export function registerAuth(app: FastifyInstance, sql: Sql, chatModel: ChatMode
     async (req, reply) => {
       const company = await companyFromRequest(sql, req);
       if (!company) return reply.code(401).send({ error: 'Faça login para conversar.' });
-      return replyForCompany(sql, chatModel, company, req.body.messages);
+      try {
+        return await replyForCompany(sql, chatModel, company, req.body.messages);
+      } catch (e) {
+        if (e instanceof QuotaExceededError) {
+          return reply.code(402).send(quotaExceededPayload(e));
+        }
+        throw e;
+      }
     },
   );
 }

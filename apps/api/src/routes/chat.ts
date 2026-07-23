@@ -10,6 +10,7 @@ import {
 import { recordAiUsage, type AiCallUsage } from '../ai/usage';
 import type { Sql } from '../db';
 import { companyParamsSchema, findCompany } from '../http';
+import { assertWithinChatQuota, QuotaExceededError, quotaExceededPayload } from '../quota';
 
 /**
  * Conversa. A rota carrega o ÚLTIMO snapshot (números já calculados) e
@@ -64,6 +65,10 @@ export async function replyForCompany(
     return { reply: NO_DATA_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
   }
 
+  // cota mensal: se a empresa já usou as perguntas do mês, para AQUI —
+  // lança QuotaExceededError (a rota devolve 402) e a IA nunca é chamada.
+  await assertWithinChatQuota(sql, company.id);
+
   const alertRows = await sql`
     SELECT rule_key, severity::text AS severity, facts, text_title, text_body
     FROM alerts
@@ -106,7 +111,14 @@ export function registerChat(app: FastifyInstance, sql: Sql, chatModel: ChatMode
     async (req, reply) => {
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
-      return replyForCompany(sql, chatModel, company, req.body.messages);
+      try {
+        return await replyForCompany(sql, chatModel, company, req.body.messages);
+      } catch (e) {
+        if (e instanceof QuotaExceededError) {
+          return reply.code(402).send(quotaExceededPayload(e));
+        }
+        throw e;
+      }
     },
   );
 }

@@ -116,12 +116,41 @@ export interface ChatTurnJson {
   content: string;
 }
 
+/**
+ * Cota de perguntas do mês estourada (HTTP 402). Guarda o quanto foi usado, o
+ * limite e a data em que renova ('YYYY-MM-DD'), para a tela avisar com clareza.
+ */
+export class QuotaError extends Error {
+  used: number;
+  quota: number;
+  resetsOn: string;
+  constructor(used: number, quota: number, resetsOn: string) {
+    super('quota_exceeded');
+    this.name = 'QuotaError';
+    this.used = used;
+    this.quota = quota;
+    this.resetsOn = resetsOn;
+  }
+}
+
+/** Se a resposta for 402, lança QuotaError com os dados do corpo estruturado. */
+async function lancarSeCota(res: Response): Promise<void> {
+  if (res.status !== 402) return;
+  const b = (await res.json().catch(() => ({}))) as {
+    used?: number;
+    quota?: number;
+    resetsOn?: string;
+  };
+  throw new QuotaError(b.used ?? 0, b.quota ?? 0, b.resetsOn ?? '');
+}
+
 export async function sendChat(companyId: string, messages: ChatTurnJson[]): Promise<string> {
   const res = await fetchWithWake(`${apiBase()}/companies/${companyId}/chat`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ messages }),
   });
+  await lancarSeCota(res);
   if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
   const body = (await res.json()) as { reply: string };
   return body.reply;
@@ -218,6 +247,7 @@ export async function sendMyChat(token: string, messages: ChatTurnJson[]): Promi
     headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
     body: JSON.stringify({ messages }),
   });
+  await lancarSeCota(res);
   if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
   const body = (await res.json()) as { reply: string };
   return body.reply;
