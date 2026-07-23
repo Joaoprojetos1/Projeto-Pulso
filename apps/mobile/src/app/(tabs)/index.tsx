@@ -345,7 +345,7 @@ export default function Dashboard() {
             onPress={() => router.push('/simular' as Href)}
             style={({ pressed }) => [styles.simular, pressed && styles.pressionado]}
           >
-            <Text style={styles.simularTexto}>Simular um cenário · e se…? →</Text>
+            <Text style={styles.simularTexto}>Testar uma decisão →</Text>
           </Pressable>
         )}
 

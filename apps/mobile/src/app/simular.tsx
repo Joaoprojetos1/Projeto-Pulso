@@ -87,7 +87,7 @@ export default function Simular() {
         <Pressable onPress={() => router.back()} hitSlop={10} style={({ pressed }) => pressed && styles.pressionado}>
           <Ionicons name="chevron-back" size={24} color={colors.tinta} />
         </Pressable>
-        <Text style={styles.titulo}>E se…</Text>
+        <Text style={styles.titulo}>Teste uma decisão</Text>
         <View style={{ width: 24 }} />
       </View>
 

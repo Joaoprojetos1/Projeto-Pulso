@@ -36,7 +36,11 @@ export const fonts = {
   corpo: 'Figtree_400Regular',
   corpoMedio: 'Figtree_500Medium',
   corpoForte: 'Figtree_600SemiBold',
-  mono: 'IBMPlexMono_500Medium',
+  // `mono` NÃO é mais monoespaçada: rótulos/tags em IBM Plex Mono tinham "cara de
+  // IA" (refinamento UX A9). Repontada para Manrope semibold — o nome do token
+  // fica para não mexer em toda tela; os números seguem alinhados por tabular-nums
+  // (fontVariant, independente da família). IBM Plex Mono só p/ uso interno/dev.
+  mono: 'Manrope_600SemiBold',
 } as const;
 
 export type Severity = 'ok' | 'warn' | 'critical';

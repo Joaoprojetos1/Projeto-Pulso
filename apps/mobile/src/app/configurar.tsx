@@ -12,37 +12,29 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MoneyInput } from '@/components/money-input';
 import { fetchMySetup, saveMySetup } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
-/** "1.234,50" ou "-80" → centavos inteiros. null se não for número. */
-function paraCents(txt: string): number | null {
-  const limpo = txt.replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-  if (limpo === '' || limpo === '-') return null;
-  const n = Number(limpo);
-  if (!Number.isFinite(n)) return null;
-  return Math.round(n * 100);
-}
-function centsParaCampo(cents: number): string {
-  return (cents / 100).toFixed(2).replace('.', ',');
-}
-
 export default function Configurar() {
   const { token, carregar } = usePulso();
-  const [caixa, setCaixa] = useState('');
-  const [custo, setCusto] = useState('');
+  const [caixaCents, setCaixaCents] = useState<number | null>(null);
+  const [custoCents, setCustoCents] = useState<number | null>(null);
+  const [caixaInicial, setCaixaInicial] = useState<number | null>(null);
+  const [custoInicial, setCustoInicial] = useState<number | null>(null);
   const [plannedCount, setPlannedCount] = useState(0);
   const [carregandoSetup, setCarregandoSetup] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -55,8 +47,14 @@ export default function Configurar() {
     }
     try {
       const s = await fetchMySetup(token);
-      if (s.cashBalanceCents != null) setCaixa(centsParaCampo(s.cashBalanceCents));
-      if (s.fixedCostCents != null) setCusto(centsParaCampo(s.fixedCostCents));
+      if (s.cashBalanceCents != null) {
+        setCaixaInicial(s.cashBalanceCents);
+        setCaixaCents(s.cashBalanceCents);
+      }
+      if (s.fixedCostCents != null) {
+        setCustoInicial(s.fixedCostCents);
+        setCustoCents(s.fixedCostCents);
+      }
       setPlannedCount(s.plannedCount);
     } catch {
       // sem prefill: o dono digita do zero (não é erro que trave a tela)
@@ -69,20 +67,18 @@ export default function Configurar() {
     void prefill();
   }, [prefill]);
 
-  const cxCents = paraCents(caixa); // pode ser negativo (cheque especial)
-  const custoCents = paraCents(custo);
   const custoValido = custoCents != null && custoCents >= 0;
-  const pode = token != null && cxCents != null && custoValido && !salvando;
+  const pode = token != null && caixaCents != null && custoValido && !salvando;
 
   async function calcular() {
-    if (!token || cxCents == null || !custoValido) {
+    if (!token || caixaCents == null || custoCents == null || custoCents < 0) {
       setErro('Preencha os dois valores para o Pulso calcular.');
       return;
     }
     setSalvando(true);
     setErro(null);
     try {
-      await saveMySetup(token, cxCents, custoCents);
+      await saveMySetup(token, caixaCents, custoCents);
       await carregar(); // traz o painel já recalculado pelo motor
       router.replace('/(tabs)');
     } catch {
@@ -101,6 +97,10 @@ export default function Configurar() {
         <View style={styles.voltar} />
       </View>
 
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView contentContainerStyle={styles.corpo} keyboardShouldPersistTaps="handled">
         <Animated.View entering={FadeInDown.duration(220)}>
           <Text style={styles.titulo}>Dois números e o Pulso já projeta o seu caixa.</Text>
@@ -114,25 +114,20 @@ export default function Configurar() {
           <ActivityIndicator color={colors.mata} style={{ marginTop: 30 }} />
         ) : (
           <Animated.View entering={FadeInDown.duration(240).delay(60)}>
-            <Text style={styles.label}>QUANTO VOCÊ TEM EM CAIXA HOJE (R$)</Text>
-            <TextInput
-              style={styles.input}
-              value={caixa}
-              onChangeText={setCaixa}
-              placeholder="Ex.: 21.300,00"
-              placeholderTextColor={colors.cinza}
-              keyboardType="numbers-and-punctuation"
+            <Text style={styles.label}>QUANTO VOCÊ TEM EM CAIXA HOJE</Text>
+            <MoneyInput
+              valueCents={caixaInicial}
+              onChangeCents={setCaixaCents}
+              permiteNegativo
+              placeholder="R$ 21.300,00"
             />
             <Text style={styles.ajuda}>O que está em conta agora, somando tudo.</Text>
 
-            <Text style={[styles.label, { marginTop: 20 }]}>CUSTO FIXO POR MÊS (R$)</Text>
-            <TextInput
-              style={styles.input}
-              value={custo}
-              onChangeText={setCusto}
-              placeholder="Ex.: 34.200,00"
-              placeholderTextColor={colors.cinza}
-              keyboardType="decimal-pad"
+            <Text style={[styles.label, { marginTop: 20 }]}>CUSTO FIXO POR MÊS</Text>
+            <MoneyInput
+              valueCents={custoInicial}
+              onChangeCents={setCustoCents}
+              placeholder="R$ 34.200,00"
             />
             <Text style={styles.ajuda}>Aluguel, equipe, impostos — o que sai todo mês.</Text>
 
@@ -159,20 +154,22 @@ export default function Configurar() {
               )}
             </Pressable>
 
-            {cxCents != null && custoValido && !salvando && (
+            {caixaCents != null && custoCents != null && custoValido && !salvando && (
               <Text style={styles.previa}>
-                Caixa hoje: {brl(cxCents)} · custo fixo: {brl(custoCents)}/mês
+                Caixa hoje: {brl(caixaCents)} · custo fixo: {brl(custoCents)}/mês
               </Text>
             )}
           </Animated.View>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
+  flex: { flex: 1 },
   cabecalho: {
     flexDirection: 'row',
     alignItems: 'center',
