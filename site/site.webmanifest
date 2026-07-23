@@ -1,0 +1,13 @@
+{
+  "name": "Pulso",
+  "short_name": "Pulso",
+  "description": "O caixa do seu negócio, sob controle. Avisa antes do aperto.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#37373F",
+  "theme_color": "#37373F",
+  "icons": [
+    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}
