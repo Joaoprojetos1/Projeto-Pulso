@@ -11,6 +11,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="pagina.css" />
+<style>
+  .lead-col { display: flex; flex-direction: column; gap: 9px; margin-top: 8px; }
+  .lead-col .inp { width: 100%; }
+  .lead-col .btn { width: 100%; justify-content: center; margin-top: 2px; }
+</style>
 </head>
 <body>
 
@@ -74,10 +79,12 @@
         </div>
 
         <div class="email-cta">
-          <label for="calc-email" class="r-k">Receba a análise completa por e-mail</label>
-          <form class="email-row" id="calc-email-form" novalidate>
+          <label class="r-k">Receba a análise completa e fale com a gente</label>
+          <form class="lead-col" id="calc-email-form" novalidate>
+            <input class="inp" id="calc-nome" type="text" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome" required />
             <input class="inp" id="calc-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
-            <button class="btn btn-primary" type="submit">Quero</button>
+            <input class="inp" id="calc-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" aria-label="Seu WhatsApp" maxlength="16" required />
+            <button class="btn btn-primary" type="submit">Quero minha análise</button>
           </form>
           <p class="email-msg" id="calc-email-msg" role="status"></p>
         </div>
@@ -194,23 +201,41 @@
     });
     atualizar();
 
-    // ---- e-mail: entra na lista de espera com origem 'calculadora' ----
+    // ---- lead: nome + e-mail + telefone, origem 'calculadora' ----
     var API = 'https://pulso-api-9byl.onrender.com/interesse';
     var eform = document.getElementById('calc-email-form');
+    var enome = document.getElementById('calc-nome');
     var einput = document.getElementById('calc-email');
+    var etel = document.getElementById('calc-tel');
     var emsg = document.getElementById('calc-email-msg');
     var enviando = false;
+
+    // máscara de telefone BR: (DD) 9XXXX-XXXX
+    function fmtTel(d) {
+      d = (d || '').replace(/\D/g, '').slice(0, 11);
+      if (!d) return '';
+      if (d.length <= 2) return '(' + d;
+      if (d.length <= 6) return '(' + d.slice(0, 2) + ') ' + d.slice(2);
+      if (d.length <= 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+      return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+    }
+    etel.addEventListener('input', function () { etel.value = fmtTel(etel.value); });
+    function telOk(v) { var d = (v || '').replace(/\D/g, ''); return d.length === 10 || d.length === 11; }
+
     function emostra(t, cls) { emsg.textContent = t; emsg.className = 'email-msg ' + (cls || ''); }
     eform.addEventListener('submit', function (e) {
       e.preventDefault();
       if (enviando) return;
+      var nome = (enome.value || '').trim();
       var email = (einput.value || '').trim();
+      if (nome.length < 2) { emostra('Digite o seu nome.', 'erro'); enome.focus(); return; }
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { emostra('Confira o e-mail e tente de novo.', 'erro'); einput.focus(); return; }
+      if (!telOk(etel.value)) { emostra('Confira o WhatsApp com DDD e tente de novo.', 'erro'); etel.focus(); return; }
       enviando = true; emostra('Enviando...', '');
       fetch(API, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: email, source: 'calculadora' })
+        body: JSON.stringify({ email: email, name: nome, phone: etel.value.replace(/\D/g, ''), source: 'calculadora' })
       }).then(function (r) {
         if (!r.ok) throw new Error('falhou');
         eform.reset();

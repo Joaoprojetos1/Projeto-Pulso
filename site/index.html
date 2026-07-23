@@ -256,15 +256,24 @@
   /* vigia (monitor) */
   .watch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 2.6rem; }
   @media (max-width: 720px) { .watch-grid { grid-template-columns: 1fr; } }
-  .signal { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; transition: transform .18s ease, border-color .18s ease; }
-  .signal:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
+  .signal { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 20px 26px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+  .signal:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
+  /* barra de severidade na lateral esquerda, por tipo de sinal */
+  .signal::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--line); }
+  .signal.sig-crit::before { background: var(--critico); animation: barbreath 2s ease-in-out infinite; }
+  .signal.sig-warn::before { background: var(--alerta); }
+  .signal.sig-ok::before { background: var(--vivo); }
+  .signal.sig-ok { background: color-mix(in srgb, var(--vivo) 6%, var(--surface-2)); }
+  @keyframes barbreath { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
   .signal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .signal .sk { display: flex; flex-direction: column; gap: 2px; font-family: var(--f-display); font-weight: 600; font-size: .98rem; color: var(--ink); letter-spacing: -0.01em; }
   .signal .sk-tech { font-family: var(--f-mono); font-size: .58rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
   .signal p { color: var(--ink); font-size: 1.02rem; }
-  .sev { font-family: var(--f-mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; padding: .3em .6em; border-radius: 999px; white-space: nowrap; }
+  .sev { font-family: var(--f-mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; padding: .3em .6em; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: .45em; }
   .sev-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
   .sev-warn { color: var(--alerta); background: color-mix(in srgb, var(--alerta) 15%, transparent); }
+  .sev-ok { color: var(--pulse-ink); background: color-mix(in srgb, var(--vivo) 14%, transparent); }
+  .sev .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.6s ease-in-out infinite; }
   .watch-foot { margin-top: 1.6rem; font-family: var(--f-mono); font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
   .watch-foot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--critico); }
 
@@ -281,21 +290,65 @@
   .cta-final { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
   .cta-final .prose { text-align: center; }
   .cta-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); }
-  .lista-form { display: flex; gap: 10px; width: 100%; max-width: 480px; margin-top: .3rem; flex-wrap: wrap; justify-content: center; }
-  .lista-input { flex: 1 1 240px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .82em 1.3em; font-family: var(--f-body); font-size: 1rem; color: var(--ink); }
+  .lista-form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: .3rem; text-align: left; }
+  .lista-input { width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: .82em 1.15em; font-family: var(--f-body); font-size: 1rem; color: var(--ink); }
   .lista-input::placeholder { color: var(--muted); }
   .lista-input:focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; }
-  .lista-form .btn { flex: 0 0 auto; }
+  .lista-form .btn { width: 100%; justify-content: center; margin-top: .2rem; }
   .lista-msg-ok { color: var(--pulse-ink); }
   .lista-msg-erro { color: var(--critico); }
 
-  /* rodapé */
-  .site-foot { border-top: 1px solid var(--line-2); padding-block: 34px; }
-  .site-foot .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  .foot-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); flex-basis: 100%; }
-  .foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
-  .foot-links a { font-size: .86rem; color: var(--muted); text-decoration: none; }
-  .foot-links a:hover { color: var(--ink); }
+  /* rodapé "de site grande": faixa escura própria, em colunas */
+  .site-foot { background: var(--mata); color: #D8DAE0; padding-block: clamp(2.6rem, 6vw, 4rem) 26px; margin-top: clamp(3rem, 7vw, 5rem); }
+  .site-foot .brand { color: #F4F4F6; }
+  .foot-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: clamp(24px, 4vw, 48px); padding-bottom: 32px; border-bottom: 1px solid rgba(236,235,239,.12); }
+  @media (max-width: 860px) { .foot-top { grid-template-columns: 1fr 1fr; gap: 30px 24px; } }
+  @media (max-width: 480px) { .foot-top { grid-template-columns: 1fr; } }
+  .foot-brandcol { display: flex; flex-direction: column; gap: 14px; }
+  .foot-tagline { font-size: .92rem; color: #A9ACB6; line-height: 1.5; max-width: 30ch; }
+  .foot-col h4 { font-family: var(--f-mono); font-size: .68rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #7FE7B8; margin: 0 0 14px; }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+  .foot-col a { font-size: .92rem; color: #C4C6CE; text-decoration: none; }
+  .foot-col a:hover { color: #FFFFFF; }
+  /* selos das lojas */
+  .foot-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .store-badge { display: inline-flex; align-items: center; gap: 9px; background: #101014; border: 1px solid rgba(236,235,239,.16); border-radius: 12px; padding: 8px 13px; text-decoration: none; color: #F4F4F6; transition: border-color .18s ease, transform .18s ease; }
+  .store-badge:hover { border-color: #7FE7B8; transform: translateY(-2px); }
+  .store-badge svg { flex: 0 0 auto; }
+  .store-badge .sb-txt { display: flex; flex-direction: column; line-height: 1.1; }
+  .store-badge .sb-txt small { font-size: .56rem; letter-spacing: .04em; color: #A9ACB6; text-transform: uppercase; }
+  .store-badge .sb-txt b { font-family: var(--f-display); font-weight: 600; font-size: .9rem; }
+  .foot-soon { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: #7FE7B8; margin-top: 2px; }
+  .foot-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 22px; }
+  .foot-note { font-family: var(--f-mono); font-size: .72rem; color: #8A8D97; }
+  .foot-social { display: inline-flex; align-items: center; gap: 8px; color: #C4C6CE; font-size: .82rem; text-decoration: none; }
+  .foot-social:hover { color: #7FE7B8; }
+
+  /* ---------- WhatsApp flutuante ---------- */
+  .wa-float {
+    position: fixed; right: clamp(16px, 4vw, 26px); bottom: clamp(16px, 4vw, 26px); z-index: 50;
+    display: inline-flex; align-items: center; gap: 0; overflow: hidden;
+    height: 58px; width: 58px; padding: 0 14px; border-radius: 999px;
+    background: #25D366; color: #FFFFFF; text-decoration: none;
+    box-shadow: 0 10px 26px -8px rgba(37,211,102,.6), 0 2px 6px rgba(0,0,0,.2);
+    transition: width .28s cubic-bezier(.2,.7,.2,1), transform .18s ease, box-shadow .18s ease;
+    animation: wapop .5s .8s both;
+  }
+  .wa-float svg { flex: 0 0 auto; }
+  .wa-float .wa-tip {
+    font-family: var(--f-display); font-weight: 600; font-size: .92rem; white-space: nowrap;
+    max-width: 0; opacity: 0; margin-left: 0; transition: max-width .28s ease, opacity .2s ease, margin-left .28s ease;
+  }
+  .wa-float:hover { width: 264px; transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(37,211,102,.7), 0 2px 6px rgba(0,0,0,.24); }
+  .wa-float:hover .wa-tip { max-width: 200px; opacity: 1; margin-left: 10px; }
+  .wa-float:focus-visible { outline: 3px solid var(--vivo); outline-offset: 3px; }
+  @keyframes wapop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (max-width: 600px) {
+    /* no celular fica só o círculo, pra não cobrir conteúdo */
+    .wa-float:hover { width: 58px; transform: none; }
+    .wa-float:hover .wa-tip { max-width: 0; opacity: 0; margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .wa-float { animation: none; } }
 
   .draft-tag { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--alerta); border: 1px dashed color-mix(in srgb, var(--alerta) 55%, transparent); padding: .2em .5em; border-radius: 6px; }
 
@@ -326,6 +379,8 @@
   .reveal.stagger.is-in > *:nth-child(2) { animation-delay: .07s; }
   .reveal.stagger.is-in > *:nth-child(3) { animation-delay: .14s; }
   .reveal.stagger.is-in > *:nth-child(4) { animation-delay: .21s; }
+  .reveal.stagger.is-in > *:nth-child(5) { animation-delay: .28s; }
+  .reveal.stagger.is-in > *:nth-child(6) { animation-delay: .35s; }
   @keyframes risein { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .reveal.stagger.is-in > * { animation: none; } }
 
@@ -497,10 +552,9 @@
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="#como">Como funciona</a>
       <a class="navlink" href="#vigia">O que ele monitora</a>
-      <a class="navlink" href="calculadora.html">Calculadora</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
-      <a class="btn btn-primary" href="#lista">Entrar na lista</a>
+      <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
     </nav>
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
       <span class="ham" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -513,10 +567,9 @@
   <nav class="sheet" aria-label="Menu">
     <a class="m-link" href="#como">Como funciona</a>
     <a class="m-link" href="#vigia">O que ele monitora</a>
-    <a class="m-link" href="calculadora.html">Calculadora</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
-    <a class="btn btn-primary" href="#lista">Entrar na lista de espera</a>
+    <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
   </nav>
 </div>
 
@@ -530,10 +583,9 @@
         <h1>Saiba que o caixa vai apertar.<br><span class="accent">Antes</span> de apertar.</h1>
         <p class="lead">O Pulso acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho, com data e valor. Você reage a tempo, não depois do susto.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="#lista">Entrar na lista de espera <span class="btn-arrow" aria-hidden="true">→</span></a>
-          <a class="btn btn-demo" href="https://joaoprojetos1.github.io/Projeto-Pulso/app/" target="_blank" rel="noopener">Ver o Pulso funcionando agora <span class="btn-arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-primary" href="calculadora.html">Simular grátis <span class="btn-arrow" aria-hidden="true">→</span></a>
         </div>
-        <p class="hero-note">Sem cadastro · a demonstração abre no navegador em 10 segundos</p>
+        <p class="hero-note">Simulação na hora, de graça · veja quando o seu caixa pode apertar</p>
       </div>
 
       <div class="alert-card" role="img" aria-label="Exemplo de alerta do Pulso: seu caixa pode zerar em 29 de julho.">
@@ -700,28 +752,28 @@
         <h2>Os sinais que aparecem antes do problema.</h2>
       </div>
       <div class="watch-grid reveal stagger">
-        <div class="signal">
-          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span><span class="sev sev-crit">Crítico</span></div>
+        <div class="signal sig-crit">
+          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span><span class="sev sev-crit"><span class="sdot"></span>Crítico</span></div>
           <p>Seu caixa pode zerar em menos de 60 dias.</p>
         </div>
-        <div class="signal">
+        <div class="signal sig-warn">
           <div class="signal-top"><span class="sk">Cresce, mas o caixa aperta<span class="sk-tech">efeito tesoura</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>Você vende mais, mas o dinheiro está demorando mais a chegar.</p>
         </div>
-        <div class="signal">
+        <div class="signal sig-warn">
           <div class="signal-top"><span class="sk">Depende de poucos clientes<span class="sk-tech">concentração</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>Um único cliente responde por boa parte do seu faturamento.</p>
         </div>
-        <div class="signal">
+        <div class="signal sig-warn">
           <div class="signal-top"><span class="sk">Dinheiro fica preso<span class="sk-tech">ciclo de caixa</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>O tempo entre pagar suas contas e receber está piorando.</p>
         </div>
-        <div class="signal">
+        <div class="signal sig-warn">
           <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span><span class="sev sev-warn">Atenção</span></div>
           <p>Sua margem caiu dois meses seguidos. O custo subiu ou o preço ficou para trás.</p>
         </div>
-        <div class="signal">
-          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span><span class="sev sev-warn">Tudo certo</span></div>
+        <div class="signal sig-ok">
+          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span><span class="sev sev-ok">Tudo certo</span></div>
           <p>Quando está tudo bem, o Pulso fica quieto. Sem aviso, é bom sinal.</p>
         </div>
       </div>
@@ -775,7 +827,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Projeção de caixa 30/60/90 dias</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Alertas do que pede atenção</li>
           </ul>
-          <a class="btn btn-ghost" href="#lista">Entrar na lista</a>
+          <a class="btn btn-ghost" href="calculadora.html">Simular grátis</a>
         </div>
         <div class="plan destaque">
           <span class="p-tag">Mais escolhido</span>
@@ -786,7 +838,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Contas a pagar e a receber</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
           </ul>
-          <a class="btn btn-primary" href="#lista">Entrar na lista</a>
+          <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
         </div>
         <div class="plan">
           <span class="p-name">Pro</span>
@@ -796,7 +848,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os indicadores do motor</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#158556" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Suporte prioritário</li>
           </ul>
-          <a class="btn btn-ghost" href="#lista">Entrar na lista</a>
+          <a class="btn btn-ghost" href="calculadora.html">Simular grátis</a>
         </div>
       </div>
       <p class="plans-note">Sem fidelidade. A assinatura acontece dentro do app. Entre na lista e a gente avisa quando ele abrir.</p>
@@ -835,17 +887,19 @@
     </div>
   </section>
 
-  <!-- LISTA DE INTERESSE (CTA principal enquanto o app nao publica) -->
+  <!-- CAPTACAO DE LEAD (simulacao gratis + reserva no piloto) -->
   <section class="sec" id="lista">
     <div class="wrap cta-final reveal">
-      <span class="eyebrow">Lista de espera</span>
-      <h2>Seja o primeiro a usar o Pulso.</h2>
-      <p class="prose">O app está a caminho das lojas. Deixe seu e-mail: a gente avisa assim que ele abrir e reserva o seu lugar no piloto. Sem compromisso.</p>
+      <span class="eyebrow">Simulação grátis</span>
+      <h2>Veja quando o seu caixa pode apertar.</h2>
+      <p class="prose">Deixe seus dados e a gente te manda a simulação completa do seu caixa e reserva o seu lugar no piloto. Sem compromisso e sem custo.</p>
       <form class="lista-form" id="lista-form" novalidate>
+        <input class="lista-input" id="lista-nome" type="text" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome" required />
         <input class="lista-input" id="lista-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
-        <button class="btn btn-primary" type="submit">Quero ser avisado <span class="btn-arrow" aria-hidden="true">→</span></button>
+        <input class="lista-input" id="lista-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" aria-label="Seu WhatsApp" maxlength="16" required />
+        <button class="btn btn-primary" type="submit">Quero minha simulação <span class="btn-arrow" aria-hidden="true">→</span></button>
       </form>
-      <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Sem compromisso. Você recebe um aviso quando o app abrir.</p>
+      <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Sem compromisso. Usamos seu contato só para te enviar a simulação e o aviso de lançamento.</p>
     </div>
   </section>
 
@@ -853,23 +907,73 @@
 
 <footer class="site-foot">
   <div class="wrap">
-    <a class="brand" href="#topo" aria-label="Pulso">
-      <svg width="24" height="18" viewBox="0 0 42 24" fill="none" aria-hidden="true">
-        <path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="var(--vivo)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Pulso
-    </a>
-    <nav class="foot-links" aria-label="Rodapé">
-      <a href="calculadora.html">Calculadora</a>
-      <a href="privacidade.html">Política de privacidade</a>
-      <a href="termos.html">Termos de uso</a>
-      <a href="#faq">Perguntas frequentes</a>
-      <a href="https://wa.me/553194287877?text=Oi%2C%20preciso%20de%20suporte%20do%20Pulso." target="_blank" rel="noopener">Suporte no WhatsApp</a>
-    </nav>
-    <!-- TODO(rodape): inserir o CNPJ real no lugar de "a definir" quando existir. -->
-    <span class="foot-note">Pulso · CNPJ a definir · Seus dados são seus, nunca compartilhamos.</span>
+    <div class="foot-top">
+      <div class="foot-brandcol">
+        <a class="brand" href="#topo" aria-label="Pulso">
+          <svg width="24" height="18" viewBox="0 0 42 24" fill="none" aria-hidden="true">
+            <path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="var(--vivo)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Pulso
+        </a>
+        <p class="foot-tagline">O monitor do caixa do seu negócio. Avisa, em português claro, antes do aperto — com data e valor.</p>
+        <div class="foot-badges">
+          <!-- lojas: o app ainda vai publicar; por ora os selos levam à demonstração no navegador -->
+          <a class="store-badge" href="https://joaoprojetos1.github.io/Projeto-Pulso/app/" target="_blank" rel="noopener" aria-label="Baixar na App Store (em breve)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#F4F4F6" aria-hidden="true"><path d="M16.365 1.43c0 1.14-.417 2.2-1.11 2.98-.84.94-2.2 1.66-3.32 1.57-.14-1.1.42-2.28 1.06-3.02.72-.84 2.02-1.47 3.1-1.53.02.14.02.28.02.42.24.02.19.06.25.1zM20.5 17.24c-.54 1.24-.8 1.79-1.5 2.89-.98 1.54-2.36 3.46-4.07 3.47-1.52.02-1.91-.99-3.97-.98-2.06.01-2.49 1-4.01.98-1.71-.01-3.02-1.74-4-3.28C-.31 15.9-.6 10.32 1.34 7.4c.98-1.48 2.53-2.42 4.07-2.42 1.57 0 2.56 1 3.86 1 1.26 0 2.03-1 3.85-1 1.37 0 2.83.75 3.87 2.03-3.4 1.86-2.85 6.72.61 8.23z"/></svg>
+            <span class="sb-txt"><small>Baixe na</small><b>App Store</b></span>
+          </a>
+          <a class="store-badge" href="https://joaoprojetos1.github.io/Projeto-Pulso/app/" target="_blank" rel="noopener" aria-label="Disponível no Google Play (em breve)">
+            <svg width="18" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 1.3 13.9 12 3.6 22.7c-.36-.2-.6-.6-.6-1.06V2.36c0-.46.24-.86.6-1.06z" fill="#23C883"/><path d="m17.4 8.3 3.05 1.74c.9.5.9 1.42 0 1.92L17.4 13.7 14.7 12z" fill="#F4F4F6"/><path d="M3.6 1.3c.28-.16.63-.18.96 0l12.84 7-2.7 2.7z" fill="#7FE7B8"/><path d="m3.6 22.7 11.1-11 2.7 2.7-12.84 7c-.33.18-.68.16-.96 0z" fill="#C4C6CE"/></svg>
+            <span class="sb-txt"><small>Disponível no</small><b>Google Play</b></span>
+          </a>
+        </div>
+        <span class="foot-soon">Em breve nas lojas · hoje você já testa no navegador</span>
+      </div>
+
+      <nav class="foot-col" aria-label="Produto">
+        <h4>Produto</h4>
+        <ul>
+          <li><a href="#como">Como funciona</a></li>
+          <li><a href="#vigia">O que ele monitora</a></li>
+          <li><a href="#planos">Planos</a></li>
+          <li><a href="calculadora.html">Simular grátis</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot-col" aria-label="Institucional">
+        <h4>Institucional</h4>
+        <ul>
+          <li><a href="privacidade.html">Política de privacidade</a></li>
+          <li><a href="termos.html">Termos de uso</a></li>
+          <li><a href="#faq">Perguntas frequentes</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot-col" aria-label="Contato">
+        <h4>Contato</h4>
+        <ul>
+          <li><a href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Pulso." target="_blank" rel="noopener">Fale no WhatsApp</a></li>
+          <li><a href="calculadora.html">Simulação grátis</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="foot-bottom">
+      <!-- TODO(rodape): CNPJ real, e-mail de contato e cidade quando existirem (hoje placeholder). -->
+      <span class="foot-note">© 2026 Pulso · CNPJ a definir · Seus dados são seus, nunca compartilhamos.</span>
+      <a class="foot-social" href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Pulso." target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#7FE7B8" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.35-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.19-1.58-1.19-3.02s.76-2.14 1.03-2.43c.27-.29.58-.36.78-.36l.56.01c.18.01.42-.07.66.5.24.58.82 2.02.9 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.12.63-.07.17-.19.73-.85.92-1.14.19-.29.39-.24.66-.15.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.68-.17 1.36z"/></svg>
+        Suporte no WhatsApp
+      </a>
+    </div>
   </div>
 </footer>
+
+<!-- botão flutuante do WhatsApp (tira-dúvidas) -->
+<a class="wa-float" href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Pulso." target="_blank" rel="noopener" aria-label="Tirar dúvidas no WhatsApp">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.35-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.19-1.58-1.19-3.02s.76-2.14 1.03-2.43c.27-.29.58-.36.78-.36l.56.01c.18.01.42-.07.66.5.24.58.82 2.02.9 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.12.63-.07.17-.19.73-.85.92-1.14.19-.29.39-.24.66-.15.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.68-.17 1.36z"/></svg>
+  <span class="wa-tip">Dúvidas? Fale com a gente</span>
+</a>
 
 <script>
   // Aparecer suave ao rolar. Só liga se o navegador suportar e se a pessoa
@@ -965,34 +1069,55 @@
     window.matchMedia('(min-width: 861px)').addEventListener('change', function (m) { if (m.matches) fechar(); });
   })();
 
-  // Lista de interesse: PONTO DE INTEGRACAO ISOLADO. Enquanto o app nao publica,
-  // o CTA guarda o e-mail. Quando o app abrir nas lojas, troque este bloco (e os
-  // botoes href="#lista") por um redirecionamento aos links de App Store / Play.
+  // Máscara de telefone BR: formata (DD) 9XXXX-XXXX enquanto digita e só deixa
+  // números. Reaproveitável. Devolve os dígitos limpos por baixo.
+  function ligarMascaraTelefone(input) {
+    if (!input) return;
+    function formatar(digitos) {
+      digitos = digitos.replace(/\D/g, '').slice(0, 11);
+      if (digitos.length === 0) return '';
+      if (digitos.length <= 2) return '(' + digitos;
+      if (digitos.length <= 6) return '(' + digitos.slice(0, 2) + ') ' + digitos.slice(2);
+      if (digitos.length <= 10) return '(' + digitos.slice(0, 2) + ') ' + digitos.slice(2, 6) + '-' + digitos.slice(6);
+      return '(' + digitos.slice(0, 2) + ') ' + digitos.slice(2, 7) + '-' + digitos.slice(7);
+    }
+    input.addEventListener('input', function () { input.value = formatar(input.value); });
+  }
+  function telefoneValido(v) { var d = (v || '').replace(/\D/g, ''); return d.length === 10 || d.length === 11; }
+  function soDigitos(v) { return (v || '').replace(/\D/g, ''); }
+
+  // Captação de lead: PONTO DE INTEGRACAO ISOLADO. Enquanto o app nao publica, o
+  // CTA guarda nome + e-mail + telefone. Quando o app abrir nas lojas, troque a
+  // navegação dos botões "Simular grátis" pelos links de App Store / Play.
   (function () {
     var API = 'https://pulso-api-9byl.onrender.com/interesse';
     var form = document.getElementById('lista-form');
-    var input = document.getElementById('lista-email');
+    var nome = document.getElementById('lista-nome');
+    var email = document.getElementById('lista-email');
+    var tel = document.getElementById('lista-tel');
     var msg = document.getElementById('lista-msg');
-    if (!form || !input || !msg) return;
+    if (!form || !email || !msg) return;
+    ligarMascaraTelefone(tel);
     var enviando = false;
     function mostra(texto, cls) { msg.textContent = texto; msg.className = 'cta-note ' + (cls || ''); }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (enviando) return;
-      var email = (input.value || '').trim();
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-        mostra('Confira o e-mail e tente de novo.', 'lista-msg-erro'); input.focus(); return;
-      }
+      var vNome = (nome.value || '').trim();
+      var vEmail = (email.value || '').trim();
+      if (vNome.length < 2) { mostra('Digite o seu nome.', 'lista-msg-erro'); nome.focus(); return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(vEmail)) { mostra('Confira o e-mail e tente de novo.', 'lista-msg-erro'); email.focus(); return; }
+      if (!telefoneValido(tel.value)) { mostra('Confira o WhatsApp com DDD e tente de novo.', 'lista-msg-erro'); tel.focus(); return; }
       enviando = true;
       mostra('Enviando...', '');
       fetch(API, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: email, source: 'site' })
+        body: JSON.stringify({ email: vEmail, name: vNome, phone: soDigitos(tel.value), source: 'site' })
       }).then(function (r) {
         if (!r.ok) throw new Error('falhou');
         form.reset();
-        mostra('Pronto! Você está na lista. A gente avisa quando o app abrir.', 'lista-msg-ok');
+        mostra('Pronto! A gente te envia a simulação e avisa quando o app abrir.', 'lista-msg-ok');
       }).catch(function () {
         mostra('Não consegui salvar agora. Tente de novo em instantes.', 'lista-msg-erro');
       }).then(function () { enviando = false; });
