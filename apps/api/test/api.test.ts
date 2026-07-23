@@ -142,6 +142,11 @@ describe('fluxo completo: clínica da tesoura', () => {
     // o diagnóstico também é exposto no dashboard
     expect(body.diagnosis).toBeTruthy();
     expect(['pressao', 'critico', 'uti']).toContain(body.diagnosis.stage);
+    // curva diária da projeção (item 14): um ponto por dia + a abertura
+    expect(Array.isArray(body.projectionCurve)).toBe(true);
+    expect(body.projectionCurve.length).toBeGreaterThan(30);
+    expect(body.projectionCurve[0]).toHaveProperty('day');
+    expect(body.projectionCurve[0]).toHaveProperty('cents');
   });
 
   it('recalcular o mesmo dia substitui os alertas em vez de duplicar', async () => {

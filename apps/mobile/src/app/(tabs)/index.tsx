@@ -128,9 +128,15 @@ export default function Dashboard() {
   const receita = (ind.revenue_current?.value ?? null) as number | null;
   const receitaAnterior = (ind.revenue_previous?.value ?? null) as number | null;
 
-  const curva = [saldoHoje, ...(projecao ?? []).map((p) => p.projectedCents)].filter(
-    (v): v is number => typeof v === 'number',
-  );
+  // curva diária (item 14) quando o servidor manda; senão, os poucos pontos de sempre
+  const curvaDiaria = dashboard.projectionCurve ?? [];
+  const usaDiaria = curvaDiaria.length >= 2;
+  const curva = usaDiaria
+    ? curvaDiaria.map((p) => p.cents)
+    : [saldoHoje, ...(projecao ?? []).map((p) => p.projectedCents)].filter(
+        (v): v is number => typeof v === 'number',
+      );
+  const curvaDatas = usaDiaria ? curvaDiaria.map((p) => p.day) : undefined;
 
   const saudavel = !zeroOn;
 
@@ -305,7 +311,7 @@ export default function Dashboard() {
               {brl(plannedTotal)}
             </Text>
           )}
-          <PulseLine points={curva} color={saudavel ? colors.vivo : colors.critico} />
+          <PulseLine points={curva} dates={curvaDatas} color={saudavel ? colors.vivo : colors.critico} />
           {/* legenda do tempo sob o gráfico: horizontes que o servidor mandou */}
           {curva.length >= 2 && (
             <View style={styles.legenda}>

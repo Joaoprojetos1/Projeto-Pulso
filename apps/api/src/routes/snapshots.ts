@@ -1,5 +1,5 @@
-import { computeAll, CORE_VERSION, diagnose, evaluate } from '@pulso/core';
-import type { CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
+import { addDays, computeAll, CORE_VERSION, diagnose, evaluate, projectCash } from '@pulso/core';
+import type { CashProjection, CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
 import { writeDiagnosis } from '../ai/diagnosis-writer';
@@ -214,6 +214,21 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     WHERE snapshot_id = ${snapshot.id}
     ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END, created_at`;
 
+  // Curva DIÁRIA da projeção (item 14): o mesmo motor, pedindo todos os dias.
+  // Fica FORA do payload (não vai para o prompt do chat, não infla o token);
+  // é recalculada aqui, fresca, a partir dos mesmos dados do snapshot.
+  const asOf = snapshot.as_of as string;
+  const snapCurva = await loadCompanySnapshot(sql, company, asOf);
+  const projDiaria = projectCash(snapCurva, Array.from({ length: 90 }, (_, i) => i + 1));
+  const pontos = projDiaria.value as CashProjection[] | null;
+  const abertura = projDiaria.inputs.openingBalanceCents;
+  const projectionCurve = pontos
+    ? [
+        ...(typeof abertura === 'number' ? [{ day: asOf, cents: abertura }] : []),
+        ...pontos.map((p) => ({ day: addDays(asOf, p.horizonDays), cents: p.projectedCents })),
+      ]
+    : [];
+
   return {
     company: toCompanyJson(company),
     snapshot: {
@@ -230,6 +245,8 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     diagnosis: snapshot.diagnosis ?? null,
     // resumo da semana (null quando não há snapshot anterior de >= 5 dias)
     weeklySummary: snapshot.weekly_summary ?? null,
+    // curva diária da projeção, para o gráfico interativo (scrubbing) do app
+    projectionCurve,
     alerts: alertRows.map((a) => ({
       // id + opened/acted para o app marcar lido/agido a partir do próprio painel
       id: a.id,

@@ -95,6 +95,8 @@ export interface DashboardJson {
   diagnosis?: DiagnosisJson | null;
   /** Resumo da semana (null quando não há snapshot anterior de >= 5 dias). */
   weeklySummary?: WeeklySummaryJson | null;
+  /** Curva diária da projeção (um ponto por dia) para o gráfico interativo. */
+  projectionCurve?: { day: string; cents: number }[];
   alerts: AlertJson[];
 }
 
@@ -307,6 +309,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
     comparativos?: Comparativos;
     diagnosis?: DiagnosisJson | null;
     weeklySummary?: WeeklySummaryJson | null;
+    projectionCurve?: { day: string; cents: number }[];
     alerts: AlertJson[];
   };
   const dashboard: DashboardJson | null = body.snapshot
@@ -316,6 +319,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
         comparativos: body.comparativos,
         diagnosis: body.diagnosis ?? null,
         weeklySummary: body.weeklySummary ?? null,
+        projectionCurve: body.projectionCurve,
         alerts: body.alerts,
       }
     : null;
