@@ -1,9 +1,10 @@
 /**
- * Conta. Sem checkout dentro do app — nem botão, nem link clicável de
- * pagamento (regra do KICKOFF: a assinatura acontece no site; é isso que
- * mantém a comissão da loja fora do ticket).
+ * Conta — padrão de mercado: cabeçalho com avatar + grupos de lista (ícone,
+ * rótulo, chevron). Refinamento UX A8. Sem checkout DENTRO do app: a assinatura
+ * acontece no site (é o que mantém a comissão da loja fora do ticket).
  */
 
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -15,13 +16,14 @@ import { dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
-// versão do app (de app.json). Um piloto sem canal de reclamação perde o melhor dado.
+type IonName = React.ComponentProps<typeof Ionicons>['name'];
+
 const VERSAO_APP = Constants.expoConfig?.version ?? '—';
 const FEEDBACK_URL =
   'https://wa.me/553194287877?text=' +
   encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
-// checkout no site (sem comissão de loja). from=app avisa a página que veio do app.
 const CHECKOUT_URL = 'https://pulso-site.onrender.com/checkout.html?from=app';
+const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
 const NOME_PLANO: Record<string, string> = {
   piloto: 'Piloto',
@@ -30,117 +32,99 @@ const NOME_PLANO: Record<string, string> = {
   pro: 'Pro',
 };
 
+/** Iniciais do negócio (até 2 letras) para o avatar. */
+function iniciais(nome: string): string {
+  const limpo = nome.replace(/^Cl[ií]nica\s+/i, '').trim();
+  const partes = limpo.split(/\s+/).filter(Boolean);
+  const letras = (partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1]![0] : '');
+  return letras.toUpperCase() || '·';
+}
+
 export default function Conta() {
   const { dashboard, fonte, token, sair } = usePulso();
   const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
+  const demo = fonte === 'demo';
+  const nome = dashboard?.company.name ?? '·';
 
   useEffect(() => {
     if (!token) return;
     let vivo = true;
     fetchMySubscription(token)
       .then((s) => { if (vivo) setAssinatura(s); })
-      .catch(() => { /* silencioso: o cartão cai no texto padrão do piloto */ });
+      .catch(() => { /* silencioso: cai no texto padrão do piloto */ });
     return () => { vivo = false; };
   }, [token]);
+
+  const planoSub = demo
+    ? 'Demonstração · dados fictícios'
+    : assinatura?.active
+      ? `Plano ${NOME_PLANO[assinatura.plan] ?? assinatura.plan} · ativo${assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}`
+      : 'Plano piloto';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.titulo}>Conta</Text>
 
-        <View style={styles.cartao}>
-          <Text style={styles.rotulo}>NEGÓCIO</Text>
-          <Text style={styles.nome}>{dashboard?.company.name ?? '·'}</Text>
-          <Text style={styles.detalhe}>
-            {fonte === 'demo' ? 'Modo demonstração · dados fictícios' : 'Conectada ao servidor do Pulso'}
-          </Text>
+        {/* cabeçalho: avatar + negócio + plano */}
+        <View style={styles.cabecalho}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarTexto}>{iniciais(nome)}</Text>
+          </View>
+          <View style={styles.cabecalhoMiolo}>
+            <Text style={styles.cabecalhoNome} numberOfLines={1}>{nome}</Text>
+            <Text style={styles.cabecalhoSub}>{planoSub}</Text>
+          </View>
         </View>
 
-        {fonte !== 'demo' && (
-          <View style={styles.cartao}>
-            <Text style={styles.rotulo}>MEUS NÚMEROS</Text>
-            <Text style={styles.detalhe}>
-              Mudou o caixa ou o custo fixo do mês? Atualize aqui e o Pulso refaz a projeção na hora.
-            </Text>
-            <Pressable
-              style={({ pressed }) => [styles.feedback, pressed && styles.pressionado]}
+        {/* grupo: dados e assinatura */}
+        <View style={styles.grupo}>
+          {!demo && (
+            <Linha
+              icon="cash-outline"
+              label="Meus números"
+              sub="Atualize seu caixa e custo fixo"
               onPress={() => router.push('/configurar' as Href)}
-            >
-              <Text style={styles.feedbackTexto}>Atualizar caixa e custo fixo</Text>
-            </Pressable>
-          </View>
-        )}
-
-        <View style={styles.cartao}>
-          <Text style={styles.rotulo}>PLANO</Text>
-          {assinatura?.active ? (
-            <>
-              <View style={styles.linhaAviso}>
-                <Text style={styles.nome}>{NOME_PLANO[assinatura.plan] ?? assinatura.plan}</Text>
-                <View style={styles.selo}>
-                  <Text style={styles.seloTexto}>ATIVO</Text>
-                </View>
-              </View>
-              <Text style={styles.detalhe}>
-                Sua assinatura está ativa
-                {assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}. Obrigado por fazer parte
-                do Pulso.
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text style={styles.nome}>{NOME_PLANO[assinatura?.plan ?? 'piloto'] ?? 'Piloto'}</Text>
-              <Text style={styles.detalhe}>
-                Você está no piloto. Quando quiser assinar, a cobrança acontece no site do Pulso — sem
-                comissão de loja e sem pagamento dentro do app.
-              </Text>
-              {fonte !== 'demo' && (
-                <Pressable
-                  style={({ pressed }) => [styles.assinar, pressed && styles.pressionado]}
-                  onPress={() => Linking.openURL(CHECKOUT_URL)}
-                >
-                  <Text style={styles.assinarTexto}>Assinar o Pulso</Text>
-                </Pressable>
-              )}
-            </>
+            />
           )}
+          <Linha
+            icon="card-outline"
+            label="Plano e assinatura"
+            sub={
+              assinatura?.active
+                ? 'Assinatura ativa'
+                : demo
+                  ? 'Entre com sua conta para assinar'
+                  : 'Assinar no site, sem comissão de loja'
+            }
+            badge={assinatura?.active ? 'ATIVO' : undefined}
+            onPress={!demo && !assinatura?.active ? () => Linking.openURL(CHECKOUT_URL) : undefined}
+            ultimo
+          />
         </View>
 
-        <View style={styles.cartao}>
-          <Text style={styles.rotulo}>AVISOS NO WHATSAPP</Text>
-          <View style={styles.linhaAviso}>
-            <Text style={styles.nome}>Alertas de caixa</Text>
-            <View style={styles.selo}>
-              <Text style={styles.seloTexto}>EM BREVE</Text>
-            </View>
-          </View>
-          <Text style={styles.detalhe}>
-            Quando o aviso pelo WhatsApp estiver ligado, os alertas sérios (como o caixa perto de
-            zerar) chegam direto no seu número, uma vez por dia. Por enquanto você acompanha tudo aqui
-            no app e no painel.
-          </Text>
+        {/* grupo: avisos, segurança, privacidade */}
+        <View style={styles.grupo}>
+          <Linha icon="notifications-outline" label="Avisos no WhatsApp" sub="Em breve" />
+          <Linha icon="lock-closed-outline" label="Segurança (biometria)" sub="Em breve" />
+          <Linha
+            icon="shield-checkmark-outline"
+            label="Dados e privacidade"
+            sub="Seus números são só seus"
+            onPress={() => Linking.openURL(PRIVACIDADE_URL)}
+            ultimo
+          />
         </View>
 
-        <View style={styles.cartao}>
-          <Text style={styles.rotulo}>SEUS DADOS</Text>
-          <Text style={styles.detalhe}>
-            Os lançamentos do seu negócio ficam guardados no servidor do Pulso, protegidos e usados só
-            para calcular seus indicadores. Nenhum dado seu treina IA nem é compartilhado.
-          </Text>
-        </View>
-
-        <View style={styles.cartao}>
-          <Text style={styles.rotulo}>AJUDA E FEEDBACK</Text>
-          <Text style={styles.detalhe}>
-            Encontrou um problema ou tem uma ideia? Sua opinião é o que mais ajuda a construir o Pulso.
-          </Text>
-          <Pressable
-            style={({ pressed }) => [styles.feedback, pressed && styles.pressionado]}
+        {/* grupo: ajuda */}
+        <View style={styles.grupo}>
+          <Linha
+            icon="chatbubble-ellipses-outline"
+            label="Ajuda e feedback"
+            sub="Fale com a gente no WhatsApp"
             onPress={() => Linking.openURL(FEEDBACK_URL)}
-          >
-            <Text style={styles.feedbackTexto}>Enviar feedback</Text>
-          </Pressable>
-          <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
+            ultimo
+          />
         </View>
 
         <Pressable
@@ -150,16 +134,57 @@ export default function Conta() {
             router.replace('/');
           }}
         >
+          <Ionicons name="log-out-outline" size={18} color={colors.critico} />
           <Text style={styles.sairTexto}>Sair</Text>
         </Pressable>
+
+        <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function Linha({
+  icon,
+  label,
+  sub,
+  badge,
+  onPress,
+  ultimo,
+}: {
+  icon: IonName;
+  label: string;
+  sub?: string;
+  badge?: string;
+  onPress?: () => void;
+  ultimo?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.linha, !ultimo && styles.linhaBorda, pressed && onPress && styles.pressionado]}
+    >
+      <View style={styles.linhaIcone}>
+        <Ionicons name={icon} size={18} color={colors.mata} />
+      </View>
+      <View style={styles.linhaMiolo}>
+        <Text style={styles.linhaLabel}>{label}</Text>
+        {sub ? <Text style={styles.linhaSub}>{sub}</Text> : null}
+      </View>
+      {badge ? (
+        <View style={styles.selo}>
+          <Text style={styles.seloTexto}>{badge}</Text>
+        </View>
+      ) : null}
+      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.cinza} /> : null}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
-  scroll: { padding: 18, gap: 12 },
+  scroll: { padding: 18, gap: 14 },
   titulo: {
     fontFamily: fonts.display,
     fontSize: 19,
@@ -167,18 +192,42 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
     marginBottom: 2,
   },
-  cartao: {
+
+  cabecalho: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 4 },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.mata,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarTexto: { fontFamily: fonts.display, fontSize: 20, color: colors.papel },
+  cabecalhoMiolo: { flex: 1, gap: 2 },
+  cabecalhoNome: { fontFamily: fonts.display, fontSize: 19, color: colors.tinta, letterSpacing: -0.3 },
+  cabecalhoSub: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
+
+  grupo: {
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.linha,
     borderRadius: 16,
-    padding: 16,
-    gap: 5,
+    overflow: 'hidden',
   },
-  rotulo: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1.2, color: colors.cinza },
-  nome: { fontFamily: fonts.display, fontSize: 17, color: colors.tinta, letterSpacing: -0.2 },
-  detalhe: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza },
-  linhaAviso: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 14 },
+  linhaBorda: { borderBottomWidth: 1, borderBottomColor: colors.linha },
+  linhaIcone: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: colors.papel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linhaMiolo: { flex: 1, gap: 1 },
+  linhaLabel: { fontFamily: fonts.corpoForte, fontSize: 15, color: colors.tinta },
+  linhaSub: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
+
   selo: {
     backgroundColor: '#F0FBF6',
     borderWidth: 1,
@@ -189,32 +238,25 @@ const styles = StyleSheet.create({
   },
   seloTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.okEscuro },
 
-  feedback: {
-    backgroundColor: colors.mata,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  feedbackTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.papel },
-  assinar: {
-    backgroundColor: colors.vivo,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  assinarTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: '#06231A' },
-  versao: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.6, color: colors.cinza, marginTop: 6 },
-
   sair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     borderWidth: 1.5,
-    borderColor: colors.mata,
+    borderColor: 'rgba(216,80,63,0.4)', // vermelho discreto do "Sair"
     borderRadius: 14,
     paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
-  pressionado: { opacity: 0.7 },
-  sairTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
+  pressionado: { opacity: 0.6 },
+  sairTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.critico },
+  versao: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    letterSpacing: 0.6,
+    color: colors.cinza,
+    textAlign: 'center',
+    marginTop: 4,
+  },
 });

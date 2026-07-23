@@ -23,11 +23,16 @@ import {
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Heartbeat } from '@/components/heartbeat';
 import { MoneyInput } from '@/components/money-input';
 import { fetchMySetup, saveMySetup } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
+
+// o servidor grátis "dorme"; o 1º cálculo pode demorar. Mensagens de etapa
+// (sem porcentagem, que seria teatro) enquanto o motor roda (A3).
+const ETAPAS = ['Ligando o monitor…', 'Calculando sua projeção…', 'Quase lá…'];
 
 export default function Configurar() {
   const { token, carregar } = usePulso();
@@ -38,7 +43,18 @@ export default function Configurar() {
   const [plannedCount, setPlannedCount] = useState(0);
   const [carregandoSetup, setCarregandoSetup] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [etapa, setEtapa] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
+
+  // roda as mensagens de etapa enquanto salva (a cada ~3,5s, sem passar da última)
+  useEffect(() => {
+    if (!salvando) {
+      setEtapa(0);
+      return;
+    }
+    const t = setInterval(() => setEtapa((i) => Math.min(i + 1, ETAPAS.length - 1)), 3500);
+    return () => clearInterval(t);
+  }, [salvando]);
 
   const prefill = useCallback(async () => {
     if (!token) {
@@ -112,6 +128,12 @@ export default function Configurar() {
 
         {carregandoSetup ? (
           <ActivityIndicator color={colors.mata} style={{ marginTop: 30 }} />
+        ) : salvando ? (
+          <View style={styles.esperando}>
+            <Heartbeat color={colors.vivo} width={72} height={26} />
+            <Text style={styles.esperandoMsg}>{ETAPAS[etapa]}</Text>
+            <Text style={styles.esperandoSub}>O Pulso está montando a sua projeção.</Text>
+          </View>
         ) : (
           <Animated.View entering={FadeInDown.duration(240).delay(60)}>
             <Text style={styles.label}>QUANTO VOCÊ TEM EM CAIXA HOJE</Text>
@@ -170,6 +192,9 @@ export default function Configurar() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
   flex: { flex: 1 },
+  esperando: { alignItems: 'center', justifyContent: 'center', gap: 14, paddingTop: 60 },
+  esperandoMsg: { fontFamily: fonts.display, fontSize: 18, color: colors.tinta, letterSpacing: -0.2 },
+  esperandoSub: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.cinza, textAlign: 'center' },
   cabecalho: {
     flexDirection: 'row',
     alignItems: 'center',
