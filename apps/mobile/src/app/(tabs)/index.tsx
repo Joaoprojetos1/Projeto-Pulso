@@ -56,19 +56,6 @@ const STAGE_SEV: Record<string, Severity> = {
   uti: 'critical',
 };
 
-// Driver (premissa) → frase de dono. Só rótulo fixo, sem cálculo (app burro).
-const PREMISSA_LABEL: Record<string, string> = {
-  P1: 'Sua reserva de caixa está baixa',
-  P2: 'O caixa projetado pode zerar em breve',
-  P3: 'Você vende mais, mas o dinheiro fica preso (efeito tesoura)',
-  P4: 'Seu ciclo de caixa piorou',
-  P5: 'Sua margem de contribuição está apertada',
-  P6: 'A receita está perto do ponto de equilíbrio',
-  P7: 'Seu faturamento está concentrado num cliente só',
-  P8: 'Há inadimplência alta na sua carteira',
-  caixa_negativo: 'Seu caixa está negativo hoje',
-};
-
 /** Tendência atual × anterior. `menorEhMelhor` inverte o julgamento (ex.: ciclo). */
 function tendencia(
   atual: number | null | undefined,
@@ -87,8 +74,6 @@ export default function Dashboard() {
   const { dashboard, fonte, carregando, carregar, mostrandoCache } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
-  // "por que esse momento?" do diagnóstico aberto?
-  const [diagAberto, setDiagAberto] = useState(false);
 
   if (!dashboard) {
     // enquanto busca sem dados ainda, mostra o "esqueleto" (não uma tela branca)
@@ -246,51 +231,21 @@ export default function Dashboard() {
           </View>
         )}
 
-        {/* resumo da semana — o que mudou desde a semana passada */}
-        {dashboard.weeklySummary && <WeeklyCard summary={dashboard.weeklySummary} />}
-
-        {/* diagnóstico do momento — o elemento principal */}
-        {diag && (
-          <View style={styles.diag}>
-            <View style={styles.diagTopo}>
+        {/* cartão de caixa — o herói absoluto da tela, com o estágio como selo */}
+        <View style={styles.cash}>
+          {diag && (
+            <View style={styles.cashTopo}>
               <View style={[styles.diagBadge, { backgroundColor: diagCor }]}>
                 <Text style={styles.diagBadgeTexto}>{STAGE_LABEL[diag.stage] ?? diag.stage}</Text>
               </View>
               {diag.transitions.direction === 'piorou' && (
-                <Text style={[styles.diagTend, { color: colors.alerta }]}>↑ piorou no mês</Text>
+                <Text style={[styles.cashTend, { color: '#F0A196' }]}>↑ piorou</Text>
               )}
               {diag.transitions.direction === 'melhorou' && (
-                <Text style={[styles.diagTend, { color: colors.okEscuro }]}>↓ melhorou no mês</Text>
+                <Text style={[styles.cashTend, { color: '#7FE7B8' }]}>↓ melhorou</Text>
               )}
             </View>
-            <Text style={styles.diagTitulo}>{diag.text.title}</Text>
-            {diag.text.body ? <Text style={styles.diagCorpo}>{diag.text.body}</Text> : null}
-            {diag.drivers.length > 0 && (
-              <Pressable
-                onPress={() => setDiagAberto((v) => !v)}
-                style={({ pressed }) => pressed && styles.pressionado}
-                hitSlop={6}
-              >
-                <Text style={styles.diagPorque}>
-                  {diagAberto ? 'ocultar' : 'por que esse momento?'}
-                </Text>
-              </Pressable>
-            )}
-            {diagAberto && diag.drivers.length > 0 && (
-              <Animated.View entering={FadeIn.duration(180)} style={styles.diagDrivers}>
-                <Text style={styles.explicaRotulo}>DE ONDE VEM ESSE NÚMERO</Text>
-                {diag.drivers.map((d) => (
-                  <Text key={d.premissa} style={styles.diagDriverItem}>
-                    • {PREMISSA_LABEL[d.premissa] ?? d.premissa}
-                  </Text>
-                ))}
-              </Animated.View>
-            )}
-          </View>
-        )}
-
-        {/* cartão de caixa */}
-        <View style={styles.cash}>
+          )}
           <Text style={styles.cashRotulo}>CAIXA PROJETADO · 30 DIAS</Text>
           {p30 ? (
             <CountUpMoney cents={p30.projectedCents} style={styles.cashValor} />
@@ -340,6 +295,11 @@ export default function Dashboard() {
           )}
         </View>
 
+        {/* o momento, em uma linha; o "porquê" fica no detalhe, não na home */}
+        {diag && diag.text.title ? (
+          <Text style={styles.momentoLinha}>{diag.text.title}</Text>
+        ) : null}
+
         {fonte !== 'demo' && (
           <Pressable
             onPress={() => router.push('/simular' as Href)}
@@ -371,33 +331,30 @@ export default function Dashboard() {
           </Animated.View>
         )}
 
-        {/* alertas */}
-        <Text style={styles.secao}>O que pede sua atenção</Text>
+        {/* resumo da semana — cartão discreto, mais abaixo (não disputa a home) */}
+        {dashboard.weeklySummary && <WeeklyCard summary={dashboard.weeklySummary} />}
+
+        {/* atenção — faixas de uma linha, tocáveis; o detalhe completo abre no toque */}
+        {dashboard.alerts.length > 0 && (
+          <Text style={styles.secao}>O que pede sua atenção</Text>
+        )}
         <View style={styles.alertas}>
           {dashboard.alerts.map((a, i) => (
             <Pressable
               key={`${a.ruleKey}-${i}`}
-              style={({ pressed }) => [styles.alerta, pressed && styles.pressionado]}
+              style={({ pressed }) => [styles.faixa, pressed && styles.pressionado]}
               onPress={() => router.push(`/alerta/${i}`)}
             >
-              <View
-                style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]}
-              />
-              <View style={styles.alertaMiolo}>
-                <View style={styles.alertaTituloLinha}>
-                  {fonte !== 'demo' && !a.openedAt && (
-                    <View
-                      style={[styles.naoLidoPonto, { backgroundColor: severityColor[a.severity as Severity] }]}
-                    />
-                  )}
-                  <Text style={styles.alertaTitulo}>{a.textTitle ?? a.ruleKey}</Text>
-                </View>
-                {a.textBody ? (
-                  <Text style={styles.alertaCorpo} numberOfLines={2}>
-                    {a.textBody}
-                  </Text>
-                ) : null}
-              </View>
+              <View style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]} />
+              {fonte !== 'demo' && !a.openedAt && (
+                <View
+                  style={[styles.naoLidoPonto, { backgroundColor: severityColor[a.severity as Severity] }]}
+                />
+              )}
+              <Text style={styles.faixaTitulo} numberOfLines={1}>
+                {a.textTitle ?? a.ruleKey}
+              </Text>
+              <Text style={styles.faixaChevron}>›</Text>
             </Pressable>
           ))}
         </View>
@@ -627,6 +584,34 @@ const styles = StyleSheet.create({
   },
   cashOk: { fontFamily: fonts.corpoForte, color: colors.vivo },
   cashRuim: { fontFamily: fonts.corpoForte, color: '#F0A196' },
+  cashTopo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  cashTend: { fontFamily: fonts.corpoMedio, fontSize: 11 },
+  momentoLinha: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    fontFamily: fonts.corpoForte,
+    fontSize: 15,
+    lineHeight: 21,
+    color: colors.tinta,
+  },
+  faixa: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  faixaTitulo: { flex: 1, fontFamily: fonts.corpoForte, fontSize: 14, color: colors.tinta },
+  faixaChevron: { fontFamily: fonts.display, fontSize: 18, color: colors.cinza },
 
   legenda: {
     flexDirection: 'row',
@@ -705,7 +690,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   pressionado: { opacity: 0.9, transform: [{ scale: 0.98 }] },
-  barra: { width: 7, borderRadius: 4 },
+  barra: { width: 5, height: 24, borderRadius: 3 },
   alertaMiolo: { flex: 1, gap: 2 },
   alertaTituloLinha: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   naoLidoPonto: { width: 8, height: 8, borderRadius: 4 },
