@@ -10,6 +10,8 @@ import {
   monthlyFixedCost,
   contributionMargin,
   customerConcentration,
+  operatingBreakEven,
+  delinquencyRate,
   projectCash,
   type CashProjection,
 } from './indicators';
@@ -359,6 +361,56 @@ describe('projectCash', () => {
     // Auditoria: projeta pelo atraso REAL (15d), não pela data prometida.
     expect(ind.inputs.avgLatenessDays).toBe(15);
     expect(ind.inputs.openingBalanceCents).toBe(800000);
+  });
+});
+
+// ---------------------------------------------------------------
+// 09b — Ponto de equilíbrio (break-even)
+// ---------------------------------------------------------------
+describe('operatingBreakEven', () => {
+  it('break-even = custo fixo / margem de contribuição', () => {
+    // 90 dias de receita R$ 30.000, custo variável R$ 15.000 → margem 0,5
+    const snap = snapshot({
+      asOf: '2026-07-01',
+      declaredFixedCostCents: 600000, // R$ 6.000/mês
+      entries: [
+        entry({ kind: 'receivable', amountCents: 3000000, issuedOn: '2026-06-01' }),
+        entry({ kind: 'payable', amountCents: 1500000, issuedOn: '2026-06-01', costType: 'variable' }),
+      ],
+    });
+    const r = operatingBreakEven(snap);
+    // 600000 / 0,5 = 1.200.000
+    expect(r.value).toBe(1200000);
+  });
+
+  it('dado insuficiente: sem margem → null com motivo', () => {
+    const r = operatingBreakEven(snapshot({ asOf: '2026-07-01', declaredFixedCostCents: 600000 }));
+    expect(r.value).toBeNull();
+    expect(r.insufficientReason).toMatch(/margem|ponto de equil/i);
+  });
+});
+
+// ---------------------------------------------------------------
+// 10b — Inadimplência da carteira (90+ dias)
+// ---------------------------------------------------------------
+describe('delinquencyRate', () => {
+  it('fração (por valor) dos recebíveis em aberto vencidos há 90+ dias', () => {
+    const snap = snapshot({
+      asOf: '2026-07-01',
+      entries: [
+        // vencido há mais de 90 dias (due 2026-03-01): R$ 2.000
+        entry({ kind: 'receivable', amountCents: 200000, issuedOn: '2026-02-01', dueOn: '2026-03-01' }),
+        // em aberto recente: R$ 6.000
+        entry({ kind: 'receivable', amountCents: 600000, issuedOn: '2026-06-01', dueOn: '2026-06-20' }),
+      ],
+    });
+    const r = delinquencyRate(snap);
+    expect(r.value).toBeCloseTo(0.25, 5); // 2.000 de 8.000
+  });
+
+  it('dado insuficiente: sem recebíveis em aberto → null', () => {
+    const r = delinquencyRate(snapshot({ asOf: '2026-07-01' }));
+    expect(r.value).toBeNull();
   });
 });
 

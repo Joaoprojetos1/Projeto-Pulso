@@ -362,6 +362,77 @@ export function customerConcentration(
 }
 
 // ---------------------------------------------------------------
+// 09b — Ponto de equilíbrio (break-even) — insumo da premissa P6 do diagnóstico
+//
+// Receita mensal mínima para cobrir o custo fixo, dado quanto sobra de cada
+// venda (margem de contribuição): break_even = custo_fixo / margem.
+// Abaixo dele, a operação não se paga.
+// ---------------------------------------------------------------
+
+export function operatingBreakEven(snap: CompanySnapshot): Indicator<Cents> {
+  const fixed = monthlyFixedCost(snap);
+  const margin = contributionMargin(snap);
+
+  if (fixed.value === null || margin.value === null || margin.value <= 0) {
+    return {
+      key: 'break_even_revenue',
+      value: null,
+      unit: 'cents',
+      inputs: { monthlyFixedCostCents: fixed.value, contributionMargin: margin.value },
+      insufficientReason:
+        fixed.value === null
+          ? 'Sem custo fixo para calcular o ponto de equilíbrio.'
+          : margin.value === null
+            ? 'Sem margem de contribuição para calcular o ponto de equilíbrio.'
+            : 'Margem de contribuição zero ou negativa: ponto de equilíbrio indefinido.',
+    };
+  }
+
+  return {
+    key: 'break_even_revenue',
+    value: Math.round(fixed.value / margin.value),
+    unit: 'cents',
+    inputs: { monthlyFixedCostCents: fixed.value, contributionMargin: margin.value },
+  };
+}
+
+// ---------------------------------------------------------------
+// 10b — Inadimplência da carteira (90+ dias) — insumo da premissa P8
+//
+// Dos recebíveis em aberto, que fração (por valor) está vencida há 90+ dias.
+// É a carteira que não vira caixa.
+// ---------------------------------------------------------------
+
+export function delinquencyRate(snap: CompanySnapshot): Indicator<number> {
+  const openRec = snap.entries.filter((e) => e.kind === 'receivable' && e.settledOn === null);
+  const total = openRec.reduce((s, e) => s + e.amountCents, 0);
+
+  if (total === 0) {
+    return {
+      key: 'delinquency_rate',
+      value: null,
+      unit: 'ratio',
+      inputs: {},
+      insufficientReason: 'Sem recebíveis em aberto para avaliar inadimplência.',
+    };
+  }
+
+  const aged = openRec.filter((e) => daysBetween(e.dueOn, snap.asOf) >= 90);
+  const agedTotal = aged.reduce((s, e) => s + e.amountCents, 0);
+
+  return {
+    key: 'delinquency_rate',
+    value: agedTotal / total,
+    unit: 'ratio',
+    inputs: {
+      overdue90PlusCents: agedTotal,
+      openReceivablesCents: total,
+      overdue90PlusCount: aged.length,
+    },
+  };
+}
+
+// ---------------------------------------------------------------
 // 02 — Projeção de caixa (O HERÓI)
 //
 // caixa_projetado(d) = saldo_hoje
@@ -479,6 +550,8 @@ export function projectCash(
       plannedCount: fusion.plannedCount,
       plannedTotalCents: fusion.plannedTotalCents,
       zeroOn,
+      // dias até zerar (insumo da premissa P2 do diagnóstico); null se não zera
+      zeroInDays: zeroOn ? daysBetween(snap.asOf, zeroOn) : null,
     },
   };
 }
@@ -504,5 +577,7 @@ export function computeAll(snap: CompanySnapshot): IndicatorSet {
     contribution_margin: contributionMargin(snap),
     fixed_cost_monthly: monthlyFixedCost(snap),
     customer_concentration: customerConcentration(snap),
+    break_even_revenue: operatingBreakEven(snap),
+    delinquency_rate: delinquencyRate(snap),
   };
 }
