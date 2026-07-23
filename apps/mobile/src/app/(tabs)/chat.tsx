@@ -5,7 +5,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -16,17 +16,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated, {
-  Easing,
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Heartbeat } from '@/components/heartbeat';
 import { MarkdownLite } from '@/components/markdown-lite';
 import { QuotaError, sendMyChat, type ChatTurnJson } from '@/lib/api';
 import { responderDeterministico } from '@/lib/perguntas';
@@ -44,29 +37,14 @@ interface Mensagem {
 // sugestões de partida — perguntas que o Pulso sabe responder bem
 const SUGESTOES = ['Quando meu caixa zera?', 'Quem me deve?', 'Dá pra pagar as contas do mês?'];
 
-/** Um pontinho que pulsa, com atraso próprio (bolha "digitando…"). */
-function Ponto({ atraso }: { atraso: number }) {
-  const o = useSharedValue(0.3);
-  useEffect(() => {
-    o.value = withDelay(
-      atraso,
-      withRepeat(withTiming(1, { duration: 500, easing: Easing.inOut(Easing.ease) }), -1, true),
-    );
-  }, [o, atraso]);
-  const estilo = useAnimatedStyle(() => ({ opacity: o.value }));
-  return <Animated.View style={[styles.ponto, estilo]} />;
-}
-
-/** A bolha "digitando…" do Pulso, com três pontinhos pulsando em sequência. */
+/** A bolha "digitando…" do Pulso: a linha de batimento em miniatura pulsando. */
 function Digitando() {
   return (
     <Animated.View
       entering={FadeInDown.duration(180)}
       style={[styles.msg, styles.msgPulso, styles.digitandoBolha]}
     >
-      <Ponto atraso={0} />
-      <Ponto atraso={150} />
-      <Ponto atraso={300} />
+      <Heartbeat color={colors.okEscuro} width={46} height={16} />
     </Animated.View>
   );
 }

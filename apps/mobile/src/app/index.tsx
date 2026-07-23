@@ -5,6 +5,7 @@
  */
 
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -39,6 +40,7 @@ export default function Login() {
   const [negocio, setNegocio] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [msg, setMsg] = useState(0);
   // fluxo de recuperação de senha (estado local — não é sessão)
   const [codigo, setCodigo] = useState('');
@@ -182,17 +184,36 @@ export default function Login() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
               />
 
               <Text style={styles.label}>SENHA</Text>
-              <TextInput
-                style={styles.input}
-                value={senha}
-                onChangeText={setSenha}
-                placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
-                placeholderTextColor={colors.cinza}
-                secureTextEntry
-              />
+              <View style={styles.senhaLinha}>
+                <TextInput
+                  style={styles.senhaInput}
+                  value={senha}
+                  onChangeText={setSenha}
+                  placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
+                  placeholderTextColor={colors.cinza}
+                  secureTextEntry={!mostrarSenha}
+                  autoCapitalize="none"
+                  autoComplete={cadastrando ? 'new-password' : 'current-password'}
+                  textContentType={cadastrando ? 'newPassword' : 'password'}
+                />
+                <Pressable
+                  onPress={() => setMostrarSenha((v) => !v)}
+                  hitSlop={8}
+                  style={styles.olho}
+                  accessibilityLabel={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  <Ionicons
+                    name={mostrarSenha ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.cinza}
+                  />
+                </Pressable>
+              </View>
 
               <Pressable
                 style={({ pressed }) => [styles.botao, (pressed || !podeEnviar) && styles.pressionado]}
@@ -361,6 +382,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.tinta,
   },
+  // senha com botão de mostrar/ocultar: a "caixa" fica na linha; o input é só texto
+  senhaLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+  },
+  senhaInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontFamily: fonts.corpo,
+    fontSize: 16,
+    color: colors.tinta,
+  },
+  olho: { paddingLeft: 8, paddingVertical: 6 },
   botao: {
     backgroundColor: colors.mata,
     borderRadius: 14,
