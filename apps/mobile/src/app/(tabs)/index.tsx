@@ -98,8 +98,14 @@ export default function Dashboard() {
         <View style={styles.vazio}>
           <PulsoLogo size={30} />
           <Text style={styles.vazioTexto}>
-            Assim que seus lançamentos chegarem, o monitor liga aqui.
+            Informe seu caixa de hoje e seu custo fixo do mês, e o monitor liga na hora.
           </Text>
+          <Pressable
+            style={({ pressed }) => [styles.configurar, pressed && styles.pressionado]}
+            onPress={() => router.push('/configurar' as Href)}
+          >
+            <Text style={styles.configurarTexto}>Configurar meu caixa</Text>
+          </Pressable>
           <Pressable
             style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
             onPress={carregar}
@@ -502,6 +508,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   tentarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
+  configurar: {
+    backgroundColor: colors.vivo,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  configurarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
 
   topo: {
     flexDirection: 'row',

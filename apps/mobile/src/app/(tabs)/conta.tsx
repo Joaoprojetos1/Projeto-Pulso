@@ -5,7 +5,7 @@
  */
 
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,6 +33,21 @@ export default function Conta() {
             {fonte === 'demo' ? 'Modo demonstração · dados fictícios' : 'Conectada ao servidor do Pulso'}
           </Text>
         </View>
+
+        {fonte !== 'demo' && (
+          <View style={styles.cartao}>
+            <Text style={styles.rotulo}>MEUS NÚMEROS</Text>
+            <Text style={styles.detalhe}>
+              Mudou o caixa ou o custo fixo do mês? Atualize aqui e o Pulso refaz a projeção na hora.
+            </Text>
+            <Pressable
+              style={({ pressed }) => [styles.feedback, pressed && styles.pressionado]}
+              onPress={() => router.push('/configurar' as Href)}
+            >
+              <Text style={styles.feedbackTexto}>Atualizar caixa e custo fixo</Text>
+            </Pressable>
+          </View>
+        )}
 
         <View style={styles.cartao}>
           <Text style={styles.rotulo}>PLANO</Text>
