@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import {
   askPulso,
   CHAT_FALLBACK_VERSION,
+  DEFAULT_CHAT_HISTORY_N,
   NO_DATA_REPLY,
   type ChatModel,
   type ChatTurn,
@@ -55,7 +56,7 @@ export async function replyForCompany(
   messages: ChatTurn[],
 ): Promise<{ reply: string; modelVersion: string }> {
   const [snapshot] = await sql`
-    SELECT id, as_of::text AS as_of, payload
+    SELECT id, as_of::text AS as_of, payload, diagnosis
     FROM indicator_snapshots
     WHERE company_id = ${company.id}
     ORDER BY as_of DESC
@@ -69,11 +70,54 @@ export async function replyForCompany(
   // lança QuotaExceededError (a rota devolve 402) e a IA nunca é chamada.
   await assertWithinChatQuota(sql, company.id);
 
+  // MEMÓRIA — grava a nova pergunta do dono (a última mensagem da requisição)
+  // ANTES de carregar o histórico, para ela já entrar no contexto.
+  const nova = messages[messages.length - 1];
+  if (nova) {
+    await sql`
+      INSERT INTO chat_messages (company_id, role, content)
+      VALUES (${company.id}, ${nova.role}, ${nova.content})`;
+  }
+
+  // (a) últimas N mensagens da conversa (o servidor é a fonte da memória)
+  const histRows = await sql`
+    SELECT role, content
+    FROM chat_messages
+    WHERE company_id = ${company.id}
+    ORDER BY created_at DESC, id DESC
+    LIMIT ${DEFAULT_CHAT_HISTORY_N}`;
+  const history: ChatTurn[] = histRows
+    .reverse()
+    .map((r) => ({ role: r.role as ChatTurn['role'], content: r.content as string }));
+
   const alertRows = await sql`
     SELECT rule_key, severity::text AS severity, facts, text_title, text_body
     FROM alerts
     WHERE snapshot_id = ${snapshot.id}
     ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END`;
+
+  // (b) últimos 3 alertas ENVIADOS (de qualquer snapshot) — memória de alerta
+  const recentAlertRows = await sql`
+    SELECT rule_key, severity::text AS severity, facts, text_title, text_body
+    FROM alerts
+    WHERE company_id = ${company.id}
+    ORDER BY created_at DESC
+    LIMIT 3`;
+
+  // (c) diagnóstico atual (deste snapshot) e o anterior (snapshot anterior)
+  const diagCurrent = snapshot.diagnosis as {
+    stage: string;
+    facts?: unknown;
+    drivers?: unknown;
+    text?: { title?: string | null; body?: string | null } | null;
+  } | null;
+  const [prevSnap] = await sql`
+    SELECT as_of::text AS as_of, diagnosis
+    FROM indicator_snapshots
+    WHERE company_id = ${company.id} AND as_of < ${snapshot.as_of}
+    ORDER BY as_of DESC
+    LIMIT 1`;
+  const diagPrevious = (prevSnap?.diagnosis as typeof diagCurrent) ?? null;
 
   const aiUsage: AiCallUsage[] = [];
   const answer = await askPulso(
@@ -89,10 +133,40 @@ export async function replyForCompany(
         title: a.text_title,
         body: a.text_body,
       })),
+      recentAlerts: recentAlertRows.map((a) => ({
+        ruleKey: a.rule_key as string,
+        severity: a.severity as string,
+        facts: a.facts,
+        title: (a.text_title as string | null) ?? null,
+        body: (a.text_body as string | null) ?? null,
+      })),
+      diagnosisCurrent: diagCurrent
+        ? {
+            asOf: snapshot.as_of as string,
+            stage: diagCurrent.stage,
+            facts: diagCurrent.facts,
+            drivers: diagCurrent.drivers,
+            text: diagCurrent.text ?? null,
+          }
+        : null,
+      diagnosisPrevious: diagPrevious
+        ? {
+            asOf: (prevSnap?.as_of as string | undefined) ?? null,
+            stage: diagPrevious.stage,
+            facts: diagPrevious.facts,
+            drivers: diagPrevious.drivers,
+            text: diagPrevious.text ?? null,
+          }
+        : null,
     },
-    messages,
+    history,
     (u) => aiUsage.push(u),
   );
+
+  // MEMÓRIA — grava a resposta do Pulso (o que o dono viu)
+  await sql`
+    INSERT INTO chat_messages (company_id, role, content)
+    VALUES (${company.id}, 'assistant', ${answer.text})`;
 
   // medição do consumo da IA (best-effort): nunca derruba a conversa
   try {

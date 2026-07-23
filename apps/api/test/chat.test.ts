@@ -142,3 +142,60 @@ describe('askPulso', () => {
     expect(usos).toHaveLength(2);
   });
 });
+
+describe('memória: teto de tokens', () => {
+  it('corta o histórico mais antigo, preserva o retrato e a pergunta atual', () => {
+    const turns = Array.from({ length: 18 }, (_, i) => ({
+      role: (i % 2 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: 'x'.repeat(400) + ` #${i}`,
+    }));
+    turns.push({ role: 'user', content: 'pergunta atual' });
+
+    const p = buildChatPrompt(CTX, turns, { tokenBudget: 500, historyN: 30 });
+    // o retrato (indicadores) nunca é cortado
+    expect(p.system).toMatch(/RETRATO DO NEGÓCIO/);
+    expect(p.system).toMatch(/cash_balance/);
+    // sobrou pouco histórico e a pergunta ATUAL foi preservada
+    expect(p.turns.length).toBeLessThan(turns.length);
+    expect(p.turns[p.turns.length - 1]!.content).toBe('pergunta atual');
+    // as mais antigas saíram
+    expect(p.turns.some((t) => t.content.includes('#0'))).toBe(false);
+  });
+});
+
+describe('memória: contexto e grounding', () => {
+  it('o retrato inclui alertas recentes e o diagnóstico atual/anterior', () => {
+    const p = buildChatPrompt(
+      {
+        ...CTX,
+        recentAlerts: [
+          { ruleKey: 'scissor', severity: 'warn', facts: { ncgCents: 5_280_000 }, title: 'Efeito tesoura', body: null },
+        ],
+        diagnosisCurrent: { asOf: '2026-07-15', stage: 'pressao', facts: {}, text: { title: 'Sob pressão' } },
+        diagnosisPrevious: { asOf: '2026-06-15', stage: 'atencao', facts: {}, text: { title: 'Atenção' } },
+      },
+      [{ role: 'user', content: 'e comparado ao mês passado?' }],
+    );
+    expect(p.system).toMatch(/alertasRecentes/);
+    expect(p.system).toMatch(/diagnosticoAtual/);
+    expect(p.system).toMatch(/diagnosticoAnterior/);
+    expect(p.system).toMatch(/pressao/);
+  });
+
+  it('o fiscal libera um número que só existe num alerta enviado antes', async () => {
+    const ctx: ChatContext = {
+      profile: { name: 'Clínica X', niche: 'clinica' },
+      asOf: '2026-07-15',
+      indicators: {},
+      alerts: [],
+      recentAlerts: [
+        { ruleKey: 'cash_runway', severity: 'critical', facts: { openingBalanceCents: 1_500_000 }, title: null, body: null },
+      ],
+    };
+    const model: ChatModel = {
+      reply: async () => ({ text: 'No último alerta, seu caixa era de R$ 15.000.', modelVersion: 'm' }),
+    };
+    const out = await askPulso(model, ctx, [{ role: 'user', content: 'quanto era?' }]);
+    expect(out.modelVersion).toBe('m'); // 15.000 (de 1.500.000 centavos) veio do alerta recente
+  });
+});

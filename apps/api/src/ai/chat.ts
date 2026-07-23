@@ -24,6 +24,24 @@ export interface ChatTurn {
   content: string;
 }
 
+/** Alerta enviado no passado, resumido para a memória da conversa. */
+export interface ChatAlertSummary {
+  ruleKey: string;
+  severity: string;
+  facts: unknown;
+  title: string | null;
+  body: string | null;
+}
+
+/** Diagnóstico (atual ou anterior), resumido para a memória da conversa. */
+export interface ChatDiagnosisSummary {
+  asOf: string | null;
+  stage: string;
+  facts?: unknown;
+  drivers?: unknown;
+  text?: { title?: string | null; body?: string | null } | null;
+}
+
 export interface ChatContext {
   profile: CompanyProfile;
   asOf: string | null;
@@ -31,7 +49,26 @@ export interface ChatContext {
   indicators: unknown;
   /** alertas do snapshot: ruleKey, severity, facts e textos. */
   alerts: unknown;
+  /** (b) últimos alertas ENVIADOS, para a IA referenciar "o alerta da semana passada". */
+  recentAlerts?: ChatAlertSummary[];
+  /** (c) diagnóstico atual e anterior, para dizer "melhorou desde o mês passado". */
+  diagnosisCurrent?: ChatDiagnosisSummary | null;
+  diagnosisPrevious?: ChatDiagnosisSummary | null;
 }
+
+/** Configuração da memória (com padrões; sobrescrevível por ambiente/teste). */
+export const DEFAULT_CHAT_HISTORY_N = Number(process.env.PULSO_CHAT_HISTORY_N ?? 10);
+export const DEFAULT_CHAT_TOKEN_BUDGET = Number(process.env.PULSO_CHAT_TOKEN_BUDGET ?? 6000);
+
+export interface ChatBuildOptions {
+  /** Quantas mensagens da conversa considerar (padrão 10). */
+  historyN?: number;
+  /** Teto de tokens do contexto; acima dele corta o histórico mais antigo (padrão 6000). */
+  tokenBudget?: number;
+}
+
+/** Estimativa grosseira de tokens (~4 caracteres por token). Basta para o corte. */
+const estimateTokens = (s: string): number => Math.ceil(s.length / 4);
 
 export interface ChatReply {
   text: string;
@@ -71,25 +108,43 @@ REGRAS INEGOCIÁVEIS:
 3. Você pode dar orientação prática e qualitativa (ex.: negociar prazo com fornecedor, rever prazo de convênio, antecipar recebível citando que custa juros) — sem prometer resultado e sem aconselhamento jurídico ou de investimento.
 4. Português do Brasil, tom de conversa, SEM jargão: "você está recebendo 46 dias depois de atender", nunca "seu DSO está em 46".
 5. Respostas CURTAS: um parágrafo, ou até 3 itens numerados. O detalhe está no painel.
-6. Se o assunto fugir do financeiro da clínica, redirecione com gentileza.`;
+6. Se o assunto fugir do financeiro da clínica, redirecione com gentileza.
+7. Você TEM memória: pode retomar o que foi conversado antes, referenciar um alerta recente e comparar o diagnóstico atual com o anterior ("melhorou desde o mês passado"). Só use números que estejam no retrato.`;
 
-export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[]) {
+export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[], opts: ChatBuildOptions = {}) {
+  const historyN = opts.historyN ?? DEFAULT_CHAT_HISTORY_N;
+  const tokenBudget = opts.tokenBudget ?? DEFAULT_CHAT_TOKEN_BUDGET;
+
   const retrato = JSON.stringify({
     empresa: { nome: ctx.profile.name, nicho: ctx.profile.niche },
     dataDoRetrato: ctx.asOf,
     indicadores: ctx.indicators,
     alertas: ctx.alerts,
+    alertasRecentes: ctx.recentAlerts ?? [],
+    diagnosticoAtual: ctx.diagnosisCurrent ?? null,
+    diagnosticoAnterior: ctx.diagnosisPrevious ?? null,
   });
+  const system = `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}`;
 
-  return {
-    system: `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}`,
-    turns: sanitizeTurns(turns),
-  };
+  // últimas N mensagens, começando num turno do usuário
+  let kept = sanitizeTurns(turns, historyN);
+
+  // teto de tokens: corta o histórico MAIS ANTIGO primeiro; nunca corta o
+  // retrato (indicadores) e nunca corta a pergunta atual (a última mensagem).
+  const systemTokens = estimateTokens(system);
+  const turnCost = (t: ChatTurn): number => estimateTokens(t.content) + 4;
+  const overBudget = () =>
+    systemTokens + kept.reduce((s, t) => s + turnCost(t), 0) > tokenBudget;
+  while (kept.length > 1 && overBudget()) kept = kept.slice(1);
+
+  // após o corte, garante que ainda começa num turno do usuário
+  const firstUser = kept.findIndex((t) => t.role === 'user');
+  return { system, turns: firstUser === -1 ? [] : kept.slice(firstUser) };
 }
 
 /** A conversa precisa começar em turno do usuário e alternar corretamente. */
-function sanitizeTurns(turns: ChatTurn[]): ChatTurn[] {
-  const recent = turns.slice(-12);
+function sanitizeTurns(turns: ChatTurn[], n: number): ChatTurn[] {
+  const recent = turns.slice(-n);
   const firstUser = recent.findIndex((t) => t.role === 'user');
   return firstUser === -1 ? [] : recent.slice(firstUser);
 }
@@ -99,10 +154,11 @@ export async function askPulso(
   ctx: ChatContext,
   turns: ChatTurn[],
   onUsage?: UsageSink,
+  opts?: ChatBuildOptions,
 ): Promise<ChatReply> {
   if (!model) return { text: NO_MODEL_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
 
-  const prompt = buildChatPrompt(ctx, turns);
+  const prompt = buildChatPrompt(ctx, turns, opts);
   if (prompt.turns.length === 0) {
     return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
   }
@@ -118,10 +174,14 @@ export async function askPulso(
     // a chamada aconteceu e gastou tokens: registra ANTES do veredito do fiscal
     if (out.usage) onUsage?.(out.usage);
 
-    // o fiscal: números da resposta têm que existir no retrato
+    // o fiscal: números da resposta têm que existir no retrato — inclui agora os
+    // facts dos alertas recentes e dos diagnósticos que entraram na memória.
     const grounded = checkGroundingDeep(out.text, {
       indicators: ctx.indicators,
       alerts: ctx.alerts,
+      recentAlerts: ctx.recentAlerts ?? null,
+      diagnosisCurrent: ctx.diagnosisCurrent ?? null,
+      diagnosisPrevious: ctx.diagnosisPrevious ?? null,
       asOf: ctx.asOf,
     });
     if (grounded.ok) return out;
