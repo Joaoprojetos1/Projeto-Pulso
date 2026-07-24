@@ -1,19 +1,20 @@
 /**
- * "Mandar pro contador": vira o resumo do caixa numa imagem limpa e abre o
- * compartilhar do celular (WhatsApp, e-mail…). Serve pro dono passar a foto da
+ * "Resumo para o contador": vira o retrato do caixa numa imagem limpa e abre o
+ * compartilhar do celular (WhatsApp, e-mail, salvar…). Serve pro dono passar a
  * situação pro contador sem tirar print torto.
  *
  * A imagem é montada aqui a partir dos números que JÁ vieram prontos do servidor
- * (o app não calcula nada). O cartão fica fora da tela e só é capturado no toque.
+ * (o app não calcula nada). O cartão fica fora da tela e só é capturado quando o
+ * dono aciona o item na Conta (handle imperativo `gerar()`).
  */
 
-import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 
 import { Heartbeat } from '@/components/heartbeat';
-import { brl, dataBR, dias, pct } from '@/lib/format';
+import { brl, brlInteiro, dataBR, dias, pct, rotuloFact, valorFact } from '@/lib/format';
 import { toqueLeve } from '@/lib/haptic';
 import { colors, fonts } from '@/theme';
 
@@ -29,6 +30,14 @@ export interface ResumoContador {
   receita: number | null;
   estagio: string | null;
   estagioCor: string;
+  /** Avisos ativos, com os facts abertos ("de onde vem esse número"). */
+  alertas: Array<{ titulo: string; facts: Record<string, unknown> }>;
+  /** Selo de demonstração, quando o retrato é fictício. */
+  demo?: boolean;
+}
+
+export interface EnviarContadorHandle {
+  gerar: () => Promise<void>;
 }
 
 function Item({ rotulo, valor }: { rotulo: string; valor: string }) {
@@ -40,40 +49,37 @@ function Item({ rotulo, valor }: { rotulo: string; valor: string }) {
   );
 }
 
-export function EnviarContador({ resumo }: { resumo: ResumoContador }) {
-  const cartaoRef = useRef<View>(null);
-  const [ocupado, setOcupado] = useState(false);
+/**
+ * Renderiza o cartão (fora da tela) e expõe `gerar()` para capturar + compartilhar.
+ * Não desenha botão: quem aciona é a tela Conta.
+ */
+export const EnviarContadorCard = forwardRef<EnviarContadorHandle, { resumo: ResumoContador }>(
+  function EnviarContadorCard({ resumo }, ref) {
+    const cartaoRef = useRef<View>(null);
+    const [ocupado, setOcupado] = useState(false);
 
-  async function enviar() {
-    if (ocupado) return;
-    toqueLeve();
-    setOcupado(true);
-    try {
-      const uri = await captureRef(cartaoRef, { format: 'png', quality: 1 });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
-          mimeType: 'image/png',
-          dialogTitle: 'Mandar resumo pro contador',
-        });
-      }
-    } catch {
-      // compartilhar cancelado ou indisponível: sem alarde
-    } finally {
-      setOcupado(false);
-    }
-  }
+    useImperativeHandle(ref, () => ({
+      async gerar() {
+        if (ocupado) return;
+        toqueLeve();
+        setOcupado(true);
+        try {
+          const uri = await captureRef(cartaoRef, { format: 'png', quality: 1 });
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(uri, {
+              mimeType: 'image/png',
+              dialogTitle: 'Resumo para o contador',
+            });
+          }
+        } catch {
+          // compartilhar cancelado ou indisponível: sem alarde
+        } finally {
+          setOcupado(false);
+        }
+      },
+    }));
 
-  return (
-    <>
-      <Pressable
-        onPress={enviar}
-        disabled={ocupado}
-        style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
-      >
-        <Text style={styles.botaoTexto}>{ocupado ? 'Preparando…' : 'Mandar resumo pro contador →'}</Text>
-      </Pressable>
-
-      {/* cartão que vira imagem — fica fora da tela, só é capturado no toque */}
+    return (
       <View style={styles.foraDaTela} pointerEvents="none">
         <View ref={cartaoRef} collapsable={false} style={styles.cartao}>
           <View style={styles.cartaoTopo}>
@@ -82,6 +88,7 @@ export function EnviarContador({ resumo }: { resumo: ResumoContador }) {
           </View>
           <Text style={styles.cartaoNome} numberOfLines={1}>{resumo.nome}</Text>
           <Text style={styles.cartaoData}>Resumo de {dataBR(resumo.data)}</Text>
+          {resumo.demo && <Text style={styles.demo}>DEMONSTRAÇÃO · DADOS FICTÍCIOS</Text>}
 
           {resumo.estagio && (
             <View style={[styles.estagio, { backgroundColor: resumo.estagioCor }]}>
@@ -92,7 +99,7 @@ export function EnviarContador({ resumo }: { resumo: ResumoContador }) {
           <View style={styles.destaque}>
             <Text style={styles.destaqueRotulo}>CAIXA PROJETADO · 30 DIAS</Text>
             <Text style={styles.destaqueValor}>
-              {resumo.caixa30 !== null ? brl(resumo.caixa30) : '·'}
+              {resumo.caixa30 !== null ? brlInteiro(resumo.caixa30) : '·'}
             </Text>
             <Text style={styles.destaqueSub}>
               {resumo.saudavel
@@ -107,28 +114,35 @@ export function EnviarContador({ resumo }: { resumo: ResumoContador }) {
             <Item rotulo="Faturou no mês" valor={resumo.receita !== null ? brl(resumo.receita) : '·'} />
           </View>
 
+          {resumo.alertas.length > 0 && (
+            <View style={styles.avisos}>
+              <Text style={styles.avisosRotulo}>AVISOS ATIVOS · DE ONDE VEM O NÚMERO</Text>
+              {resumo.alertas.map((a, i) => (
+                <View key={i} style={styles.aviso}>
+                  <Text style={styles.avisoTitulo}>{a.titulo}</Text>
+                  {Object.entries(a.facts).map(([chave, valor]) => (
+                    <View key={chave} style={styles.avisoLinha}>
+                      <Text style={styles.avisoChave}>{rotuloFact(chave)}</Text>
+                      <Text style={styles.avisoValor}>{valorFact(chave, valor)}</Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          )}
+
           <Text style={styles.rodape}>
             Números calculados pelo Pulso, nunca estimados. pulso-site.onrender.com
           </Text>
         </View>
       </View>
-    </>
-  );
-}
+    );
+  },
+);
 
 const LARGURA = 360;
 
 const styles = StyleSheet.create({
-  botao: {
-    borderWidth: 1,
-    borderColor: colors.linha,
-    borderRadius: 14,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  pressionado: { opacity: 0.6 },
-  botaoTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.mata },
-
   // posiciona o cartão fora da tela; ele é renderizado (para o view-shot capturar)
   // mas o usuário nunca o vê diretamente
   foraDaTela: { position: 'absolute', left: -9999, top: 0 },
@@ -142,6 +156,7 @@ const styles = StyleSheet.create({
   cartaoMarca: { fontFamily: fonts.display, fontSize: 22, color: colors.tinta, letterSpacing: -0.4 },
   cartaoNome: { fontFamily: fonts.display, fontSize: 18, color: colors.tinta, marginTop: 8 },
   cartaoData: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
+  demo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta, marginTop: 4 },
 
   estagio: { alignSelf: 'flex-start', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginTop: 8 },
   estagioTexto: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.papel },
@@ -182,6 +197,21 @@ const styles = StyleSheet.create({
     color: colors.tinta,
     fontVariant: ['tabular-nums'],
   },
+
+  avisos: { marginTop: 12, gap: 8 },
+  avisosRotulo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.cinza },
+  aviso: {
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 12,
+    padding: 12,
+    gap: 3,
+  },
+  avisoTitulo: { fontFamily: fonts.corpoForte, fontSize: 13, color: colors.tinta, marginBottom: 2 },
+  avisoLinha: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  avisoChave: { fontFamily: fonts.corpo, fontSize: 11.5, color: colors.cinza, flexShrink: 1 },
+  avisoValor: { fontFamily: fonts.displayMedio, fontSize: 11.5, color: colors.tinta, fontVariant: ['tabular-nums'] },
 
   rodape: { fontFamily: fonts.corpo, fontSize: 11, color: colors.cinza, marginTop: 16, lineHeight: 15 },
 });

@@ -28,7 +28,6 @@ import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
 import { PulseLine } from '@/components/pulse-line';
 import { WeeklyCard } from '@/components/weekly-card';
-import { EnviarContador } from '@/components/enviar-contador';
 import type { CashProjectionPoint } from '@/lib/api';
 import { toqueLeve } from '@/lib/haptic';
 import { brl, dataBR, dias, pct } from '@/lib/format';
@@ -379,23 +378,6 @@ export default function Dashboard() {
             <Text style={styles.verHistoricoTexto}>Ver histórico de alertas →</Text>
           </Pressable>
         )}
-
-        {/* mandar o resumo do caixa pro contador, como imagem (item 15) */}
-        <EnviarContador
-          resumo={{
-            nome: dashboard.company.name,
-            data: dashboard.snapshot.asOf,
-            saldoHoje,
-            caixa30: p30?.projectedCents ?? null,
-            zeroOn,
-            saudavel,
-            ciclo,
-            margem,
-            receita,
-            estagio: diag ? (STAGE_LABEL[diag.stage] ?? diag.stage) : null,
-            estagioCor: diagCor,
-          }}
-        />
 
         <Text style={styles.rodape}>
           Atualizado em {dataBR(dashboard.snapshot.asOf)} · motor v{dashboard.snapshot.coreVersion}

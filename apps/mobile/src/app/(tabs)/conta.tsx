@@ -7,19 +7,28 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchMyAvatar, fetchMySubscription, removeMyAvatar, saveMyAvatar, type MySubscription } from '@/lib/api';
+import { EnviarContadorCard, type EnviarContadorHandle } from '@/components/enviar-contador';
+import { fetchMyAvatar, fetchMySubscription, removeMyAvatar, saveMyAvatar, type CashProjectionPoint, type MySubscription } from '@/lib/api';
 import { autenticar, biometriaDisponivel, biometriaLigada, definirBiometria } from '@/lib/biometria';
 import { escolherDaGaleria, tirarFoto, type FotoComprimida } from '@/lib/foto-avatar';
 import { dataBR } from '@/lib/format';
 import { toqueLeve, toqueSucesso } from '@/lib/haptic';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, severityColor, type Severity } from '@/theme';
 
 type IonName = React.ComponentProps<typeof Ionicons>['name'];
+
+// estágio → rótulo e severidade (só apresentação; o servidor manda o estágio pronto)
+const STAGE_LABEL: Record<string, string> = {
+  saudavel: 'Saudável', atencao: 'Atenção', pressao: 'Pressão', critico: 'Crítico', uti: 'UTI',
+};
+const STAGE_SEV: Record<string, Severity> = {
+  saudavel: 'ok', atencao: 'warn', pressao: 'warn', critico: 'critical', uti: 'critical',
+};
 
 const VERSAO_APP = Constants.expoConfig?.version ?? '';
 const FEEDBACK_URL =
@@ -42,9 +51,34 @@ export default function Conta() {
   const [bioLigada, setBioLigada] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [subindoFoto, setSubindoFoto] = useState(false);
+  const contadorRef = useRef<EnviarContadorHandle>(null);
   const demo = fonte === 'demo';
   const nome = dashboard?.company.name ?? '·';
   const podeEditarFoto = !demo && Platform.OS !== 'web';
+
+  // retrato para o "Resumo para o contador" (só apresentação; nada é calculado aqui)
+  const ind = dashboard?.snapshot.indicators;
+  const proj = (ind?.cash_projection?.value ?? null) as CashProjectionPoint[] | null;
+  const p30 = proj?.find((p) => p.horizonDays === 30) ?? null;
+  const zeroOn = proj?.find((p) => p.zeroOn)?.zeroOn ?? null;
+  const diag = dashboard?.diagnosis ?? null;
+  const resumoContador = dashboard
+    ? {
+        nome: dashboard.company.name,
+        data: dashboard.snapshot.asOf,
+        saldoHoje: (ind?.cash_balance?.value ?? null) as number | null,
+        caixa30: p30?.projectedCents ?? null,
+        zeroOn,
+        saudavel: !zeroOn,
+        ciclo: (ind?.cash_cycle?.value ?? null) as number | null,
+        margem: (ind?.contribution_margin?.value ?? null) as number | null,
+        receita: (ind?.revenue_current?.value ?? null) as number | null,
+        estagio: diag ? (STAGE_LABEL[diag.stage] ?? diag.stage) : null,
+        estagioCor: diag ? severityColor[STAGE_SEV[diag.stage] ?? 'ok'] : colors.vivo,
+        alertas: dashboard.alerts.map((a) => ({ titulo: a.textTitle ?? a.ruleKey, facts: a.facts })),
+        demo,
+      }
+    : null;
 
   useEffect(() => {
     if (!token) return;
@@ -228,8 +262,16 @@ export default function Conta() {
           />
         </View>
 
-        {/* grupo: ajuda */}
+        {/* grupo: contador + ajuda */}
         <View style={styles.grupo}>
+          {resumoContador && (
+            <Linha
+              icon="document-text-outline"
+              label="Resumo para o contador"
+              sub="Gera uma imagem limpa do seu caixa para enviar ou salvar"
+              onPress={() => contadorRef.current?.gerar()}
+            />
+          )}
           <Linha
             icon="chatbubble-ellipses-outline"
             label="Ajuda e feedback"
@@ -248,6 +290,9 @@ export default function Conta() {
         </Pressable>
 
         <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
+
+        {/* cartão do resumo (fora da tela) — capturado ao tocar em "Resumo para o contador" */}
+        {resumoContador && <EnviarContadorCard ref={contadorRef} resumo={resumoContador} />}
       </ScrollView>
     </SafeAreaView>
   );
