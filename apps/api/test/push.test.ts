@@ -125,6 +125,37 @@ describe('entrega do aviso no celular', () => {
     expect(count).toBe(1);
   });
 
+  it('/me/devices escopa pelo token do dono; sem sessão é 401 (sem acesso cruzado)', async () => {
+    const TOKEN2 = 'ExponentPushToken[donaMNO789pqrSTU012]';
+    // sem sessão: não registra
+    const semAuth = await app.inject({
+      method: 'POST',
+      url: '/me/devices',
+      payload: { token: TOKEN2, platform: 'android' },
+    });
+    expect(semAuth.statusCode).toBe(401);
+
+    // com sessão: a empresa vem do TOKEN, não de um id na URL
+    const signup = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: { businessName: 'Clínica Dona', email: `dona-${Date.now()}@ex.com`, password: 'senha12345' },
+    });
+    const sessao = signup.json().token as string;
+    const donaId = signup.json().company.id as string;
+
+    const reg = await app.inject({
+      method: 'POST',
+      url: '/me/devices',
+      headers: { authorization: `Bearer ${sessao}` },
+      payload: { token: TOKEN2, platform: 'ios' },
+    });
+    expect(reg.statusCode).toBe(201);
+    const [{ count }] = await sql`
+      SELECT count(*)::int AS count FROM device_tokens WHERE company_id = ${donaId}`;
+    expect(count).toBe(1);
+  });
+
   it('o snapshot da tesoura entrega o alerta crítico no aparelho e marca pushed_at', async () => {
     await app.inject({
       method: 'POST',

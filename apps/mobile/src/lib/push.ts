@@ -13,7 +13,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { registerDevice } from './api';
+import { registerMyDevice } from './api';
 
 // Com o app aberto, mostra o aviso na tela também (não só na barra).
 Notifications.setNotificationHandler({
@@ -35,7 +35,7 @@ function projectId(): string | undefined {
  * Silencioso por natureza: se o dono negar a permissão ou algo falhar,
  * o app segue funcionando normalmente (só não recebe o aviso automático).
  */
-export async function registrarParaAvisos(companyId: string): Promise<void> {
+export async function registrarParaAvisos(authToken: string): Promise<void> {
   try {
     // emulador/simulador não recebe push de verdade
     if (!Device.isDevice) return;
@@ -62,7 +62,7 @@ export async function registrarParaAvisos(companyId: string): Promise<void> {
       pid ? { projectId: pid } : undefined,
     );
 
-    await registerDevice(companyId, token, Platform.OS);
+    await registerMyDevice(authToken, token, Platform.OS);
   } catch {
     // nunca atrapalha o uso do app por causa de push
   }

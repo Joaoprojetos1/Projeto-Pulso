@@ -142,8 +142,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
         /* não trava o login se a consulta falhar */
       }
       if (dash) void salvarCache(id, dash); // guarda p/ abrir offline na próxima
-      // registra este celular para receber os avisos (silencioso se falhar)
-      void registrarParaAvisos(id);
+      // registra este celular para receber os avisos (escopado pelo token; silencioso se falhar)
+      void registrarParaAvisos(t);
       return true;
     } catch (e) {
       if (e instanceof AuthError && e.tipo === 'credenciais') {

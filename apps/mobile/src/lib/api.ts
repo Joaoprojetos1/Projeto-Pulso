@@ -128,16 +128,19 @@ async function fetchWithWake(url: string, init?: RequestInit): Promise<Response>
   throw lastErr;
 }
 
-/** Registra o "endereço" (push token) deste celular para a empresa. */
-export async function registerDevice(
-  companyId: string,
-  token: string,
+/**
+ * Registra o "endereço" (push token) deste celular. Escopado pelo token de
+ * sessão do dono (a empresa vem do login, não de um id na URL).
+ */
+export async function registerMyDevice(
+  authToken: string,
+  pushToken: string,
   platform: string,
 ): Promise<void> {
-  const res = await fetchWithWake(`${apiBase()}/companies/${companyId}/devices`, {
+  const res = await fetchWithWake(`${apiBase()}/me/devices`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ token, platform }),
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${authToken}` },
+    body: JSON.stringify({ token: pushToken, platform }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} ao registrar aparelho`);
 }
