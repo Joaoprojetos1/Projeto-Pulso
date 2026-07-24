@@ -73,11 +73,20 @@ export function saoPauloMonthWindow(now: Date = new Date()): MonthWindow {
   };
 }
 
-/** Cota configurada da empresa (cai no padrão se, por algum motivo, vier vazia). */
+/**
+ * Cota da empresa. Ordem: override por empresa (chat_quota_monthly, quando
+ * preenchido) → limite do plano (plans.chat_limit_monthly) → padrão de segurança.
+ */
 export async function chatQuota(sql: Sql, companyId: string): Promise<number> {
-  const [row] = await sql`SELECT chat_quota_monthly FROM companies WHERE id = ${companyId}`;
-  const q = row?.chat_quota_monthly as number | undefined;
-  return typeof q === 'number' ? q : DEFAULT_CHAT_QUOTA;
+  const [row] = await sql`
+    SELECT c.chat_quota_monthly AS override, p.chat_limit_monthly AS plan_limit
+    FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
+    WHERE c.id = ${companyId}`;
+  const override = row?.override as number | null | undefined;
+  if (typeof override === 'number') return override;
+  const planLimit = row?.plan_limit as number | null | undefined;
+  if (typeof planLimit === 'number') return planLimit;
+  return DEFAULT_CHAT_QUOTA;
 }
 
 /** Quantas perguntas de chat esta empresa já fez no mês corrente (SP). */

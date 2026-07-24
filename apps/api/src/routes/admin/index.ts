@@ -89,7 +89,10 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
 
   // ---- escrita (tudo auditado) ------------------------------------------
 
-  app.patch<{ Params: { id: string }; Body: { name?: string; chatQuota?: number; plan?: string } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { name?: string; chatQuota?: number; planId?: string; subscriptionStatus?: string };
+  }>(
     '/admin/companies/:id',
     {
       schema: {
@@ -100,7 +103,8 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 120 },
             chatQuota: { type: 'integer', minimum: 0, maximum: 100000 },
-            plan: { type: 'string', minLength: 1, maxLength: 40 },
+            planId: { type: 'string', minLength: 1, maxLength: 40 },
+            subscriptionStatus: { enum: ['pendente', 'ativa', 'cancelada'] },
           },
         },
       },
@@ -109,25 +113,36 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
       const admin = await gate(req, reply);
       if (!admin) return reply;
 
-      const { name, chatQuota, plan } = req.body;
-      if (name === undefined && chatQuota === undefined && plan === undefined) {
+      const { name, chatQuota, planId, subscriptionStatus } = req.body;
+      if (
+        name === undefined &&
+        chatQuota === undefined &&
+        planId === undefined &&
+        subscriptionStatus === undefined
+      ) {
         return reply.code(400).send({ error: 'Nada para atualizar.' });
+      }
+      if (planId !== undefined) {
+        const [p] = await sql`SELECT 1 FROM plans WHERE id = ${planId}`;
+        if (!p) return reply.code(400).send({ error: 'Plano inexistente.' });
       }
 
       const [updated] = await sql`
         UPDATE companies SET
-          name               = COALESCE(${name ?? null}, name),
-          chat_quota_monthly = COALESCE(${chatQuota ?? null}, chat_quota_monthly),
-          plan               = COALESCE(${plan ?? null}, plan)
+          name                = COALESCE(${name ?? null}, name),
+          chat_quota_monthly  = COALESCE(${chatQuota ?? null}, chat_quota_monthly),
+          plan_id             = COALESCE(${planId ?? null}, plan_id),
+          subscription_status = COALESCE(${subscriptionStatus ?? null}, subscription_status)
         WHERE id = ${req.params.id}
-        RETURNING id::text AS id, name, plan, chat_quota_monthly`;
+        RETURNING id::text AS id, name, plan_id, subscription_status, chat_quota_monthly`;
       if (!updated) return notFound(reply);
 
       await recordAudit(sql, admin.userId, 'company.update', { type: 'company', id: req.params.id }, req.body);
       return {
         id: updated.id,
         name: updated.name,
-        plan: updated.plan,
+        planId: updated.plan_id,
+        subscriptionStatus: updated.subscription_status,
         chatQuota: updated.chat_quota_monthly,
       };
     },
@@ -212,6 +227,111 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
 
       await recordAudit(sql, admin.userId, 'lead.update', { type: 'lead', id: req.params.id }, req.body);
       return { id: updated.id, status: updated.status };
+    },
+  );
+
+  // ---- planos (gestão) ---------------------------------------------------
+
+  const planParams = {
+    type: 'object',
+    required: ['id'],
+    properties: { id: { type: 'string', minLength: 1, maxLength: 40 } },
+  } as const;
+
+  app.get('/admin/plans', async (req, reply) => {
+    const admin = await gate(req, reply);
+    if (!admin) return reply;
+    const rows = await sql`
+      SELECT id, name, price_cents, chat_limit_monthly, active, sort
+      FROM plans ORDER BY sort, price_cents`;
+    return {
+      plans: rows.map((p) => ({
+        id: p.id,
+        name: p.name,
+        priceCents: p.price_cents,
+        chatLimitMonthly: p.chat_limit_monthly,
+        active: p.active,
+        sort: p.sort,
+      })),
+    };
+  });
+
+  app.post<{
+    Body: { id: string; name: string; priceCents: number; chatLimitMonthly: number; sort?: number };
+  }>(
+    '/admin/plans',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['id', 'name', 'priceCents', 'chatLimitMonthly'],
+          additionalProperties: false,
+          properties: {
+            id: { type: 'string', minLength: 1, maxLength: 40 },
+            name: { type: 'string', minLength: 1, maxLength: 60 },
+            priceCents: { type: 'integer', minimum: 0 },
+            chatLimitMonthly: { type: 'integer', minimum: 0 },
+            sort: { type: 'integer' },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const admin = await gate(req, reply);
+      if (!admin) return reply;
+      const b = req.body;
+      try {
+        await sql`
+          INSERT INTO plans (id, name, price_cents, chat_limit_monthly, sort)
+          VALUES (${b.id.trim().toLowerCase()}, ${b.name}, ${b.priceCents}, ${b.chatLimitMonthly}, ${b.sort ?? 0})`;
+      } catch (err) {
+        if ((err as { code?: string }).code === '23505') {
+          return reply.code(409).send({ error: 'Já existe um plano com esse identificador.' });
+        }
+        throw err;
+      }
+      await recordAudit(sql, admin.userId, 'plan.create', { type: 'plan', id: b.id }, b);
+      return reply.code(201).send({ ok: true });
+    },
+  );
+
+  app.patch<{
+    Params: { id: string };
+    Body: { name?: string; priceCents?: number; chatLimitMonthly?: number; active?: boolean; sort?: number };
+  }>(
+    '/admin/plans/:id',
+    {
+      schema: {
+        params: planParams,
+        body: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string', minLength: 1, maxLength: 60 },
+            priceCents: { type: 'integer', minimum: 0 },
+            chatLimitMonthly: { type: 'integer', minimum: 0 },
+            active: { type: 'boolean' },
+            sort: { type: 'integer' },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const admin = await gate(req, reply);
+      if (!admin) return reply;
+      const b = req.body;
+      const [updated] = await sql`
+        UPDATE plans SET
+          name               = COALESCE(${b.name ?? null}, name),
+          price_cents        = COALESCE(${b.priceCents ?? null}, price_cents),
+          chat_limit_monthly = COALESCE(${b.chatLimitMonthly ?? null}, chat_limit_monthly),
+          active             = COALESCE(${b.active ?? null}, active),
+          sort               = COALESCE(${b.sort ?? null}, sort)
+        WHERE id = ${req.params.id}
+        RETURNING id`;
+      if (!updated) return notFound(reply);
+      await recordAudit(sql, admin.userId, 'plan.update', { type: 'plan', id: req.params.id }, b);
+      return { ok: true };
     },
   );
 }

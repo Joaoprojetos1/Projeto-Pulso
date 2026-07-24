@@ -17,8 +17,9 @@ const SP = 'America/Sao_Paulo';
 export interface OverviewRow {
   companyId: string;
   name: string;
-  plan: string;
-  chatQuota: number;
+  plan: string | null; // nome do plano (null = ainda sem plano)
+  subscriptionStatus: string; // pendente | ativa | cancelada
+  chatQuota: number; // efetiva (override da empresa, senão o limite do plano)
   isDemo: boolean;
   stage: string | null; // estágio do diagnóstico do último snapshot
   lastImportAt: string | null;
@@ -34,8 +35,10 @@ const num = (rows: readonly Record<string, unknown>[], id: string, field: string
 
 export async function overview(sql: Sql): Promise<OverviewRow[]> {
   const companies = await sql`
-    SELECT id::text AS id, name, plan, chat_quota_monthly, is_demo
-    FROM companies ORDER BY name`;
+    SELECT c.id::text AS id, c.name, p.name AS plan_name, c.subscription_status,
+           c.chat_quota_monthly, p.chat_limit_monthly AS plan_limit, c.is_demo
+    FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
+    ORDER BY c.name`;
 
   const lastImport = await sql`
     SELECT company_id::text AS id, max(imported_at) AS last_at
@@ -65,8 +68,10 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
     return {
       companyId: id,
       name: c.name as string,
-      plan: c.plan as string,
-      chatQuota: c.chat_quota_monthly as number,
+      plan: (c.plan_name as string | null) ?? null,
+      subscriptionStatus: c.subscription_status as string,
+      chatQuota:
+        (c.chat_quota_monthly as number | null) ?? (c.plan_limit as number | null) ?? 0,
       isDemo: c.is_demo as boolean,
       stage: (stages.find((r) => r.id === id)?.stage as string | null) ?? null,
       lastImportAt: last ? new Date(last).toISOString() : null,
@@ -91,8 +96,11 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
 
 export async function companyDossier(sql: Sql, companyId: string) {
   const [company] = await sql`
-    SELECT id::text AS id, name, cnpj, niche, plan, is_demo, chat_quota_monthly, created_at
-    FROM companies WHERE id = ${companyId}`;
+    SELECT c.id::text AS id, c.name, c.cnpj, c.niche, c.plan_id, p.name AS plan_name,
+           c.subscription_status, c.is_demo, c.chat_quota_monthly,
+           p.chat_limit_monthly AS plan_limit, c.created_at
+    FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
+    WHERE c.id = ${companyId}`;
   if (!company) return null;
 
   const [snapshot] = await sql`
@@ -138,9 +146,12 @@ export async function companyDossier(sql: Sql, companyId: string) {
       name: company.name as string,
       cnpj: (company.cnpj as string | null) ?? null,
       niche: company.niche as string,
-      plan: company.plan as string,
+      planId: (company.plan_id as string | null) ?? null,
+      plan: (company.plan_name as string | null) ?? null,
+      subscriptionStatus: company.subscription_status as string,
       isDemo: company.is_demo as boolean,
-      chatQuota: company.chat_quota_monthly as number,
+      chatQuota:
+        (company.chat_quota_monthly as number | null) ?? (company.plan_limit as number | null) ?? 0,
       createdAt: company.created_at as Date,
     },
     snapshot: snapshot
