@@ -159,7 +159,7 @@ export default function Chat() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}
       >
-        <Text style={styles.titulo}>Conversa</Text>
+        <Text style={styles.titulo} accessibilityRole="header">IA Pulso</Text>
 
         <FlatList
           ref={lista}

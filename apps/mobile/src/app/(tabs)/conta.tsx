@@ -22,7 +22,6 @@ const VERSAO_APP = Constants.expoConfig?.version ?? '—';
 const FEEDBACK_URL =
   'https://wa.me/553194287877?text=' +
   encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
-const CHECKOUT_URL = 'https://pulso-site.onrender.com/checkout.html?from=app';
 const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
 /** Iniciais do negócio (até 2 letras) para o avatar. */
@@ -87,18 +86,23 @@ export default function Conta() {
           <Linha
             icon="card-outline"
             label="Plano e assinatura"
-            sub={
-              assinatura?.active
-                ? 'Assinatura ativa'
-                : demo
-                  ? 'Entre com sua conta para assinar'
-                  : 'Assinar no site, sem comissão de loja'
-            }
+            sub={demo ? 'Entre com sua conta para assinar' : planoSub}
             badge={assinatura?.active ? 'ATIVO' : undefined}
-            onPress={!demo && !assinatura?.active ? () => Linking.openURL(CHECKOUT_URL) : undefined}
+            onPress={!demo ? () => router.push('/assinar' as Href) : undefined}
             ultimo
           />
         </View>
+
+        {!demo && (
+          <Pressable
+            style={({ pressed }) => [styles.assinarBtn, pressed && styles.pressionado]}
+            onPress={() => router.push('/assinar' as Href)}
+          >
+            <Text style={styles.assinarBtnTexto}>
+              {assinatura?.active ? 'Trocar de plano' : 'Assine ou faça upgrade'}
+            </Text>
+          </Pressable>
+        )}
 
         {/* grupo: avisos, segurança, privacidade */}
         <View style={styles.grupo}>
@@ -235,6 +239,8 @@ const styles = StyleSheet.create({
   },
   seloTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.okEscuro },
 
+  assinarBtn: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  assinarBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
   sair: {
     flexDirection: 'row',
     alignItems: 'center',

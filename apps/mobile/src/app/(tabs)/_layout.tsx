@@ -1,11 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs, type Href } from 'expo-router';
+import { router, Tabs, type Href } from 'expo-router';
+import { useEffect } from 'react';
 
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function TabsLayout() {
-  const { ehAdmin } = usePulso();
+  const { ehAdmin, assinatura, fonte, logado } = usePulso();
+
+  // Gate da assinatura: quem está logado e PENDENTE não usa as abas — cai na tela
+  // de planos. Fail-open: só bloqueia com 'pendente' explícito (erro, carregando,
+  // ativa e demonstração passam, para nunca trancar quem já é ativo).
+  useEffect(() => {
+    if (logado && fonte === 'servidor' && assinatura?.status === 'pendente') {
+      router.replace('/assinar' as Href);
+    }
+  }, [logado, fonte, assinatura?.status]);
+
   return (
     <Tabs
       screenOptions={{
@@ -41,7 +52,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Conversa',
+          title: 'IA Pulso',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />
           ),

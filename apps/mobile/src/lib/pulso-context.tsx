@@ -16,7 +16,9 @@ import {
   authSignup,
   AuthError,
   fetchMyDashboard,
+  fetchMySubscription,
   type DashboardJson,
+  type MySubscription,
   type UserRole,
 } from './api';
 import { DEMO_DASHBOARD } from './demo';
@@ -46,6 +48,10 @@ interface PulsoState {
   logado: boolean;
   /** O dashboard na tela veio do cache local (offline); o refresh ainda não substituiu. */
   mostrandoCache: boolean;
+  /** Assinatura do dono logado (null = ainda não carregou / demo). */
+  assinatura: MySubscription | null;
+  /** Re-consulta a assinatura (usado pelo "Já paguei, atualizar"). */
+  atualizarAssinatura: () => Promise<MySubscription | null>;
   /** Cria a conta (autocadastro). Retorna true se entrou. */
   cadastrar: (businessName: string, email: string, password: string) => Promise<boolean>;
   /** Entra com e-mail e senha. Retorna true se entrou. */
@@ -70,6 +76,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [restaurando, setRestaurando] = useState(true);
   const [logado, setLogado] = useState(false);
   const [mostrandoCache, setMostrandoCache] = useState(false);
+  const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
 
   // ref para o carregar() sempre enxergar o token atual sem recriar a função
   const tokenRef = useRef<string | null>(null);
@@ -88,7 +95,21 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setCompanyId(null);
     setLogado(false);
     setMostrandoCache(false);
+    setAssinatura(null);
     await AsyncStorage.multiRemove([CHAVE_TOKEN, CHAVE_CACHE]);
+  }, []);
+
+  /** Re-consulta a assinatura (o "Já paguei, atualizar" chama isto). */
+  const atualizarAssinatura = useCallback(async (): Promise<MySubscription | null> => {
+    const t = tokenRef.current;
+    if (!t) return null;
+    try {
+      const s = await fetchMySubscription(t);
+      setAssinatura(s);
+      return s;
+    } catch {
+      return null;
+    }
   }, []);
 
   /** Guarda o último dashboard de servidor, para abrir offline depois. */
@@ -114,6 +135,12 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       setFonte('servidor');
       setLogado(true);
       setMostrandoCache(false); // dado fresco do servidor substitui o cache
+      // assinatura (para o gate). Fail-open: o gate só bloqueia com 'pendente' explícito.
+      try {
+        setAssinatura(await fetchMySubscription(t));
+      } catch {
+        /* não trava o login se a consulta falhar */
+      }
       if (dash) void salvarCache(id, dash); // guarda p/ abrir offline na próxima
       // registra este celular para receber os avisos (silencioso se falhar)
       void registrarParaAvisos(id);
@@ -233,6 +260,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       restaurando,
       logado,
       mostrandoCache,
+      assinatura,
+      atualizarAssinatura,
       cadastrar,
       entrar,
       carregar: () => carregar(),
@@ -250,6 +279,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       restaurando,
       logado,
       mostrandoCache,
+      assinatura,
+      atualizarAssinatura,
       cadastrar,
       entrar,
       carregar,
