@@ -28,6 +28,19 @@ export function brl(cents: number): string {
   return negativo ? `−${base}` : base;
 }
 
+/**
+ * Reais INTEIROS, sem centavos (ex.: "R$ 100.000"). Para valores de PROJEÇÃO:
+ * são estimativas, e o centavo passaria falsa precisão. Arredonda pro real mais
+ * próximo. Continua sendo só apresentação — o app não calcula.
+ */
+export function brlInteiro(cents: number): string {
+  const negativo = cents < 0;
+  const reais = Math.round(Math.abs(cents) / 100);
+  const milhar = reais.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const base = `R$ ${milhar}`;
+  return negativo ? `−${base}` : base;
+}
+
 export function dataBR(iso: string): string {
   const [, m, d] = iso.split('-');
   return `${Number(d)} de ${MESES[Number(m) - 1]}`;
@@ -60,6 +73,7 @@ const ROTULOS: Record<string, string> = {
   cashBalanceCents: 'Caixa hoje',
   avgLatenessDays: 'Atraso médio dos clientes',
   pmrDays: 'Recebimento médio',
+  pmrPreviousDays: 'Recebimento médio (mês anterior)',
   pmpDays: 'Pagamento médio',
   cashCycleDays: 'Ciclo de caixa',
   monthlyFixedCostCents: 'Custo fixo mensal',

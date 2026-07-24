@@ -50,6 +50,17 @@ export function acoesParaAlerta(alerta: AlertJson): string[] {
       passos.push('Evite ampliar as vendas a prazo sem caixa para sustentar o intervalo até receber.');
       break;
     }
+    case 'receivables_slowing': {
+      const pmr = n(f, 'pmrDays');
+      passos.push(
+        pmr !== null
+          ? `Hoje o dinheiro leva em média ${dias(pmr)} para cair na conta. Combine prazos mais curtos com seus maiores clientes.`
+          : 'Combine prazos mais curtos de pagamento com seus maiores clientes.',
+      );
+      passos.push('Ofereça uma condição melhor para quem paga à vista ou adianta.');
+      passos.push('Acompanhe toda semana quem está atrasando, para cobrar cedo e sem desgaste.');
+      break;
+    }
     case 'concentration': {
       const cliente = s(f, 'topCustomer');
       const fatia = n(f, 'topCustomerShare');

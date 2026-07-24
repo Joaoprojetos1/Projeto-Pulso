@@ -146,6 +146,7 @@ export default function Dashboard() {
     rotulo: string;
     tecnico?: string;
     valor: string;
+    semDado?: boolean;
     positivo?: boolean;
     tend?: Tend | null;
     explica: string;
@@ -154,7 +155,8 @@ export default function Dashboard() {
       id: 'ciclo',
       rotulo: 'DINHEIRO PRESO',
       tecnico: 'ciclo de caixa',
-      valor: ciclo !== null ? dias(ciclo) : '·',
+      valor: ciclo !== null ? dias(ciclo) : '',
+      semDado: ciclo === null,
       tend: tendCiclo,
       explica:
         ciclo !== null
@@ -165,7 +167,8 @@ export default function Dashboard() {
       id: 'margem',
       rotulo: 'O QUE SOBRA',
       tecnico: 'margem',
-      valor: margem !== null ? pct(margem) : '·',
+      valor: margem !== null ? pct(margem) : '',
+      semDado: margem === null,
       tend: tendMargem,
       explica:
         margem !== null
@@ -176,7 +179,8 @@ export default function Dashboard() {
       id: 'receita',
       rotulo: 'FATUROU NO MÊS',
       tecnico: 'receita',
-      valor: receita !== null ? brl(receita) : '·',
+      valor: receita !== null ? brl(receita) : '',
+      semDado: receita === null,
       tend: tendReceita,
       explica:
         receita !== null
@@ -186,7 +190,8 @@ export default function Dashboard() {
     {
       id: 'mesAnterior',
       rotulo: 'MÊS ANTERIOR',
-      valor: receitaAnterior !== null ? brl(receitaAnterior) : '·',
+      valor: receitaAnterior !== null ? brl(receitaAnterior) : '',
+      semDado: receitaAnterior === null,
       explica:
         receitaAnterior !== null
           ? `Seu faturamento no mês passado foi ${brl(receitaAnterior)}. Serve de referência pra ver se você cresceu.`
@@ -250,9 +255,9 @@ export default function Dashboard() {
           )}
           <Text style={styles.cashRotulo}>CAIXA PROJETADO · 30 DIAS</Text>
           {p30 ? (
-            <CountUpMoney cents={p30.projectedCents} style={styles.cashValor} />
+            <CountUpMoney cents={p30.projectedCents} style={styles.cashValor} inteiro />
           ) : (
-            <Text style={styles.cashValor}>·</Text>
+            <Text style={styles.cashValor}>-</Text>
           )}
           <Text style={styles.cashDetalhe}>
             {saudavel ? (
@@ -319,6 +324,7 @@ export default function Dashboard() {
               rotulo={c.rotulo}
               tecnico={c.tecnico}
               valor={c.valor}
+              semDado={c.semDado}
               tend={c.tend}
               ativo={abertoChip === c.id}
               onPress={() => setAbertoChip((atual) => (atual === c.id ? null : c.id))}
@@ -402,6 +408,7 @@ function Chip({
   rotulo,
   tecnico,
   valor,
+  semDado,
   tend,
   ativo,
   onPress,
@@ -409,6 +416,7 @@ function Chip({
   rotulo: string;
   tecnico?: string;
   valor: string;
+  semDado?: boolean;
   tend?: Tend | null;
   ativo?: boolean;
   onPress?: () => void;
@@ -422,10 +430,15 @@ function Chip({
         pressed && styles.pressionado,
       ]}
     >
-      <Text style={styles.chipRotulo}>{rotulo}</Text>
+      {/* sem dado ainda: rótulo esmaecido e um traço, nunca um "·" solto */}
+      <Text style={[styles.chipRotulo, semDado && styles.chipTextoVazio]}>{rotulo}</Text>
       {tecnico ? <Text style={styles.chipTecnico}>{tecnico}</Text> : null}
-      <Text style={styles.chipValor}>{valor}</Text>
-      {tend && (
+      {semDado ? (
+        <Text style={[styles.chipValor, styles.chipTextoVazio]}>-</Text>
+      ) : (
+        <Text style={styles.chipValor}>{valor}</Text>
+      )}
+      {!semDado && tend && (
         <Text style={[styles.chipTend, { color: tend.bom ? colors.okEscuro : colors.alerta }]}>
           {tend.seta} {tend.pct}% vs mês passado
         </Text>
@@ -678,6 +691,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   chipTend: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.2, marginTop: 3 },
+  chipTextoVazio: { color: colors.cinza, opacity: 0.55 },
 
   explica: {
     marginHorizontal: 16,

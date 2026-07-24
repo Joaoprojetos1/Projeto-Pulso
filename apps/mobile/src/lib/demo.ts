@@ -1,16 +1,20 @@
 /**
- * Dados de DEMONSTRAÇÃO — a Clínica Horizonte, 100% inventada (a mesma
- * das fixtures do servidor). Entram quando o servidor não está no ar,
- * sempre rotulados como demonstração na tela.
+ * Dados de DEMONSTRAÇÃO — a "Horizonte Comércio", 100% inventada. Entra quando
+ * o servidor não está no ar ou quando o visitante toca em "Ver o Pulso
+ * funcionando", sempre rotulada como demonstração na tela.
  *
- * Nenhum número aqui foi calculado pelo app: é um retrato pronto, no
- * mesmo formato que o servidor devolve.
+ * É de propósito um cenário SAUDÁVEL: caixa projetado positivo e subindo, sem
+ * risco de zeragem, estágio verde — e apenas UM aviso âmbar leve (o prazo de
+ * recebimento subindo) para mostrar como os avisos funcionam sem assustar.
+ *
+ * Nenhum número aqui foi calculado pelo app: é um retrato pronto, no mesmo
+ * formato que o servidor devolve. Empresa neutra (sem segmento).
  */
 
 import type { DashboardJson } from './api';
 
 export const DEMO_DASHBOARD: DashboardJson = {
-  company: { id: 'demo', name: 'Clínica Horizonte', niche: 'clinica' },
+  company: { id: 'demo', name: 'Horizonte Comércio', niche: 'comercio' },
   snapshot: {
     asOf: '2026-07-15',
     coreVersion: '0.1.0',
@@ -18,123 +22,97 @@ export const DEMO_DASHBOARD: DashboardJson = {
     indicators: {
       cash_balance: {
         key: 'cash_balance',
-        value: 2_130_000,
+        value: 4_800_000,
         unit: 'cents',
         inputs: { observedOn: '2026-07-14', stalenessDays: 1 },
       },
       cash_projection: {
         key: 'cash_projection',
+        // positivo e subindo nos três horizontes, sem data de zeragem
         value: [
-          { horizonDays: 30, projectedCents: -840_000, zeroOn: '2026-07-29' },
-          { horizonDays: 60, projectedCents: -3_060_000, zeroOn: '2026-07-29' },
-          { horizonDays: 90, projectedCents: -5_280_000, zeroOn: '2026-07-29' },
+          { horizonDays: 30, projectedCents: 6_100_000 },
+          { horizonDays: 60, projectedCents: 7_400_000 },
+          { horizonDays: 90, projectedCents: 8_800_000 },
         ],
         unit: 'cents',
         inputs: {
-          openingBalanceCents: 2_130_000,
-          avgLatenessDays: 12,
-          monthlyFixedCostCents: 3_420_000,
-          zeroOn: '2026-07-29',
+          openingBalanceCents: 4_800_000,
+          avgLatenessDays: 9,
+          monthlyFixedCostCents: 2_200_000,
         },
       },
-      pmr: { key: 'pmr', value: 46, unit: 'days', inputs: { settledCount: 22 } },
-      pmp: { key: 'pmp', value: 0, unit: 'days', inputs: { settledCount: 18 } },
-      cash_cycle: { key: 'cash_cycle', value: 46, unit: 'days', inputs: { pmr: 46, pmp: 0, pme: 0 } },
+      pmr: { key: 'pmr', value: 41, unit: 'days', inputs: { settledCount: 32 } },
+      pmp: { key: 'pmp', value: 28, unit: 'days', inputs: { settledCount: 24 } },
+      cash_cycle: { key: 'cash_cycle', value: 30, unit: 'days', inputs: { pmr: 41, pmp: 28, pme: 17 } },
       ncg: {
         key: 'ncg',
-        value: 5_280_000,
+        value: 2_600_000,
         unit: 'cents',
-        inputs: { openReceivablesCents: 5_280_000, openPayablesCents: 0 },
+        inputs: { openReceivablesCents: 3_800_000, openPayablesCents: 1_200_000 },
       },
       revenue_current: {
         key: 'revenue_current',
-        value: 6_680_000,
+        value: 9_600_000,
         unit: 'cents',
-        inputs: { entryCount: 3 },
+        inputs: { entryCount: 34 },
       },
       revenue_previous: {
         key: 'revenue_previous',
-        value: 5_880_000,
+        value: 9_000_000,
         unit: 'cents',
-        inputs: { entryCount: 3 },
+        inputs: { entryCount: 31 },
       },
       contribution_margin: {
         key: 'contribution_margin',
-        value: 0.75,
+        value: 0.42,
         unit: 'ratio',
-        inputs: { revenueCents: 6_680_000, variableCostCents: 1_670_000 },
+        inputs: { revenueCents: 9_600_000, variableCostCents: 5_568_000 },
       },
       fixed_cost_monthly: {
         key: 'fixed_cost_monthly',
-        value: 3_420_000,
+        value: 2_200_000,
         unit: 'cents',
-        inputs: { source: 'derived_from_entries' },
+        inputs: { source: 'declared' },
       },
       customer_concentration: {
         key: 'customer_concentration',
-        value: 0.486,
+        value: 0.22,
         unit: 'ratio',
-        inputs: { topCustomer: 'Unimed Regional', customerCount: 6 },
+        inputs: { topCustomer: 'Cliente Silva', customerCount: 14 },
       },
     },
   },
-  // tendência do exemplo (atual × anterior) — fictícia, como o resto da demonstração
+  // tendência do exemplo (atual × anterior) — fictícia, como o resto
   comparativos: {
-    cash_cycle: { atual: 46, anterior: 40 }, // piorou: leva mais dias pra receber
-    contribution_margin: { atual: 0.75, anterior: 0.8 }, // margem caiu
-    revenue_current: { atual: 6_680_000, anterior: 5_880_000 }, // receita subiu
+    cash_cycle: { atual: 30, anterior: 24 }, // subiu: o recebimento está mais lento (o aviso âmbar)
+    contribution_margin: { atual: 0.42, anterior: 0.41 }, // estável/levemente melhor
+    revenue_current: { atual: 9_600_000, anterior: 9_000_000 }, // receita cresceu
   },
-  // diagnóstico do exemplo — coerente com o caixa zerando em ~14 dias (UTI)
+  // diagnóstico do exemplo — caixa saudável, veio de um momento de atenção
   diagnosis: {
-    stage: 'uti',
-    drivers: [{ premissa: 'P2', stage: 'uti', facts: { zeroInDays: 14, zeroOn: '2026-07-29' } }],
-    transitions: { previousStage: 'critico', direction: 'piorou' },
-    facts: { unavailable: {}, cashBalanceCents: 2_130_000, firedPremissas: ['P2', 'P7'] },
+    stage: 'saudavel',
+    drivers: [{ premissa: 'P1', stage: 'saudavel', facts: { projectedCents: 6_100_000 } }],
+    transitions: { previousStage: 'atencao', direction: 'melhorou' },
+    facts: { unavailable: {}, cashBalanceCents: 4_800_000, firedPremissas: [] },
     text: {
-      title: 'Seu caixa está em emergência',
-      body: 'No ritmo de hoje o caixa pode zerar em 29 de julho. Priorize antecipar recebimentos e renegociar prazos agora.',
+      title: 'Seu caixa está saudável',
+      body: 'A projeção segue positiva e subindo nos próximos 90 dias. Só fique de olho no prazo de recebimento, que subiu no último mês.',
       modelVersion: 'demo',
     },
   },
   alerts: [
     {
-      ruleKey: 'cash_runway',
-      severity: 'critical',
-      facts: {
-        zeroOn: '2026-07-29',
-        openingBalanceCents: 2_130_000,
-        avgLatenessDays: 12,
-        pmrDays: 46,
-        pmpDays: 0,
-        monthlyFixedCostCents: 3_420_000,
-      },
-      textTitle: 'Seu caixa pode zerar em 29 de julho',
-      textBody:
-        'No ritmo de hoje, o dinheiro em conta acaba em 29 de julho. Ainda dá tempo de agir. Vale olhar isso agora.',
-    },
-    {
-      ruleKey: 'scissor',
+      ruleKey: 'receivables_slowing',
       severity: 'warn',
       facts: {
-        revenueGrowthRatio: 0.136,
-        revenueCurrentCents: 6_680_000,
-        revenuePreviousCents: 5_880_000,
-        ncgCents: 5_280_000,
-        ncgOverRevenue: 0.79,
-        pmrDays: 46,
-        pmpDays: 0,
+        pmrDays: 41,
+        pmrPreviousDays: 33,
+        avgLatenessDays: 9,
+        cashCycleDays: 30,
       },
-      textTitle: 'Você vende mais, mas o dinheiro demora a chegar',
+      textTitle: 'Você está recebendo mais devagar',
       textBody:
-        'Sua receita cresceu 14% e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com clientes e fornecedores.',
-    },
-    {
-      ruleKey: 'concentration',
-      severity: 'warn',
-      facts: { topCustomerShare: 0.486, topCustomer: 'Unimed Regional', customerCount: 6 },
-      textTitle: 'Boa parte do seu faturamento vem de um cliente só',
-      textBody:
-        'Unimed Regional responde por 49% do que você fatura. Se ele atrasar ou sair, o impacto no caixa é grande.',
+        'O prazo médio para o dinheiro cair na conta subiu de 33 para 41 dias no último mês. O caixa continua saudável, mas dá pra corrigir cedo, antes de apertar.',
     },
   ],
 };

@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Text, type StyleProp, type TextStyle } from 'react-native';
 
-import { brl } from '@/lib/format';
+import { brl, brlInteiro } from '@/lib/format';
 
 interface Props {
   /** Valor final em centavos (já calculado pelo servidor). */
@@ -16,6 +16,8 @@ interface Props {
   style?: StyleProp<TextStyle>;
   /** Duração da contagem, em milissegundos. */
   duracao?: number;
+  /** Valor de PROJEÇÃO: exibe em reais inteiros (sem centavos, é estimativa). */
+  inteiro?: boolean;
 }
 
 // desaceleração suave no fim (easeOutCubic)
@@ -23,7 +25,7 @@ function suavizar(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
-export function CountUpMoney({ cents, style, duracao = 750 }: Props) {
+export function CountUpMoney({ cents, style, duracao = 750, inteiro = false }: Props) {
   const [atual, setAtual] = useState(cents);
   const inicioRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -46,5 +48,5 @@ export function CountUpMoney({ cents, style, duracao = 750 }: Props) {
     };
   }, [cents, duracao]);
 
-  return <Text style={style}>{brl(atual)}</Text>;
+  return <Text style={style}>{inteiro ? brlInteiro(atual) : brl(atual)}</Text>;
 }

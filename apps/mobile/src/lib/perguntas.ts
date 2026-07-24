@@ -8,7 +8,7 @@
  */
 
 import type { CashProjectionPoint, DashboardJson } from './api';
-import { brl, dataBR, pct } from './format';
+import { brl, brlInteiro, dataBR, pct } from './format';
 
 function semAcento(s: string): string {
   return s
@@ -79,7 +79,7 @@ export function responderDeterministico(dash: DashboardJson, pergunta: string): 
         : base;
     }
     if (p30 !== null && p30 >= 0) {
-      return `Pelo cálculo de agora, o mês fecha no positivo: a projeção para 30 dias é ${brl(p30)}.`;
+      return `Pelo cálculo de agora, o mês fecha no positivo: a projeção para 30 dias é ${brlInteiro(p30)}.`;
     }
     return 'Pelo cálculo de agora, o mês fica apertado. Olhe o painel para ver de onde vem o aperto.';
   }
