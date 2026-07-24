@@ -27,6 +27,20 @@ import { buildDashboard } from './snapshots';
 
 const EMAIL_PATTERN = '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$';
 
+/**
+ * Bootstrap de operadores: e-mails listados em PULSO_ADMIN_EMAILS (separados por
+ * vírgula) viram admin automaticamente ao entrar/cadastrar — sem mexer no banco.
+ * Não é segredo: é a lista de quem opera (CEO, especialista). O papel continua
+ * vindo SEMPRE do banco (isto só o define uma vez, na entrada).
+ */
+function ehAdminBootstrap(email: string): boolean {
+  const lista = (process.env.PULSO_ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return lista.includes(email.toLowerCase());
+}
+
 interface SignupBody {
   businessName: string;
   email: string;
@@ -133,7 +147,12 @@ export function registerAuth(
           await tx`INSERT INTO auth_tokens (token_hash, user_id) VALUES (${hashToken(token)}, ${u.id})`;
           return c as CompanyRow;
         });
-        return reply.code(201).send({ token, email, role: 'owner', company: toCompanyJson(company) });
+        let role = 'owner';
+        if (ehAdminBootstrap(email)) {
+          await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
+          role = 'admin';
+        }
+        return reply.code(201).send({ token, email, role, company: toCompanyJson(company) });
       } catch (err) {
         // corrida entre dois cadastros com o mesmo e-mail: o UNIQUE segura
         if ((err as { code?: string }).code === '23505') {
@@ -164,6 +183,13 @@ export function registerAuth(
       const token = newToken();
       await sql`INSERT INTO auth_tokens (token_hash, user_id) VALUES (${hashToken(token)}, ${user.id})`;
 
+      // bootstrap de operador: e-mail listado em PULSO_ADMIN_EMAILS vira admin
+      let role = (user.role as string) ?? 'owner';
+      if (role !== 'admin' && ehAdminBootstrap(email)) {
+        await sql`UPDATE users SET role = 'admin' WHERE id = ${user.id}`;
+        role = 'admin';
+      }
+
       const company: CompanyRow = {
         id: user.c_id as string,
         name: user.name as string,
@@ -175,7 +201,7 @@ export function registerAuth(
       return reply.send({
         token,
         email,
-        role: (user.role as string) ?? 'owner',
+        role,
         company: toCompanyJson(company),
       });
     },
