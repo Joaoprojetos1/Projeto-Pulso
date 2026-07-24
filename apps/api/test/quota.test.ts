@@ -9,7 +9,7 @@ import type { ChatModel } from '../src/ai/chat';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
-import { chatQuota, DEFAULT_CHAT_QUOTA, saoPauloMonthWindow } from '../src/quota';
+import { chatQuota, DEFAULT_CHAT_QUOTA, saoPauloMonthWindow, saoPauloToday } from '../src/quota';
 
 const PORT = 5499;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-quota-test');
@@ -162,6 +162,16 @@ describe('cota mensal do chat', () => {
     const comPlano = await novaEmpresa();
     await sql`UPDATE companies SET plan_id = 'pro' WHERE id = ${comPlano}`;
     expect(await chatQuota(sql, comPlano)).toBe(100);
+  });
+});
+
+describe('hoje no fuso de São Paulo', () => {
+  it('madrugada UTC ainda é "ontem" em São Paulo (não erra o dia)', () => {
+    // 2026-07-16 02:00 UTC = 2026-07-15 23:00 em SP (UTC-3)
+    const instante = new Date('2026-07-16T02:00:00Z');
+    expect(saoPauloToday(instante)).toBe('2026-07-15');
+    // o UTC ingênuo (bug antigo) mostraria o dia seguinte:
+    expect(instante.toISOString().slice(0, 10)).toBe('2026-07-16');
   });
 });
 

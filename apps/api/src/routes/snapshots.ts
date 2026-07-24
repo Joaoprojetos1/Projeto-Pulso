@@ -10,6 +10,7 @@ import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 import type { PushMessage, PushSender } from '../push';
+import { saoPauloToday } from '../quota';
 
 /**
  * Cálculo e leitura.
@@ -434,7 +435,7 @@ export function registerSnapshots(
     async (req, reply) => {
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
-      const asOf = req.body?.asOf ?? new Date().toISOString().slice(0, 10);
+      const asOf = req.body?.asOf ?? saoPauloToday();
       const result = await computeAndStore(sql, company, asOf, alertWriter, pushSender, app.log);
       return reply.code(201).send(result);
     },
@@ -537,7 +538,7 @@ export function registerSnapshots(
       const company = await companyFromRequest(sql, req);
       if (!company) return reply.code(401).send({ error: 'Faça login.' });
 
-      const today = new Date().toISOString().slice(0, 10);
+      const today = saoPauloToday();
       await sql`
         INSERT INTO cash_balances (company_id, observed_on, balance_cents)
         VALUES (${company.id}, ${today}, ${req.body.cashBalanceCents})

@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { DATE_PATTERN } from '../http';
+import { saoPauloToday } from '../quota';
 import { loadCompanySnapshot } from './snapshots';
 
 /**
@@ -41,7 +42,7 @@ export function registerSimulate(app: FastifyInstance, sql: Sql) {
       const company = await companyFromRequest(sql, req);
       if (!company) return reply.code(401).send({ error: 'Faça login para simular.' });
 
-      const asOf = req.body.asOf ?? new Date().toISOString().slice(0, 10);
+      const asOf = req.body.asOf ?? saoPauloToday();
       const snap = await loadCompanySnapshot(sql, company, asOf);
 
       const simulation = simulate(snap, req.body.deltas, { horizonDays: req.body.horizonDays });

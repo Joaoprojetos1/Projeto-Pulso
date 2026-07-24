@@ -4,6 +4,7 @@ import { aggregateAiUsage } from '../../ai/usage';
 import type { AuthedUser } from '../../auth';
 import type { Sql } from '../../db';
 import { UUID_PATTERN } from '../../http';
+import { saoPauloToday } from '../../quota';
 import { notFound, rateLimited, recordAudit, requireAdmin } from './guard';
 import { companyDossier, economy, health, leads, overview, pilotMetrics } from './queries';
 
@@ -170,7 +171,7 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
       const [last] = await sql`
         SELECT as_of::text AS as_of FROM indicator_snapshots
         WHERE company_id = ${req.params.id} ORDER BY as_of DESC LIMIT 1`;
-      const asOf = (last?.as_of as string | undefined) ?? new Date().toISOString().slice(0, 10);
+      const asOf = (last?.as_of as string | undefined) ?? saoPauloToday();
 
       const res = await app.inject({
         method: 'POST',

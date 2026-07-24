@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { DATE_PATTERN, UUID_PATTERN } from '../http';
+import { saoPauloToday } from '../quota';
 
 /**
  * Contas PREVISTAS — a camada de planejamento do dono (a pagar e a receber).
@@ -26,7 +27,7 @@ interface ContaRow {
   created_at: Date;
 }
 
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = () => saoPauloToday();
 
 /** Estado de apresentação: prevista | vencida (data passou, sem confirmar) | realizada. */
 function statusApresentado(r: ContaRow, ref: string): 'prevista' | 'vencida' | 'realizada' {

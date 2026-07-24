@@ -53,6 +53,21 @@ export interface MonthWindow {
   resetsOn: string;
 }
 
+/**
+ * "Hoje" ('YYYY-MM-DD') no fuso de São Paulo. Usar isto em vez de
+ * new Date().toISOString().slice(0,10) — este último dá o dia em UTC, que à
+ * noite em Brasília já virou o dia seguinte (bug de "conta vencida" e de âncora
+ * do snapshot). en-CA formata como AAAA-MM-DD.
+ */
+export function saoPauloToday(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
 /** Janela do mês corrente no fuso de São Paulo. */
 export function saoPauloMonthWindow(now: Date = new Date()): MonthWindow {
   const parts = new Intl.DateTimeFormat('en-CA', {

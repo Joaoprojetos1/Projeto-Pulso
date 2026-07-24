@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { companyFromRequest, normalizeEmail } from '../auth';
 import type { Sql } from '../db';
 import { DATE_PATTERN } from '../http';
+import { saoPauloToday } from '../quota';
 
 /**
  * Assinatura (entitlement) — o "gatilho de ativação".
@@ -24,7 +25,7 @@ const STATUS = ['pendente', 'ativa', 'cancelada'] as const;
 function estaAtiva(status: string, until: string | null): boolean {
   if (status !== 'ativa') return false;
   if (!until) return true;
-  return until >= new Date().toISOString().slice(0, 10);
+  return until >= saoPauloToday();
 }
 
 async function lerAssinatura(sql: Sql, companyId: string) {
