@@ -183,11 +183,11 @@ describe('fluxo completo: clínica saudável', () => {
 });
 
 describe('bordas', () => {
-  it('lista de empresas: o app usa isto para encontrar a clínica', async () => {
+  it('lista de empresas exige operador: sem admin não enumera a base', async () => {
+    // segurança: GET /companies devolve CNPJ de todas as clínicas — só admin.
+    // O guard do admin não se revela: responde 404 para quem não é operador.
     const res = await app.inject({ method: 'GET', url: '/companies' });
-    expect(res.statusCode).toBe(200);
-    const nomes = res.json().companies.map((c: { name: string }) => c.name);
-    expect(nomes).toContain('Clínica Horizonte');
+    expect(res.statusCode).toBe(404);
   });
 
   it('empresa inexistente: 404 com mensagem clara', async () => {
@@ -217,8 +217,13 @@ describe('bordas', () => {
   });
 
   it('chat sem modelo de IA: responde o aviso honesto (nunca finge)', async () => {
-    const companies = await app.inject({ method: 'GET', url: '/companies' });
-    const id = companies.json().companies[0].id as string;
+    const created = await app.inject({
+      method: 'POST',
+      url: '/companies',
+      payload: { name: 'Clínica Chat Sem IA' },
+    });
+    const id = created.json().id as string;
+    await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, payload: { asOf: '2026-07-15' } });
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${id}/chat`,

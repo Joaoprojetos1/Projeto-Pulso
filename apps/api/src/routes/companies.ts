@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { Sql } from '../db';
 import { companyParamsSchema, findCompany, toCompanyJson, type CompanyRow } from '../http';
+import { requireAdmin } from './admin/guard';
 
 interface CompanyBody {
   name: string;
@@ -38,7 +39,11 @@ export function registerCompanies(app: FastifyInstance, sql: Sql) {
     },
   );
 
-  app.get('/companies', async () => {
+  // Listar TODAS as empresas (com CNPJ) é dado sensível: só operador (admin).
+  // Sem o guard, qualquer um enumeraria a base inteira de clínicas.
+  app.get('/companies', async (req, reply) => {
+    const admin = await requireAdmin(sql, req, reply);
+    if (!admin) return reply;
     const rows = await sql`
       SELECT id, name, cnpj, niche, declared_fixed_cost_cents, created_at
       FROM companies ORDER BY created_at LIMIT 100`;
