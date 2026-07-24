@@ -166,15 +166,18 @@ describe('escritas do admin geram auditoria', () => {
       method: 'PATCH',
       url: `/admin/companies/${id}`,
       headers: authH(adminAuth),
-      payload: { chatQuota: 200, plan: 'fundador' },
+      payload: { chatQuota: 200, planId: 'pro', subscriptionStatus: 'ativa' },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().chatQuota).toBe(200);
-    expect(res.json().plan).toBe('fundador');
+    expect(res.json().planId).toBe('pro');
+    expect(res.json().subscriptionStatus).toBe('ativa');
 
-    const [company] = await sql`SELECT chat_quota_monthly, plan FROM companies WHERE id = ${id}`;
+    const [company] = await sql`
+      SELECT chat_quota_monthly, plan_id, subscription_status FROM companies WHERE id = ${id}`;
     expect(company.chat_quota_monthly).toBe(200);
-    expect(company.plan).toBe('fundador');
+    expect(company.plan_id).toBe('pro');
+    expect(company.subscription_status).toBe('ativa');
 
     const [audit] = await sql`
       SELECT action, target_type, target_id FROM admin_audit

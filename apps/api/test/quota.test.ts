@@ -9,7 +9,7 @@ import type { ChatModel } from '../src/ai/chat';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
-import { saoPauloMonthWindow } from '../src/quota';
+import { chatQuota, DEFAULT_CHAT_QUOTA, saoPauloMonthWindow } from '../src/quota';
 
 const PORT = 5499;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-quota-test');
@@ -149,10 +149,19 @@ describe('cota mensal do chat', () => {
     expect(await contarChat(id)).toBe(1);
   });
 
-  it('cota é configurável por empresa; o padrão é 50', async () => {
-    const id = await novaEmpresa(); // sem definir
-    const [row] = await sql`SELECT chat_quota_monthly FROM companies WHERE id = ${id}`;
-    expect(row.chat_quota_monthly).toBe(50);
+  it('cota efetiva: override da empresa prevalece; senão o plano; senão o padrão', async () => {
+    // sem override e sem plano → cai no padrão de segurança
+    const semNada = await novaEmpresa();
+    expect(await chatQuota(sql, semNada)).toBe(DEFAULT_CHAT_QUOTA);
+
+    // override por empresa prevalece
+    const comOverride = await novaEmpresa(200);
+    expect(await chatQuota(sql, comOverride)).toBe(200);
+
+    // sem override, mas com plano → usa o limite do plano (Pro = 100, seed 0015)
+    const comPlano = await novaEmpresa();
+    await sql`UPDATE companies SET plan_id = 'pro' WHERE id = ${comPlano}`;
+    expect(await chatQuota(sql, comPlano)).toBe(100);
   });
 });
 
