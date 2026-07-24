@@ -8,7 +8,13 @@ build/
 .expo/
 .DS_Store
 .pgdata/
-.pgdata-test/
+.pgdata-*/
+google-services.json.bak
+# credenciais que nunca podem ser versionadas
+*-adminsdk-*.json
+*service-account*.json
+*.pem
+*.key
 
 # dado real de cliente NUNCA entra
 fixtures/real/
