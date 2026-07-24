@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SimLine } from '@/components/sim-line';
 import { sendSimulate, type SimulationDelta, type SimulationResult } from '@/lib/api';
-import { dataBR } from '@/lib/format';
+import { dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -43,7 +43,7 @@ const zeroIndex = (c: SimulationResult['original']) =>
 
 export default function Simular() {
   const { token, fonte, dashboard } = usePulso();
-  const asOf = dashboard?.snapshot.asOf ?? new Date().toISOString().slice(0, 10);
+  const asOf = dashboard?.snapshot.asOf ?? hojeISO();
   const demo = fonte === 'demo' || !token;
 
   const [ativos, setAtivos] = useState<Set<string>>(new Set());

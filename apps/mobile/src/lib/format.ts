@@ -33,6 +33,18 @@ export function dataBR(iso: string): string {
   return `${Number(d)} de ${MESES[Number(m) - 1]}`;
 }
 
+/**
+ * Hoje no calendário LOCAL do aparelho (YYYY-MM-DD). Usa os componentes locais,
+ * nunca toISOString(): de noite no Brasil (UTC-3) o ISO já apontaria amanhã, e
+ * "Hoje" viraria o dia seguinte. Aceita uma base para calcular outros dias.
+ */
+export function hojeISO(base: Date = new Date()): string {
+  const y = base.getFullYear();
+  const m = String(base.getMonth() + 1).padStart(2, '0');
+  const d = String(base.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export function pct(ratio: number): string {
   return `${Math.round(ratio * 100)}%`;
 }

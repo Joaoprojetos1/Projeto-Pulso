@@ -30,7 +30,8 @@ import {
   type ContaJson,
   type ContaKind,
 } from '@/lib/api';
-import { brl, dataBR } from '@/lib/format';
+import { textoParaCents } from '@/components/money-input';
+import { brl, dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -51,14 +52,13 @@ const PRAZOS: Array<{ rotulo: string; dias: number }> = [
 function emIso(diasAFrente: number): string {
   const d = new Date();
   d.setDate(d.getDate() + diasAFrente);
-  return d.toISOString().slice(0, 10);
+  return hojeISO(d); // data LOCAL do aparelho (não UTC): "Hoje" não pula à noite
 }
 
 function reaisParaCents(txt: string): number | null {
-  const limpo = txt.replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-  const n = Number(limpo);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return Math.round(n * 100);
+  // conversão por STRING (regra do projeto: dinheiro é centavo inteiro, nunca float)
+  const cents = textoParaCents(txt);
+  return cents && cents > 0 ? cents : null;
 }
 
 /** Data livre digitada (DD/MM/AAAA) para ISO; null se inválida. */
@@ -77,7 +77,11 @@ function isoParaDDMM(iso: string): string {
   return `${d}/${mo}/${y}`;
 }
 function centsParaCampo(cents: number): string {
-  return (cents / 100).toFixed(2).replace('.', ',');
+  // por string, sem float: "123456" → "1234,56"
+  const abs = Math.abs(cents);
+  const reais = Math.floor(abs / 100);
+  const c = String(abs % 100).padStart(2, '0');
+  return `${reais},${c}`;
 }
 
 const rotuloStatus: Record<ContaJson['status'], string> = {
