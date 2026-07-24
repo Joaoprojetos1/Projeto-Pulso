@@ -72,7 +72,7 @@ export default function Saude() {
       ) : (
         <ScrollView contentContainerStyle={styles.conteudo}>
           <View style={styles.destaque}>
-            <Text style={styles.destaqueRotulo}>ÚLTIMO SNAPSHOT GERADO</Text>
+            <Text style={styles.destaqueRotulo}>ÚLTIMO CÁLCULO GERADO</Text>
             <Text style={styles.destaqueValor}>{quando(h.lastSnapshotAt)}</Text>
           </View>
 
