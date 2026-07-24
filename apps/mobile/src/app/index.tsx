@@ -252,7 +252,7 @@ export default function Login() {
                     style={styles.input}
                     value={negocio}
                     onChangeText={setNegocio}
-                    placeholder="Ex.: Clínica Sorriso"
+                    placeholder="Ex.: Loja Aurora"
                     placeholderTextColor={colors.cinza}
                   />
                 </>

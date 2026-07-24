@@ -35,8 +35,8 @@ export function templateFor(alert: AlertFact): AlertText {
       return {
         title: 'Você vende mais, mas o dinheiro demora a chegar',
         body: pct
-          ? `Sua receita cresceu ${pct} e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com convênios e fornecedores.`
-          : 'Sua receita cresce e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com convênios e fornecedores.',
+          ? `Sua receita cresceu ${pct} e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com clientes e fornecedores.`
+          : 'Sua receita cresce e mesmo assim o caixa aperta: há muito dinheiro preso a receber. Vale rever prazos com clientes e fornecedores.',
       };
     }
 
