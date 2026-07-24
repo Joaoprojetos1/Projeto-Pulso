@@ -9,6 +9,7 @@
  * Os números vêm do campo `usage` da resposta da API (input/output tokens).
  */
 
+import { callCostCents } from './prices';
 import type { Sql } from '../db';
 
 export type AiUsageKind = 'alert_writer' | 'chat';
@@ -59,11 +60,13 @@ export interface AiUsageRollup {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  /** Custo estimado em centavos (tokens × tabela de preços dos modelos). */
+  costCents: number;
 }
 
 /**
- * Agrega o consumo por empresa, tipo, modelo e mês: total de tokens e número
- * de chamadas. Fonte do endpoint interno GET /admin/ai-usage.
+ * Agrega o consumo por empresa, tipo, modelo e mês: total de tokens, número de
+ * chamadas e custo estimado em R$. Fonte do endpoint interno GET /admin/ai-usage.
  */
 export async function aggregateAiUsage(sql: Sql): Promise<AiUsageRollup[]> {
   const rows = await sql`
@@ -93,6 +96,7 @@ export async function aggregateAiUsage(sql: Sql): Promise<AiUsageRollup[]> {
       inputTokens,
       outputTokens,
       totalTokens: inputTokens + outputTokens,
+      costCents: callCostCents(r.model as string, inputTokens, outputTokens),
     };
   });
 }

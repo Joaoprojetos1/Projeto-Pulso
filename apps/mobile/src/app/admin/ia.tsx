@@ -21,6 +21,7 @@ export default function IaCustos() {
   const [linhas, setLinhas] = useState<AdminAiUsageRow[] | null>(null);
   const [eco, setEco] = useState<AdminEconomy | null>(null);
   const [erro, setErro] = useState(false);
+  const [detalhes, setDetalhes] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -104,33 +105,60 @@ export default function IaCustos() {
         ) : linhas.length === 0 ? (
           <Text style={styles.vazioTexto}>Nenhum consumo de IA registrado ainda.</Text>
         ) : (
-          porMes.map(([mes, rows]) => {
-            const totalMes = rows.reduce((s, r) => s + r.totalTokens, 0);
-            return (
-              <View key={mes} style={styles.cartao}>
-                <View style={styles.mesTopo}>
-                  <Text style={styles.mes}>{mes}</Text>
-                  <Text style={styles.mesTotal}>{totalMes.toLocaleString('pt-BR')} tok</Text>
-                </View>
-                {rows
-                  .slice()
-                  .sort((a, b) => b.totalTokens - a.totalTokens)
-                  .map((r, i) => (
+          <>
+            <Pressable onPress={() => setDetalhes((v) => !v)} style={styles.detalhesToggle} hitSlop={6}>
+              <Text style={styles.detalhesTexto}>
+                {detalhes ? 'Ocultar detalhes técnicos (tokens)' : 'Ver detalhes técnicos (tokens)'}
+              </Text>
+              <Ionicons name={detalhes ? 'chevron-up' : 'chevron-down'} size={14} color={colors.cinza} />
+            </Pressable>
+
+            {porMes.map(([mes, rows]) => {
+              const interacoesMes = rows.reduce((s, r) => s + r.calls, 0);
+              const custoMes = rows.reduce((s, r) => s + r.costCents, 0);
+              // agrupa por empresa (soma interações + custo)
+              const porEmpresa = new Map<string, { nome: string; interacoes: number; custoCents: number }>();
+              for (const r of rows) {
+                const chave = r.companyId;
+                const at = porEmpresa.get(chave) ?? { nome: r.companyName ?? 'sem nome', interacoes: 0, custoCents: 0 };
+                at.interacoes += r.calls;
+                at.custoCents += r.costCents;
+                porEmpresa.set(chave, at);
+              }
+              const empresas = [...porEmpresa.values()].sort((a, b) => b.custoCents - a.custoCents);
+              return (
+                <View key={mes} style={styles.cartao}>
+                  <View style={styles.mesTopo}>
+                    <Text style={styles.mes}>{mes}</Text>
+                    <Text style={styles.mesTotal}>{interacoesMes} interações · {brl(custoMes)}</Text>
+                  </View>
+                  {empresas.map((e, i) => (
                     <View key={i} style={styles.kv}>
-                      <View style={styles.kvMiolo}>
-                        <Text style={styles.kvChave} numberOfLines={1}>
-                          {r.companyName ?? '—'}
-                        </Text>
-                        <Text style={styles.kvSub}>
-                          {r.kind} · {r.model} · {r.calls} chamadas
-                        </Text>
-                      </View>
-                      <Text style={styles.kvValor}>{r.totalTokens.toLocaleString('pt-BR')}</Text>
+                      <Text style={styles.kvChave} numberOfLines={1}>{e.nome}</Text>
+                      <Text style={styles.kvValor}>
+                        {e.interacoes} interações · {brl(e.custoCents)}
+                      </Text>
                     </View>
                   ))}
-              </View>
-            );
-          })
+                  {detalhes && (
+                    <View style={styles.detalhesBloco}>
+                      {rows
+                        .slice()
+                        .sort((a, b) => b.totalTokens - a.totalTokens)
+                        .map((r, i) => (
+                          <View key={i} style={styles.kv}>
+                            <Text style={styles.kvSub} numberOfLines={1}>
+                              {r.companyName ?? 'sem nome'} · {r.kind} · {r.model} · {r.calls} chamadas
+                            </Text>
+                            <Text style={styles.kvSub}>{r.totalTokens.toLocaleString('pt-BR')} tok</Text>
+                          </View>
+                        ))}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -159,5 +187,8 @@ const styles = StyleSheet.create({
   kvMiolo: { flex: 1, gap: 1 },
   kvChave: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.tinta },
   kvSub: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.2, color: colors.cinza },
-  kvValor: { fontFamily: fonts.mono, fontSize: 13, color: colors.tinta },
+  kvValor: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.tinta },
+  detalhesToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 4 },
+  detalhesTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
+  detalhesBloco: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 8, gap: 6, marginTop: 4 },
 });

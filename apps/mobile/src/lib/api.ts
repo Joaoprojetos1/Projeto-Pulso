@@ -639,7 +639,7 @@ async function adminGet<T>(token: string, path: string): Promise<T> {
 
 async function adminWrite<T>(
   token: string,
-  method: 'POST' | 'PATCH',
+  method: 'POST' | 'PATCH' | 'DELETE',
   path: string,
   body?: unknown,
 ): Promise<T> {
@@ -657,6 +657,7 @@ async function adminWrite<T>(
 export interface AdminOverviewRow {
   companyId: string;
   name: string;
+  phone: string | null;
   plan: string | null;
   subscriptionStatus: SubscriptionStatus;
   chatQuota: number;
@@ -664,12 +665,25 @@ export interface AdminOverviewRow {
   stage: DiagnosisStage | null;
   lastImportAt: string | null;
   daysSinceImport: number | null;
+  daysSinceData: number | null;
   unopenedAlerts: number;
   chatQuestionsMonth: number;
 }
 
-export function fetchAdminOverview(token: string): Promise<AdminOverviewRow[]> {
-  return adminGet<{ companies: AdminOverviewRow[] }>(token, '/admin/overview').then((b) => b.companies);
+export interface AdminSummary {
+  activeSubscribers: number;
+  pendingPayment: number;
+  monthlyRevenueCents: number;
+  aiInteractionsMonth: number;
+}
+
+export interface AdminOverview {
+  companies: AdminOverviewRow[];
+  summary: AdminSummary;
+}
+
+export function fetchAdminOverview(token: string): Promise<AdminOverview> {
+  return adminGet<AdminOverview>(token, '/admin/overview');
 }
 
 export interface AdminDossier {
@@ -678,6 +692,7 @@ export interface AdminDossier {
     name: string;
     cnpj: string | null;
     niche: string;
+    phone: string | null;
     planId: string | null;
     plan: string | null;
     subscriptionStatus: SubscriptionStatus;
@@ -685,6 +700,14 @@ export interface AdminDossier {
     chatQuota: number;
     createdAt: string;
   };
+  /** Números do negócio (em centavos) — o app só formata em R$. */
+  businessNumbers: {
+    cashCents: number | null;
+    fixedCostCents: number | null;
+    revenueCents: number | null;
+    revenuePreviousCents: number | null;
+  };
+  chatUsedMonth: number;
   snapshot: {
     asOf: string;
     coreVersion: string;
@@ -697,6 +720,7 @@ export interface AdminDossier {
     id: string;
     ruleKey: string;
     severity: 'ok' | 'warn' | 'critical';
+    textTitle: string | null;
     createdAt: string;
     openedAt: string | null;
     actedAt: string | null;
@@ -708,6 +732,7 @@ export interface AdminDossier {
     rowCount: number;
     importedAt: string;
   }>;
+  cashInputs: Array<{ observedOn: string; balanceCents: number }>;
   planned: Array<{ kind: ContaKind; status: string; count: number; totalCents: number }>;
   aiUsageMonth: Array<{
     kind: string;
@@ -725,6 +750,7 @@ export function fetchAdminCompany(token: string, id: string): Promise<AdminDossi
 
 export interface PatchEmpresa {
   name?: string;
+  phone?: string;
   chatQuota?: number;
   planId?: string;
   subscriptionStatus?: SubscriptionStatus;
@@ -734,8 +760,13 @@ export function patchAdminCompany(
   token: string,
   id: string,
   patch: PatchEmpresa,
-): Promise<{ id: string; name: string; planId: string | null; subscriptionStatus: SubscriptionStatus; chatQuota: number }> {
+): Promise<{ id: string; name: string; phone: string | null; planId: string | null; subscriptionStatus: SubscriptionStatus; chatQuota: number }> {
   return adminWrite(token, 'PATCH', `/admin/companies/${id}`, patch);
+}
+
+/** Excluir cadastro: exige o nome exato como confirmação. Remove tudo (auditado). */
+export function deleteAdminCompany(token: string, id: string, confirmName: string): Promise<{ ok: boolean }> {
+  return adminWrite(token, 'DELETE', `/admin/companies/${id}`, { confirmName });
 }
 
 /* --------------- Planos (gestão no admin) --------------- */
@@ -810,6 +841,7 @@ export interface AdminAiUsageRow {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  costCents: number;
 }
 
 export function fetchAdminAiUsage(token: string): Promise<AdminAiUsageRow[]> {
