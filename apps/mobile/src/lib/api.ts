@@ -801,6 +801,24 @@ export function fetchAdminAiUsage(token: string): Promise<AdminAiUsageRow[]> {
   return adminGet<{ usage: AdminAiUsageRow[] }>(token, '/admin/ai-usage').then((b) => b.usage);
 }
 
+export interface AdminEconomy {
+  /** custo médio por interação (R$ centavos); null = sem conversa suficiente. */
+  avgCostCents: number | null;
+  byModel: Array<{ model: string; calls: number; avgCostCents: number }>;
+  plans: Array<{
+    id: string;
+    name: string;
+    priceCents: number;
+    chatLimit: number;
+    costAtFullCents: number | null;
+    sobraCents: number | null;
+  }>;
+}
+
+export function fetchAdminEconomy(token: string): Promise<AdminEconomy> {
+  return adminGet<AdminEconomy>(token, '/admin/economy');
+}
+
 export interface AdminHealth {
   lastSnapshotAt: string | null;
   importsLast7Days: number;

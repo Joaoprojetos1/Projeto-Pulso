@@ -5,7 +5,7 @@ import type { AuthedUser } from '../../auth';
 import type { Sql } from '../../db';
 import { UUID_PATTERN } from '../../http';
 import { notFound, rateLimited, recordAudit, requireAdmin } from './guard';
-import { companyDossier, health, leads, overview, pilotMetrics } from './queries';
+import { companyDossier, economy, health, leads, overview, pilotMetrics } from './queries';
 
 /**
  * Área de operação (admin). Ferramenta interna para João e Marco.
@@ -73,6 +73,12 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
     const admin = await gate(req, reply);
     if (!admin) return reply;
     return { usage: await aggregateAiUsage(sql) };
+  });
+
+  app.get('/admin/economy', async (req, reply) => {
+    const admin = await gate(req, reply);
+    if (!admin) return reply;
+    return await economy(sql);
   });
 
   app.get('/admin/pilot-metrics', async (req, reply) => {

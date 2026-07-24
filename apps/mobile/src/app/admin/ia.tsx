@@ -11,13 +11,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchAdminAiUsage, type AdminAiUsageRow } from '@/lib/api';
+import { fetchAdminAiUsage, fetchAdminEconomy, type AdminAiUsageRow, type AdminEconomy } from '@/lib/api';
+import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function IaCustos() {
   const { token, ehAdmin } = usePulso();
   const [linhas, setLinhas] = useState<AdminAiUsageRow[] | null>(null);
+  const [eco, setEco] = useState<AdminEconomy | null>(null);
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
@@ -26,6 +28,9 @@ export default function IaCustos() {
     fetchAdminAiUsage(token)
       .then((u) => vivo && setLinhas(u))
       .catch(() => vivo && setErro(true));
+    fetchAdminEconomy(token)
+      .then((e) => vivo && setEco(e))
+      .catch(() => {});
     return () => {
       vivo = false;
     };
@@ -62,21 +67,44 @@ export default function IaCustos() {
         <View style={{ width: 24 }} />
       </View>
 
-      {erro ? (
-        <View style={styles.centro}>
+      <ScrollView contentContainerStyle={styles.conteudo}>
+        {eco && (
+          <View style={styles.cartao}>
+            <Text style={styles.secaoTitulo}>Economia por plano</Text>
+            <Text style={styles.secaoSub}>
+              {eco.avgCostCents != null
+                ? `Custo médio por interação com a IA: ${brl(eco.avgCostCents)}`
+                : 'Ainda sem conversas suficientes para estimar o custo por interação.'}
+            </Text>
+            {eco.byModel.map((m) => (
+              <Text key={m.model} style={styles.kvSub}>
+                {m.model}: {brl(m.avgCostCents)}/interação · {m.calls} chamadas
+              </Text>
+            ))}
+            <View style={{ height: 6 }} />
+            {eco.plans.map((p) => (
+              <View key={p.id} style={styles.ecoPlano}>
+                <Text style={styles.ecoNome}>
+                  {p.name} · {brl(p.priceCents)}/mês · {p.chatLimit} interações
+                </Text>
+                <Text style={styles.ecoDetalhe}>
+                  {p.costAtFullCents != null
+                    ? `Se usar 100%: custo ~${brl(p.costAtFullCents)}, sobra ${brl(p.sobraCents ?? 0)}`
+                    : 'Sem dados de custo ainda.'}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {erro ? (
           <Text style={styles.vazioTexto}>Não consegui carregar o consumo.</Text>
-        </View>
-      ) : linhas === null ? (
-        <View style={styles.centro}>
-          <ActivityIndicator color={colors.mata} />
-        </View>
-      ) : linhas.length === 0 ? (
-        <View style={styles.centro}>
+        ) : linhas === null ? (
+          <ActivityIndicator color={colors.mata} style={{ marginTop: 20 }} />
+        ) : linhas.length === 0 ? (
           <Text style={styles.vazioTexto}>Nenhum consumo de IA registrado ainda.</Text>
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.conteudo}>
-          {porMes.map(([mes, rows]) => {
+        ) : (
+          porMes.map(([mes, rows]) => {
             const totalMes = rows.reduce((s, r) => s + r.totalTokens, 0);
             return (
               <View key={mes} style={styles.cartao}>
@@ -102,9 +130,9 @@ export default function IaCustos() {
                   ))}
               </View>
             );
-          })}
-        </ScrollView>
-      )}
+          })
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -118,6 +146,11 @@ const styles = StyleSheet.create({
 
   conteudo: { padding: 16, gap: 12, paddingBottom: 40 },
   cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: 8 },
+  secaoTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, letterSpacing: -0.2 },
+  secaoSub: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },
+  ecoPlano: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 8, gap: 2 },
+  ecoNome: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: colors.tinta },
+  ecoDetalhe: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
   mesTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', borderBottomWidth: 1, borderBottomColor: colors.linha, paddingBottom: 8 },
   mes: { fontFamily: fonts.mono, fontSize: 13, letterSpacing: 0.5, color: colors.tinta },
   mesTotal: { fontFamily: fonts.display, fontSize: 15, color: colors.tinta },

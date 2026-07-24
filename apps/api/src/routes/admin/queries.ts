@@ -1,5 +1,6 @@
 import { CORE_VERSION } from '@pulso/core';
 
+import { callCostCents } from '../../ai/prices';
 import type { Sql } from '../../db';
 
 /**
@@ -300,4 +301,67 @@ export async function pilotMetrics(sql: Sql): Promise<PilotMetrics[]> {
       plannedConfirmed: num(planned, c.id as string, 'confirmed'),
     },
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Economia por plano: quanto sobra por cliente (custo da IA vs preço do plano)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deriva de ai_usage (conversas do mês) + a tabela de preços dos modelos:
+ *  - custo médio por interação, por modelo e no geral;
+ *  - por plano ativo: preço, limite, custo estimado se o cliente usar 100% do
+ *    limite, e o quanto sobra. NENHUMA conta financeira de cliente aqui —
+ *    é métrica gerencial de custo de operação.
+ */
+export async function economy(sql: Sql) {
+  const chatRows = await sql`
+    SELECT model,
+           count(*)::int              AS calls,
+           sum(input_tokens)::bigint  AS input_tokens,
+           sum(output_tokens)::bigint AS output_tokens
+    FROM ai_usage
+    WHERE kind = 'chat'
+      AND (created_at AT TIME ZONE ${SP}) >= date_trunc('month', (now() AT TIME ZONE ${SP}))
+    GROUP BY model`;
+
+  const byModel = chatRows.map((r) => {
+    const calls = r.calls as number;
+    const custo = callCostCents(r.model as string, Number(r.input_tokens), Number(r.output_tokens));
+    return {
+      model: r.model as string,
+      calls,
+      avgCostCents: calls > 0 ? Math.round(custo / calls) : 0,
+    };
+  });
+
+  const totalCalls = byModel.reduce((s, m) => s + m.calls, 0);
+  const totalCost = chatRows.reduce(
+    (s, r) => s + callCostCents(r.model as string, Number(r.input_tokens), Number(r.output_tokens)),
+    0,
+  );
+  // null = ainda não houve conversa suficiente para estimar
+  const avgCostCents = totalCalls > 0 ? Math.round(totalCost / totalCalls) : null;
+
+  const plans = await sql`
+    SELECT id, name, price_cents, chat_limit_monthly
+    FROM plans WHERE active = true ORDER BY sort, price_cents`;
+
+  return {
+    avgCostCents,
+    byModel,
+    plans: plans.map((p) => {
+      const limit = p.chat_limit_monthly as number;
+      const price = p.price_cents as number;
+      const costAtFull = avgCostCents != null ? avgCostCents * limit : null;
+      return {
+        id: p.id as string,
+        name: p.name as string,
+        priceCents: price,
+        chatLimit: limit,
+        costAtFullCents: costAtFull,
+        sobraCents: costAtFull != null ? price - costAtFull : null,
+      };
+    }),
+  };
 }
