@@ -185,19 +185,19 @@
     <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Pulso ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
 
     <div class="stat">
-      <b class="tnum">57<span> / 75 tarefas</span></b>
+      <b class="tnum">59<span> / 77 tarefas</span></b>
       <span class="leg">concluídas. Cada frente abaixo mostra o que está feito e o que falta.</span>
     </div>
-    <div class="barra" role="img" aria-label="76% concluído"><div class="fill" style="width:76%"></div></div>
-    <p class="obs">≈ 76% · o escopo cresceu: nasceram as frentes de cobrança e de operação · falta ligar o aviso (push), plugar o pagamento e ir a campo</p>
+    <div class="barra" role="img" aria-label="77% concluído"><div class="fill" style="width:77%"></div></div>
+    <p class="obs">≈ 77% · o novo aplicativo está sendo gerado com o aviso automático · falta instalar e testar o push, plugar o pagamento, ler o arquivo real e ir a campo</p>
   </section>
 
   <div class="focus">
     <div class="pulse-dot" aria-hidden="true"></div>
     <div>
       <div class="fi">Frentes da vez</div>
-      <h3>Ligar o aviso, plugar o pagamento e ir a campo</h3>
-      <p>Com o produto e o backoffice de pé, os próximos blocos são: a notificação que chega sozinha no celular (falta a configuração do Firebase, externa), o meio de pagamento real para cobrar pelo site, ler o arquivo de verdade de uma clínica (com o especialista) e o piloto com a primeira clínica real.</p>
+      <h3>Instalar o novo app, plugar o pagamento e ir a campo</h3>
+      <p>O novo aplicativo está sendo gerado com o aviso automático já ligado (Firebase). Falta instalar essa versão e fazer o teste final para o aviso chegar sozinho no celular. Em paralelo: o meio de pagamento real para cobrar pelo site, ler o arquivo de verdade de uma clínica (com o especialista) e o piloto com a primeira clínica real.</p>
     </div>
   </div>
 
@@ -219,7 +219,7 @@
     <a class="linkcard" href="https://expo.dev/artifacts/eas/A3gCE6dbf1lW_Wtt204DHNP0W6NIaiQdIc58KLym1rg.apk" target="_blank" rel="noopener">
       <span class="lk">App · Android</span>
       <span class="lt">Instalar no celular</span>
-      <span class="ld">O app instalável (Android). O link do arquivo pode expirar com o tempo; se não baixar, é só pedir um novo.</span>
+      <span class="ld">O app instalável (Android). A nova versão (0.1.1), com o aviso automático, está sendo gerada — link atualizado assim que ficar pronta. O link do arquivo pode expirar; se não baixar, é só pedir um novo.</span>
       <span class="lgo">baixar o APK →</span>
     </a>
   </div>
@@ -316,7 +316,7 @@
       </div>
     </details>
 
-    <details class="dia" open>
+    <details class="dia">
       <summary>
         <span class="dnum">DIA 5</span>
         <span class="dtit">23 de julho — de produto a negócio</span>
@@ -339,6 +339,22 @@
           <li><span class="ok">✓</span><span>Planos de verdade no lugar do "piloto": Essencial R$ 97, Pro R$ 147 e Premium R$ 197, cada um com um limite de conversas com a IA por mês. O limite passou a vir do plano, e o operador pode criar e editar planos pelos bastidores</span></li>
           <li><span class="ok">✓</span><span>Fluxo de assinatura no app: ao criar a conta, o dono escolhe um plano e vai para o pagamento no site (fora das lojas); enquanto não paga, o app fica na tela de planos; ao pagar, toca em "já paguei" e o app libera. Sair volta para a tela inicial</span></li>
           <li><span class="ok">✓</span><span>Bastidores mais completos: visão de "economia por plano" (quanto sobra por cliente depois do custo da IA) e ativação da assinatura na mão pelo operador. E, no app, a conversa passou a se chamar "IA Pulso"</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia" open>
+      <summary>
+        <span class="dnum">DIA 6</span>
+        <span class="dtit">24 de julho — o novo aplicativo, com o aviso automático</span>
+        <span class="dresumo tnum">3 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span>Novo aplicativo em geração, reunindo tudo o que só entra em uma versão instalável: a <b>notificação que chega sozinha</b> (o coração da promessa, agora ligado ao Firebase), a vibração leve ao tocar, a biometria opcional para abrir o app, a foto no avatar do negócio e o "mandar pro contador" (gera uma imagem limpa do alerta para compartilhar). Assim que instalado, falta só um teste rápido para o aviso passar a chegar no celular</span></li>
+          <li><span class="ok">✓</span><span>Reforço de segurança: fechado o acesso cruzado entre empresas nos bastidores — uma clínica nunca alcança o dado de outra, nem por engano</span></li>
+          <li><span class="ok">✓</span><span>Atualização publicada: a nova versão (0.1.1) foi ao ar pelo canal de atualização automática, deixando o caminho pronto para os próximos ajustes chegarem sem reinstalar</span></li>
         </ul>
       </div>
     </details>
@@ -387,7 +403,7 @@
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">6 de 7</span></div>
+      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">7 de 8</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Banco de dados com histórico completo</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">As portas: cadastro, dados, cálculo, painel, contas e chat</span></li>
@@ -395,6 +411,7 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes de ponta a ponta com banco de verdade</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Login e controle de acesso</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Servidor na nuvem, no ar 24h (Render + banco Neon)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Isolamento entre empresas reforçado (uma clínica nunca vê dado de outra)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Backup e monitoramento</span></li>
       </ul>
     </div>
@@ -414,7 +431,7 @@
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">12 de 14</span></div>
+      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">13 de 15</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">As telas com a marca Pulso</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">"De onde vem esse número" aberto em todo alerta</span></li>
@@ -428,7 +445,8 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Central de alertas: histórico, lido e "fiz algo com isso"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Refino de experiência: boas-vindas, login melhorado, tela de conta, máscara de dinheiro, teclado e animações</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de assinatura (escolher plano) e "IA Pulso" no lugar de "Conversa"</span></li>
-        <li class="t-now"><span class="ic">●</span><span class="tx">Notificações: <b>código e Firebase prontos</b>, falta gerar o novo aplicativo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Toques finais nativos: vibração, biometria opcional, foto do avatar e "mandar pro contador"</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Notificações: <b>novo aplicativo gerado com o aviso (Firebase)</b> — falta instalar e confirmar o aviso chegando</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Publicação nas lojas (App Store / Google Play)</span></li>
       </ul>
     </div>
@@ -503,7 +521,7 @@
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
-        <div class="metric"><b class="tnum">57</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">59</b><span>tarefas concluídas</span></div>
         <div class="metric"><b class="tnum">18</b><span>pela frente</span></div>
         <div class="metric"><b class="tnum">113</b><span>testes no servidor</span></div>
       </div>
@@ -524,7 +542,7 @@
 
   <footer class="foot">
     <span>Pulso</span>
-    <span>Atualizado 23 jul 2026</span>
+    <span>Atualizado 24 jul 2026</span>
   </footer>
 
 </div>
