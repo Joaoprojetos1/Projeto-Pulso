@@ -2,9 +2,12 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { aggregateAiUsage } from '../../ai/usage';
 import type { AuthedUser } from '../../auth';
+import type { AlertWriterModel } from '../../ai/writer';
 import type { Sql } from '../../db';
-import { UUID_PATTERN } from '../../http';
+import { findCompany, UUID_PATTERN } from '../../http';
+import type { PushSender } from '../../push';
 import { saoPauloToday } from '../../quota';
+import { computeAndStore } from '../snapshots';
 import { notFound, rateLimited, recordAudit, requireAdmin } from './guard';
 import { companyDossier, economy, health, leads, overview, pilotMetrics } from './queries';
 
@@ -22,7 +25,12 @@ const idParams = {
   properties: { id: { type: 'string', pattern: UUID_PATTERN } },
 } as const;
 
-export function registerAdmin(app: FastifyInstance, sql: Sql) {
+export function registerAdmin(
+  app: FastifyInstance,
+  sql: Sql,
+  alertWriter: AlertWriterModel | null = null,
+  pushSender: PushSender | null = null,
+) {
   // porteiro: rate limit + papel admin. Devolve o admin ou null (já respondeu).
   const gate = async (
     req: FastifyRequest,
@@ -162,25 +170,21 @@ export function registerAdmin(app: FastifyInstance, sql: Sql) {
       const admin = await gate(req, reply);
       if (!admin) return reply;
 
-      const [company] = await sql`SELECT id FROM companies WHERE id = ${req.params.id}`;
+      const company = await findCompany(sql, req.params.id);
       if (!company) return notFound(reply);
 
-      // reprocessa com o core ATUAL. Reusa a rota real de snapshot (mesmo motor,
-      // mesmo writer/push já ligados) recomputando o último dia calculado; sem
+      // reprocessa com o core ATUAL: chama o mesmo motor (computeAndStore) direto,
+      // com o writer/push já ligados, recomputando o último dia calculado; sem
       // snapshot ainda, usa hoje. Imports são append-only, então recomputar é seguro.
       const [last] = await sql`
         SELECT as_of::text AS as_of FROM indicator_snapshots
         WHERE company_id = ${req.params.id} ORDER BY as_of DESC LIMIT 1`;
       const asOf = (last?.as_of as string | undefined) ?? saoPauloToday();
 
-      const res = await app.inject({
-        method: 'POST',
-        url: `/companies/${req.params.id}/snapshots`,
-        payload: { asOf },
-      });
+      const result = await computeAndStore(sql, company, asOf, alertWriter, pushSender, app.log);
 
       await recordAudit(sql, admin.userId, 'company.reprocess', { type: 'company', id: req.params.id }, { asOf });
-      return reply.code(res.statusCode).send(res.json());
+      return reply.code(201).send(result);
     },
   );
 

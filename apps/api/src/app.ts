@@ -39,7 +39,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   app.get('/health', async () => ({ ok: true }));
 
   registerAuth(app, sql, opts.chatModel ?? null, opts.mailer);
-  registerAdmin(app, sql);
+  registerAdmin(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerInterest(app, sql);
   registerPlanned(app, sql);
   registerCompanies(app, sql);
