@@ -79,6 +79,7 @@ export default function Operacao() {
         <Text style={styles.sub}>Empresas ordenadas por mais tempo sem dado.</Text>
 
         <View style={styles.atalhos}>
+          <Atalho icon="pricetags-outline" label="Planos" onPress={() => router.push('/admin/planos' as Href)} />
           <Atalho icon="megaphone-outline" label="Leads" onPress={() => router.push('/admin/leads' as Href)} />
           <Atalho icon="pie-chart-outline" label="IA e custos" onPress={() => router.push('/admin/ia' as Href)} />
           <Atalho icon="pulse-outline" label="Saúde" onPress={() => router.push('/admin/saude' as Href)} />

@@ -25,13 +25,6 @@ const FEEDBACK_URL =
 const CHECKOUT_URL = 'https://pulso-site.onrender.com/checkout.html?from=app';
 const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
-const NOME_PLANO: Record<string, string> = {
-  piloto: 'Piloto',
-  essencial: 'Essencial',
-  crescimento: 'Crescimento',
-  pro: 'Pro',
-};
-
 /** Iniciais do negócio (até 2 letras) para o avatar. */
 function iniciais(nome: string): string {
   const limpo = nome.replace(/^Cl[ií]nica\s+/i, '').trim();
@@ -58,8 +51,12 @@ export default function Conta() {
   const planoSub = demo
     ? 'Demonstração · dados fictícios'
     : assinatura?.active
-      ? `Plano ${NOME_PLANO[assinatura.plan] ?? assinatura.plan} · ativo${assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}`
-      : 'Plano piloto';
+      ? `Plano ${assinatura.planName ?? '—'} · ativo${assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}`
+      : assinatura?.status === 'pendente'
+        ? 'Assinatura pendente'
+        : assinatura?.planName
+          ? `Plano ${assinatura.planName} · ${assinatura.status}`
+          : 'Sem plano ativo';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

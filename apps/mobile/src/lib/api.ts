@@ -381,9 +381,14 @@ export async function saveMySetup(
 
 /* --------------- Assinatura (entitlement) --------------- */
 
+export type SubscriptionStatus = 'pendente' | 'ativa' | 'cancelada';
+
 export interface MySubscription {
-  plan: string;
-  status: 'none' | 'active' | 'canceled' | 'past_due';
+  planId: string | null;
+  planName: string | null;
+  priceCents: number | null;
+  chatLimit: number | null;
+  status: SubscriptionStatus;
   /** validade da assinatura ('YYYY-MM-DD') ou null (ativa até cancelar). */
   until: string | null;
   /** true = pode usar os benefícios do plano. */
@@ -398,6 +403,20 @@ export async function fetchMySubscription(token: string): Promise<MySubscription
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (!res.ok) throw new Error(`HTTP ${res.status} na assinatura`);
   return (await res.json()) as MySubscription;
+}
+
+export interface PlanJson {
+  id: string;
+  name: string;
+  priceCents: number;
+  chatLimitMonthly: number;
+}
+
+/** Planos ativos, para a tela "Assine" (não exige login). */
+export async function fetchPlans(): Promise<PlanJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/plans`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos planos`);
+  return ((await res.json()) as { plans: PlanJson[] }).plans;
 }
 
 /** Conversa do dono logado. */
@@ -623,7 +642,8 @@ async function adminWrite<T>(
 export interface AdminOverviewRow {
   companyId: string;
   name: string;
-  plan: string;
+  plan: string | null;
+  subscriptionStatus: SubscriptionStatus;
   chatQuota: number;
   isDemo: boolean;
   stage: DiagnosisStage | null;
@@ -643,7 +663,9 @@ export interface AdminDossier {
     name: string;
     cnpj: string | null;
     niche: string;
-    plan: string;
+    planId: string | null;
+    plan: string | null;
+    subscriptionStatus: SubscriptionStatus;
     isDemo: boolean;
     chatQuota: number;
     createdAt: string;
@@ -689,15 +711,46 @@ export function fetchAdminCompany(token: string, id: string): Promise<AdminDossi
 export interface PatchEmpresa {
   name?: string;
   chatQuota?: number;
-  plan?: string;
+  planId?: string;
+  subscriptionStatus?: SubscriptionStatus;
 }
 
 export function patchAdminCompany(
   token: string,
   id: string,
   patch: PatchEmpresa,
-): Promise<{ id: string; name: string; plan: string; chatQuota: number }> {
+): Promise<{ id: string; name: string; planId: string | null; subscriptionStatus: SubscriptionStatus; chatQuota: number }> {
   return adminWrite(token, 'PATCH', `/admin/companies/${id}`, patch);
+}
+
+/* --------------- Planos (gestão no admin) --------------- */
+
+export interface AdminPlan {
+  id: string;
+  name: string;
+  priceCents: number;
+  chatLimitMonthly: number;
+  active: boolean;
+  sort: number;
+}
+
+export function fetchAdminPlans(token: string): Promise<AdminPlan[]> {
+  return adminGet<{ plans: AdminPlan[] }>(token, '/admin/plans').then((b) => b.plans);
+}
+
+export function createAdminPlan(
+  token: string,
+  plan: { id: string; name: string; priceCents: number; chatLimitMonthly: number; sort?: number },
+): Promise<{ ok: boolean }> {
+  return adminWrite(token, 'POST', '/admin/plans', plan);
+}
+
+export function patchAdminPlan(
+  token: string,
+  id: string,
+  patch: { name?: string; priceCents?: number; chatLimitMonthly?: number; active?: boolean; sort?: number },
+): Promise<{ ok: boolean }> {
+  return adminWrite(token, 'PATCH', `/admin/plans/${id}`, patch);
 }
 
 export function reprocessAdminCompany(token: string, id: string): Promise<{ snapshotId: string }> {

@@ -24,10 +24,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   fetchAdminCompany,
+  fetchAdminPlans,
   patchAdminCompany,
   reprocessAdminCompany,
   resetSenhaUsuario,
   type AdminDossier,
+  type AdminPlan,
+  type SubscriptionStatus,
 } from '@/lib/api';
 import { estagioCor, estagioRotulo } from '@/lib/estagio';
 import { brl, dataBR } from '@/lib/format';
@@ -41,7 +44,9 @@ export default function EmpresaDossie() {
   const [d, setD] = useState<AdminDossier | null>(null);
   const [erro, setErro] = useState(false);
   const [quota, setQuota] = useState('');
-  const [plano, setPlano] = useState('');
+  const [planoId, setPlanoId] = useState<string | null>(null);
+  const [statusAss, setStatusAss] = useState<SubscriptionStatus>('pendente');
+  const [planos, setPlanos] = useState<AdminPlan[]>([]);
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -52,8 +57,9 @@ export default function EmpresaDossie() {
     try {
       const dossie = await fetchAdminCompany(token, id);
       setD(dossie);
-      setQuota(String(dossie.company.chatQuota));
-      setPlano(dossie.company.plan);
+      setQuota('');
+      setPlanoId(dossie.company.planId);
+      setStatusAss(dossie.company.subscriptionStatus);
     } catch {
       setErro(true);
     }
@@ -63,15 +69,20 @@ export default function EmpresaDossie() {
     void carregar();
   }, [carregar]);
 
+  useEffect(() => {
+    if (token) fetchAdminPlans(token).then(setPlanos).catch(() => {});
+  }, [token]);
+
   const salvarEdicao = useCallback(async () => {
     if (!token || !id) return;
     setOcupado(true);
     setMsg(null);
     try {
-      const q = Number(quota);
+      const q = quota.trim() === '' ? undefined : Number(quota);
       await patchAdminCompany(token, id, {
-        chatQuota: Number.isFinite(q) ? q : undefined,
-        plan: plano.trim() || undefined,
+        chatQuota: q !== undefined && Number.isFinite(q) ? q : undefined,
+        planId: planoId ?? undefined,
+        subscriptionStatus: statusAss,
       });
       setMsg('Alterações salvas.');
       await carregar();
@@ -80,7 +91,7 @@ export default function EmpresaDossie() {
     } finally {
       setOcupado(false);
     }
-  }, [token, id, quota, plano, carregar]);
+  }, [token, id, quota, planoId, statusAss, carregar]);
 
   const reprocessar = useCallback(async () => {
     if (!token || !id) return;
@@ -157,7 +168,8 @@ export default function EmpresaDossie() {
           {/* cabeçalho: plano, cota, cnpj, demo */}
           <View style={styles.cartao}>
             <View style={styles.badges}>
-              <Badge texto={`Plano: ${d.company.plan}`} />
+              <Badge texto={`Plano: ${d.company.plan ?? 'sem plano'}`} />
+              <Badge texto={`Assinatura: ${d.company.subscriptionStatus}`} />
               <Badge texto={`Cota: ${d.company.chatQuota}/mês`} />
               {d.company.isDemo && <Badge texto="DEMONSTRAÇÃO" destaque />}
             </View>
@@ -285,37 +297,51 @@ export default function EmpresaDossie() {
           <View style={styles.cartao}>
             <Rotulo texto="AÇÕES" />
 
-            {/* editar cota/plano */}
-            <View style={styles.campoLinha}>
-              <View style={styles.campo}>
-                <Text style={styles.campoRotulo}>Cota chat/mês</Text>
-                <TextInput
-                  style={styles.input}
-                  value={quota}
-                  onChangeText={setQuota}
-                  keyboardType="number-pad"
-                  placeholder="50"
-                  placeholderTextColor={colors.cinza}
-                />
-              </View>
-              <View style={styles.campo}>
-                <Text style={styles.campoRotulo}>Plano</Text>
-                <TextInput
-                  style={styles.input}
-                  value={plano}
-                  onChangeText={setPlano}
-                  autoCapitalize="none"
-                  placeholder="piloto"
-                  placeholderTextColor={colors.cinza}
-                />
-              </View>
+            {/* editar plano, assinatura e cota */}
+            <Text style={styles.campoRotulo}>Plano</Text>
+            <View style={styles.chips}>
+              {planos.map((p) => (
+                <Pressable
+                  key={p.id}
+                  onPress={() => setPlanoId(p.id)}
+                  style={[styles.chip, planoId === p.id && styles.chipAtivo]}
+                >
+                  <Text style={[styles.chipTexto, planoId === p.id && styles.chipTextoAtivo]}>
+                    {p.name} · {brl(p.priceCents)}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
+
+            <Text style={styles.campoRotulo}>Assinatura</Text>
+            <View style={styles.chips}>
+              {(['pendente', 'ativa', 'cancelada'] as SubscriptionStatus[]).map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => setStatusAss(s)}
+                  style={[styles.chip, statusAss === s && styles.chipAtivo]}
+                >
+                  <Text style={[styles.chipTexto, statusAss === s && styles.chipTextoAtivo]}>{s}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text style={styles.campoRotulo}>Cota chat/mês (vazio = usar o limite do plano)</Text>
+            <TextInput
+              style={styles.input}
+              value={quota}
+              onChangeText={setQuota}
+              keyboardType="number-pad"
+              placeholder="do plano"
+              placeholderTextColor={colors.cinza}
+            />
+
             <Pressable
               onPress={salvarEdicao}
               disabled={ocupado}
               style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
             >
-              <Text style={styles.botaoTexto}>Salvar plano e cota</Text>
+              <Text style={styles.botaoTexto}>Salvar plano, assinatura e cota</Text>
             </Pressable>
 
             {/* reprocessar */}
@@ -467,7 +493,12 @@ const styles = StyleSheet.create({
     color: colors.tinta,
     backgroundColor: colors.papel,
   },
-  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 2 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
+  chip: { borderWidth: 1, borderColor: colors.linha, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12, backgroundColor: colors.papel },
+  chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
+  chipTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
+  chipTextoAtivo: { color: colors.okEscuro },
+  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 6 },
   botaoTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.branco },
 
   acao: {
