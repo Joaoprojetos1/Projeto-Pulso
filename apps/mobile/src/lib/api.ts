@@ -128,21 +128,6 @@ async function fetchWithWake(url: string, init?: RequestInit): Promise<Response>
   throw lastErr;
 }
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetchWithWake(`${apiBase()}${path}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
-  return (await res.json()) as T;
-}
-
-export async function fetchCompanies(): Promise<Array<{ id: string; name: string }>> {
-  const body = await getJson<{ companies: Array<{ id: string; name: string }> }>('/companies');
-  return body.companies;
-}
-
-export async function fetchDashboard(companyId: string): Promise<DashboardJson> {
-  return getJson<DashboardJson>(`/companies/${companyId}/dashboard`);
-}
-
 /** Registra o "endereço" (push token) deste celular para a empresa. */
 export async function registerDevice(
   companyId: string,
@@ -188,18 +173,6 @@ async function lancarSeCota(res: Response): Promise<void> {
     resetsOn?: string;
   };
   throw new QuotaError(b.used ?? 0, b.quota ?? 0, b.resetsOn ?? '');
-}
-
-export async function sendChat(companyId: string, messages: ChatTurnJson[]): Promise<string> {
-  const res = await fetchWithWake(`${apiBase()}/companies/${companyId}/chat`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ messages }),
-  });
-  await lancarSeCota(res);
-  if (!res.ok) throw new Error(`HTTP ${res.status} no chat`);
-  const body = (await res.json()) as { reply: string };
-  return body.reply;
 }
 
 /* ----------------------- Login de verdade ----------------------- */
