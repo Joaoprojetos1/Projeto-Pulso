@@ -355,6 +355,44 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Foto do avatar --------------- */
+
+/** Foto atual do negócio como data URI, ou null (usa as iniciais). */
+export async function fetchMyAvatar(token: string): Promise<string | null> {
+  const res = await fetchWithWake(`${apiBase()}/me/avatar`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} na foto`);
+  const { dataUri } = (await res.json()) as { dataUri: string | null };
+  return dataUri;
+}
+
+/** Envia a foto já reduzida (base64) + tipo. O app manda pronto; servidor guarda. */
+export async function saveMyAvatar(
+  token: string,
+  dataBase64: string,
+  mime: string,
+): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/avatar`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ dataBase64, mime }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar a foto`);
+}
+
+/** Remove a foto (volta para as iniciais). */
+export async function removeMyAvatar(token: string): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/avatar`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao remover a foto`);
+}
+
 /* --------------- Assinatura (entitlement) --------------- */
 
 export type SubscriptionStatus = 'pendente' | 'ativa' | 'cancelada';

@@ -8,6 +8,7 @@ import type { Mailer } from './mailer';
 import type { PushSender } from './push';
 import { registerAdmin } from './routes/admin';
 import { registerAuth } from './routes/auth';
+import { registerAvatar } from './routes/avatar';
 import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
@@ -49,6 +50,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerSimulate(app, sql);
   registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
+  registerAvatar(app, sql);
 
   return app;
 }

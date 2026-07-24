@@ -8,13 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchMySubscription, type MySubscription } from '@/lib/api';
+import { fetchMyAvatar, fetchMySubscription, removeMyAvatar, saveMyAvatar, type MySubscription } from '@/lib/api';
 import { autenticar, biometriaDisponivel, biometriaLigada, definirBiometria } from '@/lib/biometria';
+import { escolherDaGaleria, tirarFoto, type FotoComprimida } from '@/lib/foto-avatar';
 import { dataBR } from '@/lib/format';
-import { toqueLeve } from '@/lib/haptic';
+import { toqueLeve, toqueSucesso } from '@/lib/haptic';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -39,8 +40,11 @@ export default function Conta() {
   const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
   const [bioDisponivel, setBioDisponivel] = useState(false);
   const [bioLigada, setBioLigada] = useState(false);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [subindoFoto, setSubindoFoto] = useState(false);
   const demo = fonte === 'demo';
   const nome = dashboard?.company.name ?? '·';
+  const podeEditarFoto = !demo && Platform.OS !== 'web';
 
   useEffect(() => {
     if (!token) return;
@@ -63,6 +67,57 @@ export default function Conta() {
     })();
     return () => { vivo = false; };
   }, []);
+
+  // foto atual do negócio (só logado no servidor)
+  useEffect(() => {
+    if (!token) return;
+    let vivo = true;
+    fetchMyAvatar(token)
+      .then((uri) => { if (vivo) setAvatarUri(uri); })
+      .catch(() => { /* silencioso: cai nas iniciais */ });
+    return () => { vivo = false; };
+  }, [token]);
+
+  // aplica a foto escolhida: envia ao servidor e mostra na hora
+  async function aplicarFoto(foto: FotoComprimida | null) {
+    if (!foto || !token) return;
+    setSubindoFoto(true);
+    try {
+      await saveMyAvatar(token, foto.base64, foto.mime);
+      setAvatarUri(`data:${foto.mime};base64,${foto.base64}`);
+      toqueSucesso();
+    } catch {
+      Alert.alert('Não consegui salvar a foto', 'Tente de novo em instantes.');
+    } finally {
+      setSubindoFoto(false);
+    }
+  }
+
+  async function removerFoto() {
+    if (!token) return;
+    setSubindoFoto(true);
+    try {
+      await removeMyAvatar(token);
+      setAvatarUri(null);
+    } catch {
+      /* silencioso */
+    } finally {
+      setSubindoFoto(false);
+    }
+  }
+
+  // menu simples: galeria, câmera e (se houver foto) remover
+  function mudarFoto() {
+    if (!podeEditarFoto || subindoFoto) return;
+    toqueLeve();
+    const opcoes: Array<{ text: string; style?: 'cancel' | 'destructive'; onPress?: () => void }> = [
+      { text: 'Escolher da galeria', onPress: async () => aplicarFoto(await escolherDaGaleria()) },
+      { text: 'Tirar foto', onPress: async () => aplicarFoto(await tirarFoto()) },
+    ];
+    if (avatarUri) opcoes.push({ text: 'Remover foto', style: 'destructive', onPress: removerFoto });
+    opcoes.push({ text: 'Cancelar', style: 'cancel' });
+    Alert.alert('Foto do negócio', undefined, opcoes);
+  }
 
   // liga/desliga a trava; pede a biometria uma vez ao LIGAR (confirma que funciona)
   async function alternarBiometria(ligar: boolean) {
@@ -90,11 +145,25 @@ export default function Conta() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.titulo}>Conta</Text>
 
-        {/* cabeçalho: avatar + negócio + plano */}
+        {/* cabeçalho: avatar (tocável para trocar a foto) + negócio + plano */}
         <View style={styles.cabecalho}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarTexto}>{iniciais(nome)}</Text>
-          </View>
+          <Pressable
+            onPress={mudarFoto}
+            disabled={!podeEditarFoto}
+            style={({ pressed }) => [styles.avatar, pressed && podeEditarFoto && styles.pressionado]}
+            accessibilityLabel="Trocar a foto do negócio"
+          >
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.avatarFoto} />
+            ) : (
+              <Text style={styles.avatarTexto}>{iniciais(nome)}</Text>
+            )}
+            {podeEditarFoto && (
+              <View style={styles.avatarCamera}>
+                <Ionicons name="camera" size={12} color={colors.papel} />
+              </View>
+            )}
+          </Pressable>
           <View style={styles.cabecalhoMiolo}>
             <Text style={styles.cabecalhoNome} numberOfLines={1}>{nome}</Text>
             <Text style={styles.cabecalhoSub}>{planoSub}</Text>
@@ -261,7 +330,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarFoto: { width: 56, height: 56, borderRadius: 28 },
   avatarTexto: { fontFamily: fonts.display, fontSize: 20, color: colors.papel },
+  avatarCamera: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.vivo,
+    borderWidth: 2,
+    borderColor: colors.papel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cabecalhoMiolo: { flex: 1, gap: 2 },
   cabecalhoNome: { fontFamily: fonts.display, fontSize: 19, color: colors.tinta, letterSpacing: -0.3 },
   cabecalhoSub: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },

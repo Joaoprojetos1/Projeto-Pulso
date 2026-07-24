@@ -41,6 +41,13 @@
         {
           "color": "#23C883"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Pulso usa suas fotos para você escolher o avatar do seu negócio.",
+          "cameraPermission": "O Pulso usa a câmera para você tirar a foto do avatar do seu negócio."
+        }
       ]
     ],
     "experiments": {
