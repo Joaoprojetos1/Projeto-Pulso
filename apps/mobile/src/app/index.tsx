@@ -7,7 +7,7 @@
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,6 +20,12 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import Animated, {
+  SlideInLeft,
+  SlideInRight,
+  SlideOutLeft,
+  SlideOutRight,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Heartbeat } from '@/components/heartbeat';
@@ -54,6 +60,13 @@ export default function Login() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [erroLocal, setErroLocal] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+
+  // teclado não cobre o campo focado: rola até o fim (onde ficam senha + botão),
+  // com folga acima do teclado. Vale para os campos mais baixos de qualquer form.
+  function rolarAteCampo() {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
+  }
 
   async function enviarCodigo() {
     if (email.trim().length === 0 || ocupado) return;
@@ -147,16 +160,22 @@ export default function Login() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.wrap}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollConteudo}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
         {modo === 'boas-vindas' ? (
-          <View style={styles.boasVindas}>
+          <Animated.View
+            key="bv"
+            entering={SlideInLeft.duration(260)}
+            exiting={SlideOutLeft.duration(200)}
+            style={styles.boasVindas}
+          >
             <View style={styles.bvHero}>
               <PulsoLogo size={54} color={colors.papel} />
               <Heartbeat color={colors.vivo} width={96} height={30} />
@@ -197,9 +216,14 @@ export default function Login() {
               </Pressable>
               {VERSAO_APP ? <Text style={styles.bvVersao}>v{VERSAO_APP}</Text> : null}
             </View>
-          </View>
+          </Animated.View>
         ) : (
-        <>
+        <Animated.View
+          key="auth"
+          entering={SlideInRight.duration(260)}
+          exiting={SlideOutRight.duration(200)}
+          style={styles.authWrap}
+        >
         <View style={styles.hero}>
           <Pressable onPress={() => irPara('boas-vindas')} hitSlop={8} style={styles.voltarInicio}>
             <Ionicons name="chevron-back" size={20} color={colors.papelSobreMata} />
@@ -250,6 +274,7 @@ export default function Login() {
                   style={styles.senhaInput}
                   value={senha}
                   onChangeText={setSenha}
+                  onFocus={rolarAteCampo}
                   placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
                   placeholderTextColor={colors.cinza}
                   secureTextEntry={!mostrarSenha}
@@ -385,7 +410,7 @@ export default function Login() {
             </>
           )}
         </View>
-        </>
+        </Animated.View>
         )}
         </ScrollView>
       </KeyboardAvoidingView>
@@ -399,7 +424,8 @@ const styles = StyleSheet.create({
   wrap: { flex: 1 },
   // flexGrow:1 deixa o herói ocupar o espaço quando sobra, mas permite ROLAR
   // até os campos quando o teclado sobe (A1 — teclado não cobre a digitação).
-  scrollConteudo: { flexGrow: 1 },
+  scrollConteudo: { flexGrow: 1, paddingBottom: 24 },
+  authWrap: { flexGrow: 1 },
   // ---- tela de boas-vindas (porta de entrada, 3 caminhos) ----
   boasVindas: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 28, paddingTop: 44, paddingBottom: 24, gap: 24, minHeight: 560 },
   bvHero: { flex: 1, justifyContent: 'center', alignItems: 'flex-start', gap: 16 },

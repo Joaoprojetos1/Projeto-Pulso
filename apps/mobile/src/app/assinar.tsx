@@ -124,10 +124,7 @@ export default function Assinar() {
         )}
 
         <Pressable
-          onPress={() => {
-            sair();
-            router.replace('/');
-          }}
+          onPress={sair}
           hitSlop={8}
           style={styles.sair}
         >

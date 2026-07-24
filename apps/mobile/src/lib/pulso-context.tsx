@@ -8,6 +8,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import {
@@ -206,6 +207,10 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     const t = tokenRef.current;
     if (t) void authLogout(t);
     void limparSessao();
+    // reset de navegação: sair de QUALQUER tela volta à porta de entrada.
+    // dismissAll fecha modais abertos (alerta) antes de trocar a raiz.
+    if (router.canDismiss?.()) router.dismissAll();
+    router.replace('/');
   }, [limparSessao]);
 
   // abertura do app: se havia token salvo, entra direto (mantém logado)

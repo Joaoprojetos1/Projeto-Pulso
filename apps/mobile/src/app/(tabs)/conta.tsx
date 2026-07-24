@@ -21,7 +21,7 @@ import { colors, fonts } from '@/theme';
 
 type IonName = React.ComponentProps<typeof Ionicons>['name'];
 
-const VERSAO_APP = Constants.expoConfig?.version ?? '—';
+const VERSAO_APP = Constants.expoConfig?.version ?? '';
 const FEEDBACK_URL =
   'https://wa.me/553194287877?text=' +
   encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
@@ -133,7 +133,7 @@ export default function Conta() {
   const planoSub = demo
     ? 'Demonstração · dados fictícios'
     : assinatura?.active
-      ? `Plano ${assinatura.planName ?? '—'} · ativo${assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}`
+      ? `Plano ${assinatura.planName ?? 'ativo'} · ativo${assinatura.until ? ` até ${dataBR(assinatura.until)}` : ''}`
       : assinatura?.status === 'pendente'
         ? 'Assinatura pendente'
         : assinatura?.planName
@@ -241,10 +241,7 @@ export default function Conta() {
 
         <Pressable
           style={({ pressed }) => [styles.sair, pressed && styles.pressionado]}
-          onPress={() => {
-            sair();
-            router.replace('/');
-          }}
+          onPress={sair}
         >
           <Ionicons name="log-out-outline" size={18} color={colors.critico} />
           <Text style={styles.sairTexto}>Sair</Text>

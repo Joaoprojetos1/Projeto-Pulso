@@ -36,9 +36,10 @@ import { brl, dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
+// categorias neutras (público indefinido, sem termos de setor)
 const CATEGORIAS: Record<ContaKind, string[]> = {
-  receivable: ['convênio', 'particular', 'cartão', 'outro'],
-  payable: ['folha', 'fornecedor', 'imposto', 'aluguel', 'outro'],
+  receivable: ['cliente', 'cartão', 'pix/boleto', 'outro'],
+  payable: ['fornecedor', 'aluguel', 'equipe', 'outro'],
 };
 
 const PRAZOS: Array<{ rotulo: string; dias: number }> = [
@@ -60,6 +61,14 @@ function reaisParaCents(txt: string): number | null {
   // conversão por STRING (regra do projeto: dinheiro é centavo inteiro, nunca float)
   const cents = textoParaCents(txt);
   return cents && cents > 0 ? cents : null;
+}
+
+/** Máscara de data ao digitar: só dígitos, "25102026" vira "25/10/2026". */
+function mascaraData(txt: string): string {
+  const d = txt.replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
 }
 
 /** Data livre digitada (DD/MM/AAAA) para ISO; null se inválida. */
@@ -382,7 +391,7 @@ function ContaForm({
         style={styles.input}
         value={quem}
         onChangeText={setQuem}
-        placeholder={visao === 'receivable' ? 'Ex.: Unimed' : 'Ex.: Distribuidora Alfa'}
+        placeholder={visao === 'receivable' ? 'Ex.: Cliente Silva' : 'Ex.: Distribuidora Alfa'}
         placeholderTextColor={colors.cinza}
       />
 
@@ -416,9 +425,11 @@ function ContaForm({
       <TextInput
         style={[styles.input, { marginTop: 8 }, dataManualInvalida && styles.inputErro]}
         value={dataManual}
-        onChangeText={setDataManual}
+        onChangeText={(t) => setDataManual(mascaraData(t))}
         placeholder="ou digite uma data: DD/MM/AAAA"
         placeholderTextColor={colors.cinza}
+        keyboardType="number-pad"
+        maxLength={10}
       />
       <Text style={styles.dataEscolhida}>
         {dataManualInvalida ? 'Data inválida — use DD/MM/AAAA' : `Data prevista: ${dataBR(dueOn)}`}
