@@ -37,7 +37,7 @@ beforeAll(async () => {
   const signup = await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: 'Clínica Alertas', email: 'dona@alertas.com', password: 'senha-forte-123' },
+    payload: { businessName: 'Clínica Alertas', email: 'dona@alertas.com', password: 'senha-forte-123', phone: '11987654321' },
   });
   token = signup.json().token as string;
   companyId = signup.json().company.id as string;

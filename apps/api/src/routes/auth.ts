@@ -45,6 +45,13 @@ interface SignupBody {
   businessName: string;
   email: string;
   password: string;
+  phone: string;
+}
+
+/** Só os dígitos do telefone (DDD + número). Null se não parecer um celular BR. */
+function digitosDeTelefone(bruto: string): string | null {
+  const d = bruto.replace(/\D/g, '');
+  return d.length >= 10 && d.length <= 11 ? d : null;
 }
 interface LoginBody {
   email: string;
@@ -56,12 +63,13 @@ interface ChatBody {
 
 const signupSchema = {
   type: 'object',
-  required: ['businessName', 'email', 'password'],
+  required: ['businessName', 'email', 'password', 'phone'],
   additionalProperties: false,
   properties: {
     businessName: { type: 'string', minLength: 1, maxLength: 120 },
     email: { type: 'string', pattern: EMAIL_PATTERN, maxLength: 200 },
     password: { type: 'string', minLength: 8, maxLength: 200 },
+    phone: { type: 'string', minLength: 8, maxLength: 25 },
   },
 } as const;
 
@@ -127,6 +135,11 @@ export function registerAuth(
     async (req, reply) => {
       const email = normalizeEmail(req.body.email);
 
+      const phone = digitosDeTelefone(req.body.phone);
+      if (!phone) {
+        return reply.code(400).send({ error: 'Informe um WhatsApp válido com DDD.' });
+      }
+
       const [existing] = await sql`SELECT 1 FROM users WHERE email = ${email}`;
       if (existing) {
         return reply.code(409).send({ error: 'Já existe uma conta com esse e-mail.' });
@@ -138,7 +151,7 @@ export function registerAuth(
       try {
         const company = await sql.begin(async (tx) => {
           const [c] = await tx`
-            INSERT INTO companies (name) VALUES (${req.body.businessName})
+            INSERT INTO companies (name, phone) VALUES (${req.body.businessName}, ${phone})
             RETURNING id, name, cnpj, niche, declared_fixed_cost_cents, created_at`;
           const [u] = await tx`
             INSERT INTO users (email, password_hash, company_id)

@@ -38,7 +38,7 @@ beforeAll(async () => {
   const signup = await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: 'Clínica Planejo', email: 'dono@planejo.com', password: 'senha-boa-123' },
+    payload: { businessName: 'Clínica Planejo', email: 'dono@planejo.com', password: 'senha-boa-123', phone: '11987654321' },
   });
   token = signup.json().token as string;
 });

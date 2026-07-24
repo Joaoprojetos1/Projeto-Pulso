@@ -47,10 +47,25 @@ const MENSAGENS_CARREGANDO = [
 
 type Modo = 'boas-vindas' | 'entrar' | 'cadastrar' | 'esqueci' | 'redefinir';
 
+/** Máscara de telefone BR ao digitar: "(DD) 9XXXX-XXXX" (aceita fixo e celular). */
+function mascaraTelefone(txt: string): string {
+  const d = txt.replace(/\D/g, '').slice(0, 11);
+  if (d.length === 0) return '';
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+function telefoneValido(txt: string): boolean {
+  const d = txt.replace(/\D/g, '');
+  return d.length >= 10 && d.length <= 11;
+}
+
 export default function Login() {
   const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
   const [modo, setModo] = useState<Modo>('boas-vindas');
   const [negocio, setNegocio] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -137,7 +152,7 @@ export default function Login() {
   const podeEnviar =
     email.trim().length > 0 &&
     senha.length > 0 &&
-    (modo === 'entrar' || negocio.trim().length > 0);
+    (modo === 'entrar' || (negocio.trim().length > 0 && telefoneValido(telefone)));
 
   async function enviar() {
     if (!podeEnviar) return;
@@ -147,7 +162,7 @@ export default function Login() {
       if (ok) router.replace('/(tabs)');
     } else {
       // só o cadastro passa pela tela "vamos ligar o monitor" (uma única vez)
-      const ok = await cadastrar(negocio.trim(), email.trim(), senha);
+      const ok = await cadastrar(negocio.trim(), email.trim(), senha, telefone);
       if (ok) router.replace('/onboarding');
     }
   }
@@ -254,6 +269,19 @@ export default function Login() {
                     onChangeText={setNegocio}
                     placeholder="Ex.: Loja Aurora"
                     placeholderTextColor={colors.cinza}
+                  />
+
+                  <Text style={styles.label}>WHATSAPP</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={telefone}
+                    onChangeText={(t) => setTelefone(mascaraTelefone(t))}
+                    onFocus={rolarAteCampo}
+                    placeholder="(11) 91234-5678"
+                    placeholderTextColor={colors.cinza}
+                    keyboardType="phone-pad"
+                    maxLength={16}
+                    textContentType="telephoneNumber"
                   />
                 </>
               )}

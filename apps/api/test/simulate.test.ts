@@ -44,7 +44,7 @@ beforeAll(async () => {
   const signup = await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: 'Clínica Simulação', email: 'sim@teste.com', password: 'segredo123' },
+    payload: { businessName: 'Clínica Simulação', email: 'sim@teste.com', password: 'segredo123', phone: '11987654321' },
   });
   expect(signup.statusCode).toBe(201);
   token = signup.json().token as string;

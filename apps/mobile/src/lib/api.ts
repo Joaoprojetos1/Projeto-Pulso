@@ -220,8 +220,9 @@ export function authSignup(
   businessName: string,
   email: string,
   password: string,
+  phone: string,
 ): Promise<AuthResult> {
-  return postAuth('/auth/signup', { businessName, email, password });
+  return postAuth('/auth/signup', { businessName, email, password, phone });
 }
 
 export function authLogin(email: string, password: string): Promise<AuthResult> {

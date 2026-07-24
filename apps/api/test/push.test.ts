@@ -146,7 +146,7 @@ describe('entrega do aviso no celular', () => {
     const signup = await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Clínica Dona', email: `dona-${Date.now()}@ex.com`, password: 'senha12345' },
+      payload: { businessName: 'Clínica Dona', email: `dona-${Date.now()}@ex.com`, password: 'senha12345', phone: '11987654321' },
     });
     const sessao = signup.json().token as string;
     const donaId = signup.json().company.id as string;

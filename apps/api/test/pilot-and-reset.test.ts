@@ -50,7 +50,7 @@ describe('recuperação de senha', () => {
     const signup = await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Clínica Reset', email, password: senhaAntiga },
+      payload: { businessName: 'Clínica Reset', email, password: senhaAntiga, phone: '11987654321' },
     });
     expect(signup.statusCode).toBe(201);
 
@@ -111,7 +111,7 @@ async function adminToken(email: string): Promise<string> {
   const signup = await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: 'Operação', email, password: 'senha-admin-123' },
+    payload: { businessName: 'Operação', email, password: 'senha-admin-123', phone: '11987654321' },
   });
   await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
   const login = await app.inject({

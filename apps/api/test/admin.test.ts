@@ -53,7 +53,7 @@ async function signupAndLogin(email: string, role: 'owner' | 'admin'): Promise<s
   await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: `Empresa de ${email}`, email, password: 'senha-forte-123' },
+    payload: { businessName: `Empresa de ${email}`, email, password: 'senha-forte-123', phone: '11987654321' },
   });
   if (role === 'admin') await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
   const login = await app.inject({ method: 'POST', url: '/auth/login', payload: { email, password: 'senha-forte-123' } });

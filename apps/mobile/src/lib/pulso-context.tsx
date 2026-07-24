@@ -54,7 +54,7 @@ interface PulsoState {
   /** Re-consulta a assinatura (usado pelo "Já paguei, atualizar"). */
   atualizarAssinatura: () => Promise<MySubscription | null>;
   /** Cria a conta (autocadastro). Retorna true se entrou. */
-  cadastrar: (businessName: string, email: string, password: string) => Promise<boolean>;
+  cadastrar: (businessName: string, email: string, password: string, phone: string) => Promise<boolean>;
   /** Entra com e-mail e senha. Retorna true se entrou. */
   entrar: (email: string, password: string) => Promise<boolean>;
   /** Recarrega o painel do dono logado (pull-to-refresh / tentar de novo). */
@@ -177,11 +177,11 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   );
 
   const cadastrar = useCallback(
-    async (businessName: string, email: string, password: string): Promise<boolean> => {
+    async (businessName: string, email: string, password: string, phone: string): Promise<boolean> => {
       setCarregando(true);
       setErro(null);
       try {
-        const r = await authSignup(businessName, email, password);
+        const r = await authSignup(businessName, email, password, phone);
         await guardarToken(r.token);
         return await carregar(r.token);
       } catch (e) {

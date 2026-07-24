@@ -49,7 +49,7 @@ describe('login de verdade', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Clínica Nova', email, password: senha },
+      payload: { businessName: 'Clínica Nova', email, password: senha, phone: '11987654321' },
     });
     expect(res.statusCode).toBe(201);
     const body = res.json();
@@ -58,11 +58,37 @@ describe('login de verdade', () => {
     expect(body.email).toBe(email);
   });
 
+  it('cadastro guarda o telefone (só dígitos) no negócio', async () => {
+    const [row] = await sql`
+      SELECT c.phone FROM companies c JOIN users u ON u.company_id = c.id
+      WHERE u.email = ${email}`;
+    expect(row.phone).toBe('11987654321');
+  });
+
+  it('cadastro sem telefone é recusado', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: { businessName: 'Sem Fone', email: 'semfone@teste.com', password: 'segredo-forte-123' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('cadastro com telefone curto (menos de 10 dígitos) é recusado', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      // passa no schema (>= 8 chars) mas tem só 9 dígitos: barrado pela regra do handler
+      payload: { businessName: 'Fone Curto', email: 'fonecurto@teste.com', password: 'segredo-forte-123', phone: '(12) 3456-789' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('não deixa cadastrar o mesmo e-mail duas vezes', async () => {
     const res = await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Outra', email, password: senha },
+      payload: { businessName: 'Outra', email, password: senha, phone: '11987654321' },
     });
     expect(res.statusCode).toBe(409);
   });

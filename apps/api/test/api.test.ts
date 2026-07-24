@@ -283,7 +283,7 @@ describe('autorização: /companies/:id/* é superfície de operador (só admin)
     const s = await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Clínica de Outro Dono', email: 'outro-dono@pulso.teste', password: 'senha-forte-123' },
+      payload: { businessName: 'Clínica de Outro Dono', email: 'outro-dono@pulso.teste', password: 'senha-forte-123', phone: '11987654321' },
     });
     ownerToken = s.json().token as string;
   });

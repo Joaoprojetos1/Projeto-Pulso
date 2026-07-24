@@ -104,7 +104,7 @@ async function makeAdmin(email: string): Promise<string> {
   await app.inject({
     method: 'POST',
     url: '/auth/signup',
-    payload: { businessName: 'Operação', email, password: 'senha-admin-123' },
+    payload: { businessName: 'Operação', email, password: 'senha-admin-123', phone: '11987654321' },
   });
   await sql`UPDATE users SET role = 'admin' WHERE email = ${email}`;
   const login = await app.inject({
@@ -230,7 +230,7 @@ describe('medição do consumo da IA', () => {
     await app.inject({
       method: 'POST',
       url: '/auth/signup',
-      payload: { businessName: 'Dona Comum', email: 'dona-comum@pulso.com', password: 'senha-comum-123' },
+      payload: { businessName: 'Dona Comum', email: 'dona-comum@pulso.com', password: 'senha-comum-123', phone: '11987654321' },
     });
     const ownerLogin = await app.inject({
       method: 'POST',
