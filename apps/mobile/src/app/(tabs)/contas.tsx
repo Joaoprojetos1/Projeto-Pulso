@@ -31,6 +31,7 @@ import {
   type ContaKind,
 } from '@/lib/api';
 import { textoParaCents } from '@/components/money-input';
+import { toqueSucesso } from '@/lib/haptic';
 import { brl, dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
@@ -235,6 +236,7 @@ function ContaCard({
     setOcupado(true);
     try {
       await confirmarConta(token, conta.id);
+      toqueSucesso();
       onMudou();
     } catch {
       setOcupado(false);

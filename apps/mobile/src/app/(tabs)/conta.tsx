@@ -8,11 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { fetchMySubscription, type MySubscription } from '@/lib/api';
+import { autenticar, biometriaDisponivel, biometriaLigada, definirBiometria } from '@/lib/biometria';
 import { dataBR } from '@/lib/format';
+import { toqueLeve } from '@/lib/haptic';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -35,6 +37,8 @@ function iniciais(nome: string): string {
 export default function Conta() {
   const { dashboard, fonte, token, sair } = usePulso();
   const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
+  const [bioDisponivel, setBioDisponivel] = useState(false);
+  const [bioLigada, setBioLigada] = useState(false);
   const demo = fonte === 'demo';
   const nome = dashboard?.company.name ?? '·';
 
@@ -46,6 +50,30 @@ export default function Conta() {
       .catch(() => { /* silencioso: cai no texto padrão do piloto */ });
     return () => { vivo = false; };
   }, [token]);
+
+  // estado atual da trava por biometria (só faz sentido logado no servidor)
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      const [disp, lig] = await Promise.all([biometriaDisponivel(), biometriaLigada()]);
+      if (vivo) {
+        setBioDisponivel(disp);
+        setBioLigada(lig);
+      }
+    })();
+    return () => { vivo = false; };
+  }, []);
+
+  // liga/desliga a trava; pede a biometria uma vez ao LIGAR (confirma que funciona)
+  async function alternarBiometria(ligar: boolean) {
+    toqueLeve();
+    if (ligar) {
+      const ok = await autenticar();
+      if (!ok) return; // não conseguiu confirmar: mantém desligada
+    }
+    await definirBiometria(ligar);
+    setBioLigada(ligar);
+  }
 
   const planoSub = demo
     ? 'Demonstração · dados fictícios'
@@ -107,7 +135,21 @@ export default function Conta() {
         {/* grupo: avisos, segurança, privacidade */}
         <View style={styles.grupo}>
           <Linha icon="notifications-outline" label="Avisos no WhatsApp" sub="Em breve" />
-          <Linha icon="lock-closed-outline" label="Segurança (biometria)" sub="Em breve" />
+          <Linha
+            icon="finger-print-outline"
+            label="Proteger com biometria"
+            sub={
+              demo
+                ? 'Entre com sua conta para usar'
+                : !bioDisponivel
+                  ? 'Cadastre uma digital ou rosto no aparelho'
+                  : bioLigada
+                    ? 'Pede digital ou rosto ao abrir'
+                    : 'Desligado'
+            }
+            toggleValue={bioLigada}
+            onToggle={!demo && bioDisponivel ? alternarBiometria : undefined}
+          />
           <Linha
             icon="shield-checkmark-outline"
             label="Dados e privacidade"
@@ -151,6 +193,8 @@ function Linha({
   sub,
   badge,
   onPress,
+  toggleValue,
+  onToggle,
   ultimo,
 }: {
   icon: IonName;
@@ -158,13 +202,17 @@ function Linha({
   sub?: string;
   badge?: string;
   onPress?: () => void;
+  /** Se presente, a linha mostra um interruptor no lugar da seta. */
+  toggleValue?: boolean;
+  onToggle?: (v: boolean) => void;
   ultimo?: boolean;
 }) {
+  const temToggle = onToggle !== undefined || toggleValue !== undefined;
   return (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
-      style={({ pressed }) => [styles.linha, !ultimo && styles.linhaBorda, pressed && onPress && styles.pressionado]}
+      disabled={!onPress || temToggle}
+      style={({ pressed }) => [styles.linha, !ultimo && styles.linhaBorda, pressed && onPress && !temToggle && styles.pressionado]}
     >
       <View style={styles.linhaIcone}>
         <Ionicons name={icon} size={18} color={colors.mata} />
@@ -178,7 +226,17 @@ function Linha({
           <Text style={styles.seloTexto}>{badge}</Text>
         </View>
       ) : null}
-      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.cinza} /> : null}
+      {temToggle ? (
+        <Switch
+          value={!!toggleValue}
+          onValueChange={onToggle}
+          disabled={!onToggle}
+          trackColor={{ false: colors.linha, true: colors.vivo }}
+          thumbColor={colors.branco}
+        />
+      ) : onPress ? (
+        <Ionicons name="chevron-forward" size={18} color={colors.cinza} />
+      ) : null}
     </Pressable>
   );
 }

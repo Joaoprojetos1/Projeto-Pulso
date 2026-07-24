@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { acoesParaAlerta } from '@/lib/acoes';
 import { markAlertActed, markAlertOpened } from '@/lib/api';
+import { toqueSucesso } from '@/lib/haptic';
 import { rotuloFact, valorFact } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, severityLabel, type Severity } from '@/theme';
@@ -90,6 +91,7 @@ export default function DetalheAlerta() {
             onPress={() => {
               if (agiu || alerta.actedAt) return;
               setAgiu(true);
+              toqueSucesso();
               if (token) void markAlertActed(token, alertaId);
             }}
             disabled={agiu || !!alerta.actedAt}

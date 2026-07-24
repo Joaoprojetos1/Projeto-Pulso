@@ -28,7 +28,9 @@ import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
 import { PulseLine } from '@/components/pulse-line';
 import { WeeklyCard } from '@/components/weekly-card';
+import { EnviarContador } from '@/components/enviar-contador';
 import type { CashProjectionPoint } from '@/lib/api';
+import { toqueLeve } from '@/lib/haptic';
 import { brl, dataBR, dias, pct } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, type Severity } from '@/theme';
@@ -343,7 +345,10 @@ export default function Dashboard() {
             <Pressable
               key={`${a.ruleKey}-${i}`}
               style={({ pressed }) => [styles.faixa, pressed && styles.pressionado]}
-              onPress={() => router.push(`/alerta/${i}`)}
+              onPress={() => {
+                toqueLeve();
+                router.push(`/alerta/${i}`);
+              }}
             >
               <View style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]} />
               {fonte !== 'demo' && !a.openedAt && (
@@ -367,6 +372,23 @@ export default function Dashboard() {
             <Text style={styles.verHistoricoTexto}>Ver histórico de alertas →</Text>
           </Pressable>
         )}
+
+        {/* mandar o resumo do caixa pro contador, como imagem (item 15) */}
+        <EnviarContador
+          resumo={{
+            nome: dashboard.company.name,
+            data: dashboard.snapshot.asOf,
+            saldoHoje,
+            caixa30: p30?.projectedCents ?? null,
+            zeroOn,
+            saudavel,
+            ciclo,
+            margem,
+            receita,
+            estagio: diag ? (STAGE_LABEL[diag.stage] ?? diag.stage) : null,
+            estagioCor: diagCor,
+          }}
+        />
 
         <Text style={styles.rodape}>
           Atualizado em {dataBR(dashboard.snapshot.asOf)} · motor v{dashboard.snapshot.coreVersion}

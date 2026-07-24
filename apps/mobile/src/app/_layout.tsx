@@ -16,6 +16,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
+import { BiometricGate } from '@/components/biometric-gate';
 import { PulsoProvider } from '@/lib/pulso-context';
 import { colors } from '@/theme';
 
@@ -50,6 +51,7 @@ export default function RootLayout() {
   return (
     <PulsoProvider>
       <StatusBar style="dark" />
+      <BiometricGate>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -76,6 +78,7 @@ export default function RootLayout() {
           options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }}
         />
       </Stack>
+      </BiometricGate>
     </PulsoProvider>
   );
 }
