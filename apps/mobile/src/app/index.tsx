@@ -141,16 +141,20 @@ export default function Login() {
 
   async function enviar() {
     if (!podeEnviar) return;
-    const ok =
-      modo === 'entrar'
-        ? await entrar(email.trim(), senha)
-        : await cadastrar(negocio.trim(), email.trim(), senha);
-    if (ok) router.replace('/onboarding');
+    if (modo === 'entrar') {
+      // login de conta existente cai DIRETO no painel
+      const ok = await entrar(email.trim(), senha);
+      if (ok) router.replace('/(tabs)');
+    } else {
+      // só o cadastro passa pela tela "vamos ligar o monitor" (uma única vez)
+      const ok = await cadastrar(negocio.trim(), email.trim(), senha);
+      if (ok) router.replace('/onboarding');
+    }
   }
 
   function verDemonstracao() {
     entrarDemo();
-    router.replace('/onboarding');
+    router.replace('/(tabs)'); // demonstração vai direto ao painel
   }
 
   const cadastrando = modo === 'cadastrar';

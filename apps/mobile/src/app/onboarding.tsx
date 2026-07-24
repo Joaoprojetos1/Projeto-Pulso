@@ -1,20 +1,17 @@
 /**
- * Onboarding: conectar os dados do negócio.
- * O envio do arquivo real depende do modelo de exportação do sistema da
- * clínica (a caminho). Até lá, a demonstração mostra o produto vivo.
+ * Primeira vez, logo após o cadastro: "Vamos ligar o monitor no seu caixa".
+ * Aparece UMA única vez (só o cadastro chega aqui; login vai direto ao painel).
+ * Duas saídas: ver o painel agora ou já enviar seus dados para o motor girar.
  */
 
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PulsoLogo } from '@/components/logo';
-import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function Onboarding() {
-  const { fonte, dashboard } = usePulso();
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.wrap}>
@@ -23,38 +20,33 @@ export default function Onboarding() {
         <View style={styles.miolo}>
           <Text style={styles.titulo}>Vamos ligar o monitor no seu caixa</Text>
           <Text style={styles.corpo}>
-            O Pulso lê os lançamentos do sistema do seu negócio (contas a receber, a pagar e o
-            saldo) e passa a vigiar seu caixa todos os dias.
+            O Pulso acompanha o dinheiro do seu negócio todos os dias e te avisa, em português claro,
+            antes de o caixa apertar. Para o motor girar, ele precisa dos seus números.
           </Text>
 
           <View style={styles.cartao}>
-            <Text style={styles.cartaoRotulo}>COMO SEUS DADOS ENTRAM</Text>
+            <Text style={styles.cartaoRotulo}>PARA COMEÇAR, ESCOLHA UM CAMINHO</Text>
             <Text style={styles.cartaoTexto}>
-              1. Você exporta o arquivo do seu sistema (uma vez por semana).{'\n'}
-              2. Envia aqui pelo app.{'\n'}
-              3. O Pulso calcula tudo e avisa o que importa.
-            </Text>
-          </View>
-
-          <View style={[styles.cartao, styles.cartaoAviso]}>
-            <Text style={styles.cartaoRotulo}>NESTE PILOTO</Text>
-            <Text style={styles.cartaoTexto}>
-              O envio de arquivo abre em breve.{' '}
-              {fonte === 'servidor'
-                ? `Por ora, você está vendo os dados de ${dashboard?.company.name ?? 'seu negócio'} direto do servidor.`
-                : 'Por ora, explore com a empresa de demonstração. Dados 100% fictícios.'}
+              Você pode enviar seus dados agora e já ver seu caixa projetado, ou dar uma olhada no
+              painel primeiro e configurar quando quiser.
             </Text>
           </View>
         </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
-          onPress={() => router.replace('/(tabs)')}
-        >
-          <Text style={styles.botaoTexto}>
-            {fonte === 'servidor' ? 'Ver meu painel' : 'Explorar a demonstração'}
-          </Text>
-        </Pressable>
+        <View style={styles.botoes}>
+          <Pressable
+            style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
+            onPress={() => router.replace('/configurar' as Href)}
+          >
+            <Text style={styles.botaoTexto}>Enviar meus dados</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.botaoLinha, pressed && styles.pressionado]}
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text style={styles.botaoLinhaTexto}>Ver meu painel</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -81,11 +73,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.linha,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.vivo,
     borderRadius: 16,
     padding: 16,
     gap: 8,
   },
-  cartaoAviso: { borderLeftWidth: 4, borderLeftColor: colors.vivo },
   cartaoRotulo: {
     fontFamily: fonts.mono,
     fontSize: 10,
@@ -98,12 +91,21 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: colors.tinta,
   },
+  botoes: { gap: 10 },
   botao: {
-    backgroundColor: colors.mata,
+    backgroundColor: colors.vivo,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
+  botaoLinha: {
+    borderWidth: 1.5,
+    borderColor: colors.linha,
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  botaoLinhaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   pressionado: { opacity: 0.85 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: colors.papel },
 });

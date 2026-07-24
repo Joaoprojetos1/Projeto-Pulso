@@ -81,25 +81,20 @@ export default function Dashboard() {
     // enquanto busca sem dados ainda, mostra o "esqueleto" (não uma tela branca)
     if (carregando) return <SkeletonDashboard />;
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.vazio}>
-          <PulsoLogo size={30} />
-          <Text style={styles.vazioTexto}>
-            Informe seu caixa de hoje e seu custo fixo do mês, e o monitor liga na hora.
-          </Text>
-          <Pressable
-            style={({ pressed }) => [styles.configurar, pressed && styles.pressionado]}
-            onPress={() => router.push('/configurar' as Href)}
-          >
-            <Text style={styles.configurarTexto}>Configurar meu caixa</Text>
-          </Pressable>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.vazioScroll}>
+          <View style={styles.topo}>
+            <PulsoLogo size={26} />
+          </View>
+          <Text style={styles.vazioBoas}>Bem-vindo ao Pulso</Text>
+          <PrimeirosPassos passos={montarPassos(null, 0)} />
           <Pressable
             style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
             onPress={carregar}
           >
             <Text style={styles.tentarTexto}>Tentar de novo</Text>
           </Pressable>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -115,6 +110,10 @@ export default function Dashboard() {
   const projInputs = (ind.cash_projection?.inputs ?? {}) as Record<string, number | string | null>;
   const plannedCount = typeof projInputs.plannedCount === 'number' ? projInputs.plannedCount : 0;
   const plannedTotal = typeof projInputs.plannedTotalCents === 'number' ? projInputs.plannedTotalCents : 0;
+
+  // primeiros passos: só para conta de verdade e enquanto faltar algo
+  const passos = montarPassos(ind, plannedCount);
+  const mostrarPassos = fonte === 'servidor' && passos.some((p) => !p.feito);
 
   const ciclo = (ind.cash_cycle?.value ?? null) as number | null;
   const margem = (ind.contribution_margin?.value ?? null) as number | null;
@@ -237,6 +236,8 @@ export default function Dashboard() {
             </Text>
           </View>
         )}
+
+        {mostrarPassos && <PrimeirosPassos passos={passos} />}
 
         {/* cartão de caixa — o herói absoluto da tela, com o estágio como selo */}
         <View style={styles.cash}>
@@ -401,6 +402,59 @@ export default function Dashboard() {
         </Text>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+interface Passo {
+  chave: string;
+  label: string;
+  feito: boolean;
+  rota: Href;
+}
+
+/** O que falta o dono fazer para o motor girar. Vazio quando tudo pronto. */
+function montarPassos(
+  ind: Record<string, { value?: unknown } | undefined> | null,
+  plannedCount: number,
+): Passo[] {
+  const caixaInformado = (ind?.cash_balance?.value ?? null) !== null;
+  return [
+    {
+      chave: 'caixa',
+      label: 'Informe seu caixa de hoje e o custo fixo do mês',
+      feito: caixaInformado,
+      rota: '/configurar' as Href,
+    },
+    {
+      chave: 'contas',
+      label: 'Cadastre suas contas a receber e a pagar',
+      feito: plannedCount > 0,
+      rota: '/(tabs)/contas' as Href,
+    },
+  ];
+}
+
+/** Card de primeiros passos: o que falta configurar. Some quando tudo está feito. */
+function PrimeirosPassos({ passos }: { passos: Passo[] }) {
+  return (
+    <View style={styles.passos}>
+      <Text style={styles.passosTitulo}>Primeiros passos</Text>
+      <Text style={styles.passosSub}>Termine seu cadastro para o Pulso projetar seu caixa.</Text>
+      {passos.map((p) => (
+        <Pressable
+          key={p.chave}
+          disabled={p.feito}
+          onPress={() => router.push(p.rota)}
+          style={({ pressed }) => [styles.passoItem, pressed && !p.feito && styles.pressionado]}
+        >
+          <View style={[styles.passoBolinha, p.feito && styles.passoBolinhaFeita]}>
+            {p.feito ? <Text style={styles.passoCheck}>✓</Text> : null}
+          </View>
+          <Text style={[styles.passoLabel, p.feito && styles.passoLabelFeito]}>{p.label}</Text>
+          {!p.feito && <Text style={styles.passoSeta}>›</Text>}
+        </Pressable>
+      ))}
+    </View>
   );
 }
 
@@ -705,6 +759,45 @@ const styles = StyleSheet.create({
   },
   explicaRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.cinza },
   explicaTexto: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.tinta },
+
+  // ---- primeiros passos (termine seu cadastro) ----
+  passos: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.vivo,
+    borderRadius: 16,
+    padding: 16,
+    gap: 8,
+  },
+  passosTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, letterSpacing: -0.2 },
+  passosSub: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza, marginBottom: 2 },
+  passoItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  passoBolinha: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.cinza,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  passoBolinhaFeita: { backgroundColor: colors.vivo, borderColor: colors.vivo },
+  passoCheck: { fontFamily: fonts.corpoForte, fontSize: 11, color: '#06231A' },
+  passoLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
+  passoLabelFeito: { color: colors.cinza, textDecorationLine: 'line-through' },
+  passoSeta: { fontFamily: fonts.display, fontSize: 18, color: colors.cinza },
+
+  vazioScroll: { paddingBottom: 28 },
+  vazioBoas: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    color: colors.tinta,
+    letterSpacing: -0.4,
+    paddingHorizontal: 18,
+    marginBottom: 12,
+  },
 
   secao: {
     fontFamily: fonts.display,
