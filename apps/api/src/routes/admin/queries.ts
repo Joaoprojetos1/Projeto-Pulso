@@ -18,6 +18,7 @@ const SP = 'America/Sao_Paulo';
 export interface OverviewRow {
   companyId: string;
   name: string;
+  phone: string | null;
   plan: string | null; // nome do plano (null = ainda sem plano)
   subscriptionStatus: string; // pendente | ativa | cancelada
   chatQuota: number; // efetiva (override da empresa, senão o limite do plano)
@@ -25,8 +26,38 @@ export interface OverviewRow {
   stage: string | null; // estágio do diagnóstico do último snapshot
   lastImportAt: string | null;
   daysSinceImport: number | null; // null = nunca importou
+  /** Dias desde o último DADO (import OU caixa informado → snapshot). null = nunca. */
+  daysSinceData: number | null;
   unopenedAlerts: number;
   chatQuestionsMonth: number;
+}
+
+/** Números do topo da operação (o negócio de uma olhada). */
+export interface OperationSummary {
+  activeSubscribers: number;
+  pendingPayment: number;
+  monthlyRevenueCents: number;
+  aiInteractionsMonth: number;
+}
+
+export async function operationSummary(sql: Sql): Promise<OperationSummary> {
+  const [subs] = await sql`
+    SELECT
+      count(*) FILTER (WHERE c.subscription_status = 'ativa')::int     AS ativos,
+      count(*) FILTER (WHERE c.subscription_status = 'pendente')::int  AS pendentes,
+      coalesce(sum(p.price_cents) FILTER (WHERE c.subscription_status = 'ativa'), 0)::bigint AS receita_cents
+    FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
+    WHERE c.is_demo = false`;
+  const [ia] = await sql`
+    SELECT count(*)::int AS n FROM ai_usage
+    WHERE kind = 'chat'
+      AND (created_at AT TIME ZONE ${SP}) >= date_trunc('month', (now() AT TIME ZONE ${SP}))`;
+  return {
+    activeSubscribers: (subs?.ativos as number) ?? 0,
+    pendingPayment: (subs?.pendentes as number) ?? 0,
+    monthlyRevenueCents: Number(subs?.receita_cents ?? 0),
+    aiInteractionsMonth: (ia?.n as number) ?? 0,
+  };
 }
 
 const num = (rows: readonly Record<string, unknown>[], id: string, field: string): number => {
@@ -36,7 +67,7 @@ const num = (rows: readonly Record<string, unknown>[], id: string, field: string
 
 export async function overview(sql: Sql): Promise<OverviewRow[]> {
   const companies = await sql`
-    SELECT c.id::text AS id, c.name, p.name AS plan_name, c.subscription_status,
+    SELECT c.id::text AS id, c.name, c.phone, p.name AS plan_name, c.subscription_status,
            c.chat_quota_monthly, p.chat_limit_monthly AS plan_limit, c.is_demo
     FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
     ORDER BY c.name`;
@@ -44,6 +75,11 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
   const lastImport = await sql`
     SELECT company_id::text AS id, max(imported_at) AS last_at
     FROM imports GROUP BY company_id`;
+
+  // sinal universal de "tem dado": todo import E todo caixa informado gera snapshot
+  const lastData = await sql`
+    SELECT company_id::text AS id, max(computed_at) AS last_at
+    FROM indicator_snapshots GROUP BY company_id`;
 
   const unopened = await sql`
     SELECT company_id::text AS id, count(*)::int AS n
@@ -66,9 +102,12 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
     const id = c.id as string;
     const last = lastImport.find((r) => r.id === id)?.last_at as Date | undefined;
     const lastMs = last ? new Date(last).getTime() : null;
+    const lastDataAt = lastData.find((r) => r.id === id)?.last_at as Date | undefined;
+    const lastDataMs = lastDataAt ? new Date(lastDataAt).getTime() : null;
     return {
       companyId: id,
       name: c.name as string,
+      phone: (c.phone as string | null) ?? null,
       plan: (c.plan_name as string | null) ?? null,
       subscriptionStatus: c.subscription_status as string,
       chatQuota:
@@ -77,15 +116,16 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
       stage: (stages.find((r) => r.id === id)?.stage as string | null) ?? null,
       lastImportAt: last ? new Date(last).toISOString() : null,
       daysSinceImport: lastMs == null ? null : Math.floor((now - lastMs) / 86_400_000),
+      daysSinceData: lastDataMs == null ? null : Math.floor((now - lastDataMs) / 86_400_000),
       unopenedAlerts: num(unopened, id, 'n'),
       chatQuestionsMonth: num(chat, id, 'n'),
     };
   });
 
-  // ordena por "mais tempo sem dado": nunca importou primeiro, depois mais dias
+  // ordena por "mais tempo sem dado": nunca enviou primeiro, depois mais dias
   rows.sort((a, b) => {
-    const da = a.daysSinceImport ?? Number.POSITIVE_INFINITY;
-    const db = b.daysSinceImport ?? Number.POSITIVE_INFINITY;
+    const da = a.daysSinceData ?? Number.POSITIVE_INFINITY;
+    const db = b.daysSinceData ?? Number.POSITIVE_INFINITY;
     return db - da;
   });
   return rows;
@@ -97,7 +137,8 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
 
 export async function companyDossier(sql: Sql, companyId: string) {
   const [company] = await sql`
-    SELECT c.id::text AS id, c.name, c.cnpj, c.niche, c.plan_id, p.name AS plan_name,
+    SELECT c.id::text AS id, c.name, c.cnpj, c.niche, c.phone, c.declared_fixed_cost_cents,
+           c.plan_id, p.name AS plan_name,
            c.subscription_status, c.is_demo, c.chat_quota_monthly,
            p.chat_limit_monthly AS plan_limit, c.created_at
     FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
@@ -111,7 +152,7 @@ export async function companyDossier(sql: Sql, companyId: string) {
     ORDER BY as_of DESC LIMIT 1`;
 
   const alerts = await sql`
-    SELECT id, rule_key, severity::text AS severity, created_at, opened_at, acted_at
+    SELECT id, rule_key, severity::text AS severity, text_title, created_at, opened_at, acted_at
     FROM alerts WHERE company_id = ${companyId}
     ORDER BY created_at DESC LIMIT 100`;
 
@@ -120,6 +161,18 @@ export async function companyDossier(sql: Sql, companyId: string) {
            row_count, imported_at
     FROM imports WHERE company_id = ${companyId}
     ORDER BY imported_at DESC LIMIT 50`;
+
+  // caixa informado à mão (o dono no "Configurar meu caixa") — conta como dado enviado
+  const cashInputs = await sql`
+    SELECT observed_on::text AS observed_on, balance_cents
+    FROM cash_balances WHERE company_id = ${companyId}
+    ORDER BY observed_on DESC LIMIT 50`;
+
+  // interações de IA (chat) usadas no mês corrente
+  const [chatUsed] = await sql`
+    SELECT count(*)::int AS n FROM ai_usage
+    WHERE company_id = ${companyId} AND kind = 'chat'
+      AND (created_at AT TIME ZONE ${SP}) >= date_trunc('month', (now() AT TIME ZONE ${SP}))`;
 
   const users = await sql`
     SELECT id::text AS id, email, role FROM users
@@ -141,12 +194,25 @@ export async function companyDossier(sql: Sql, companyId: string) {
       AND (created_at AT TIME ZONE ${SP}) >= date_trunc('month', (now() AT TIME ZONE ${SP}))
     GROUP BY kind, model`;
 
+  // "Números do negócio": lê os indicadores JÁ calculados do último snapshot
+  // (valores em CENTAVOS — o app formata em R$; nada é calculado aqui).
+  const payload = (snapshot?.payload ?? {}) as Record<string, { value?: unknown } | undefined>;
+  const numFrom = (k: string): number | null =>
+    typeof payload[k]?.value === 'number' ? (payload[k]!.value as number) : null;
+  const businessNumbers = {
+    cashCents: numFrom('cash_balance'),
+    fixedCostCents: numFrom('fixed_cost_monthly') ?? (company.declared_fixed_cost_cents as number | null) ?? null,
+    revenueCents: numFrom('revenue_current'),
+    revenuePreviousCents: numFrom('revenue_previous'),
+  };
+
   return {
     company: {
       id: company.id as string,
       name: company.name as string,
       cnpj: (company.cnpj as string | null) ?? null,
       niche: company.niche as string,
+      phone: (company.phone as string | null) ?? null,
       planId: (company.plan_id as string | null) ?? null,
       plan: (company.plan_name as string | null) ?? null,
       subscriptionStatus: company.subscription_status as string,
@@ -155,6 +221,8 @@ export async function companyDossier(sql: Sql, companyId: string) {
         (company.chat_quota_monthly as number | null) ?? (company.plan_limit as number | null) ?? 0,
       createdAt: company.created_at as Date,
     },
+    businessNumbers,
+    chatUsedMonth: (chatUsed?.n as number) ?? 0,
     snapshot: snapshot
       ? {
           asOf: snapshot.as_of as string,
@@ -169,6 +237,7 @@ export async function companyDossier(sql: Sql, companyId: string) {
       id: a.id,
       ruleKey: a.rule_key,
       severity: a.severity,
+      textTitle: (a.text_title as string | null) ?? null,
       createdAt: a.created_at,
       openedAt: a.opened_at,
       actedAt: a.acted_at,
@@ -179,6 +248,10 @@ export async function companyDossier(sql: Sql, companyId: string) {
       periodEnd: i.period_end,
       rowCount: i.row_count,
       importedAt: i.imported_at,
+    })),
+    cashInputs: cashInputs.map((c) => ({
+      observedOn: c.observed_on as string,
+      balanceCents: Number(c.balance_cents),
     })),
     planned: planned.map((p) => ({
       kind: p.kind,

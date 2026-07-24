@@ -219,6 +219,38 @@ describe('escritas do admin geram auditoria', () => {
     expect(audit).toBeTruthy();
   });
 
+  it('DELETE /admin/companies/:id exige o nome certo, remove a empresa e audita', async () => {
+    const id = await companyWithData('Clínica Excluir', clinicaTesoura);
+
+    // nome errado: recusa e NÃO apaga
+    const errado = await app.inject({
+      method: 'DELETE',
+      url: `/admin/companies/${id}`,
+      headers: authH(adminAuth),
+      payload: { confirmName: 'Nome Errado' },
+    });
+    expect(errado.statusCode).toBe(400);
+    const [aindaExiste] = await sql`SELECT 1 FROM companies WHERE id = ${id}`;
+    expect(aindaExiste).toBeTruthy();
+
+    // nome certo: apaga a empresa e os dados associados
+    const ok = await app.inject({
+      method: 'DELETE',
+      url: `/admin/companies/${id}`,
+      headers: authH(adminAuth),
+      payload: { confirmName: 'Clínica Excluir' },
+    });
+    expect(ok.statusCode).toBe(200);
+    const [sumiu] = await sql`SELECT 1 FROM companies WHERE id = ${id}`;
+    expect(sumiu).toBeUndefined();
+    const snaps = await sql`SELECT 1 FROM indicator_snapshots WHERE company_id = ${id}`;
+    expect(snaps.length).toBe(0);
+
+    const [audit] = await sql`
+      SELECT 1 FROM admin_audit WHERE action = 'company.delete' AND target_id = ${id}`;
+    expect(audit).toBeTruthy();
+  });
+
   it('GET/PATCH /admin/leads lista e muda status, com auditoria', async () => {
     await app.inject({
       method: 'POST',

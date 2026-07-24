@@ -9,7 +9,7 @@ import type { PushSender } from '../../push';
 import { saoPauloToday } from '../../quota';
 import { computeAndStore } from '../snapshots';
 import { notFound, rateLimited, recordAudit, requireAdmin } from './guard';
-import { companyDossier, economy, health, leads, overview, pilotMetrics } from './queries';
+import { companyDossier, economy, health, leads, operationSummary, overview, pilotMetrics } from './queries';
 
 /**
  * Área de operação (admin). Ferramenta interna para João e Marco.
@@ -45,7 +45,8 @@ export function registerAdmin(
   app.get('/admin/overview', async (req, reply) => {
     const admin = await gate(req, reply);
     if (!admin) return reply;
-    return { companies: await overview(sql) };
+    const [companies, summary] = await Promise.all([overview(sql), operationSummary(sql)]);
+    return { companies, summary };
   });
 
   app.get<{ Params: { id: string } }>(
@@ -106,7 +107,7 @@ export function registerAdmin(
 
   app.patch<{
     Params: { id: string };
-    Body: { name?: string; chatQuota?: number; planId?: string; subscriptionStatus?: string };
+    Body: { name?: string; phone?: string; chatQuota?: number; planId?: string; subscriptionStatus?: string };
   }>(
     '/admin/companies/:id',
     {
@@ -117,6 +118,7 @@ export function registerAdmin(
           additionalProperties: false,
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 120 },
+            phone: { type: 'string', maxLength: 25 },
             chatQuota: { type: 'integer', minimum: 0, maximum: 100000 },
             planId: { type: 'string', minLength: 1, maxLength: 40 },
             subscriptionStatus: { enum: ['pendente', 'ativa', 'cancelada'] },
@@ -128,9 +130,10 @@ export function registerAdmin(
       const admin = await gate(req, reply);
       if (!admin) return reply;
 
-      const { name, chatQuota, planId, subscriptionStatus } = req.body;
+      const { name, phone, chatQuota, planId, subscriptionStatus } = req.body;
       if (
         name === undefined &&
+        phone === undefined &&
         chatQuota === undefined &&
         planId === undefined &&
         subscriptionStatus === undefined
@@ -141,25 +144,88 @@ export function registerAdmin(
         const [p] = await sql`SELECT 1 FROM plans WHERE id = ${planId}`;
         if (!p) return reply.code(400).send({ error: 'Plano inexistente.' });
       }
+      // telefone: guarda só os dígitos (como no cadastro). COALESCE mantém o atual
+      // quando não vier — serve para preencher retroativo, não para limpar.
+      let phoneDigits: string | null = null;
+      if (phone !== undefined) {
+        const d = phone.replace(/\D/g, '');
+        if (d.length < 10 || d.length > 11) {
+          return reply.code(400).send({ error: 'Telefone inválido. Use DDD + número.' });
+        }
+        phoneDigits = d;
+      }
 
       const [updated] = await sql`
         UPDATE companies SET
           name                = COALESCE(${name ?? null}, name),
+          phone               = COALESCE(${phoneDigits}, phone),
           chat_quota_monthly  = COALESCE(${chatQuota ?? null}, chat_quota_monthly),
           plan_id             = COALESCE(${planId ?? null}, plan_id),
           subscription_status = COALESCE(${subscriptionStatus ?? null}, subscription_status)
         WHERE id = ${req.params.id}
-        RETURNING id::text AS id, name, plan_id, subscription_status, chat_quota_monthly`;
+        RETURNING id::text AS id, name, phone, plan_id, subscription_status, chat_quota_monthly`;
       if (!updated) return notFound(reply);
 
       await recordAudit(sql, admin.userId, 'company.update', { type: 'company', id: req.params.id }, req.body);
       return {
         id: updated.id,
         name: updated.name,
+        phone: updated.phone,
         planId: updated.plan_id,
         subscriptionStatus: updated.subscription_status,
         chatQuota: updated.chat_quota_monthly,
       };
+    },
+  );
+
+  // excluir cadastro: remove a empresa e TODOS os dados associados. Exige o nome
+  // exato como confirmação (dupla checagem também no servidor). Auditado.
+  app.delete<{ Params: { id: string }; Body: { confirmName: string } }>(
+    '/admin/companies/:id',
+    {
+      schema: {
+        params: idParams,
+        body: {
+          type: 'object',
+          required: ['confirmName'],
+          additionalProperties: false,
+          properties: { confirmName: { type: 'string', minLength: 1, maxLength: 120 } },
+        },
+      },
+    },
+    async (req, reply) => {
+      const admin = await gate(req, reply);
+      if (!admin) return reply;
+
+      const [company] = await sql`SELECT id::text AS id, name FROM companies WHERE id = ${req.params.id}`;
+      if (!company) return notFound(reply);
+
+      const informado = req.body.confirmName.trim().toLowerCase();
+      if (informado !== (company.name as string).trim().toLowerCase()) {
+        return reply.code(400).send({ error: 'O nome digitado não confere com o da empresa.' });
+      }
+
+      const id = req.params.id;
+      await sql.begin(async (tx) => {
+        // filhos que dependem do usuário (não têm FK direto para a empresa)
+        await tx`DELETE FROM auth_tokens WHERE user_id IN (SELECT id FROM users WHERE company_id = ${id})`;
+        await tx`DELETE FROM password_reset_tokens WHERE user_id IN (SELECT id FROM users WHERE company_id = ${id})`;
+        await tx`DELETE FROM users WHERE company_id = ${id}`;
+        // filhos com company_id (a maioria já teria ON DELETE CASCADE; explícito é seguro)
+        await tx`DELETE FROM chat_messages WHERE company_id = ${id}`;
+        await tx`DELETE FROM ai_usage WHERE company_id = ${id}`;
+        await tx`DELETE FROM planned_entries WHERE company_id = ${id}`;
+        await tx`DELETE FROM device_tokens WHERE company_id = ${id}`;
+        await tx`DELETE FROM alerts WHERE company_id = ${id}`;
+        await tx`DELETE FROM entries WHERE company_id = ${id}`;
+        await tx`DELETE FROM imports WHERE company_id = ${id}`;
+        await tx`DELETE FROM indicator_snapshots WHERE company_id = ${id}`;
+        await tx`DELETE FROM cash_balances WHERE company_id = ${id}`;
+        await tx`DELETE FROM companies WHERE id = ${id}`;
+      });
+
+      await recordAudit(sql, admin.userId, 'company.delete', { type: 'company', id }, { name: company.name });
+      return { ok: true };
     },
   );
 
