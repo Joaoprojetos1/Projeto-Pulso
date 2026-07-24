@@ -11,6 +11,7 @@ import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
 import { isExpoPushToken, type PushMessage, type PushResult, type PushSender } from '../src/push';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5497;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-push-test');
@@ -29,6 +30,8 @@ let pg: EmbeddedPostgres;
 let sql: Sql;
 let push: FakePushSender;
 let app: ReturnType<typeof buildApp>;
+/** Token de operador (admin): a superfície /companies/:id/* exige papel admin. */
+let ADMIN: string;
 
 beforeAll(async () => {
   rmSync(DATA_DIR, { recursive: true, force: true });
@@ -48,6 +51,7 @@ beforeAll(async () => {
   push = new FakePushSender();
   app = buildApp(sql, { pushSender: push });
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -102,6 +106,7 @@ describe('entrega do aviso no celular', () => {
     const ruim = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/devices`,
+      headers: bearer(ADMIN),
       payload: { token: 'nao-eh-token', platform: 'android' },
     });
     expect(ruim.statusCode).toBe(400);
@@ -109,6 +114,7 @@ describe('entrega do aviso no celular', () => {
     const ok = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/devices`,
+      headers: bearer(ADMIN),
       payload: { token: TOKEN, platform: 'android' },
     });
     expect(ok.statusCode).toBe(201);
@@ -118,6 +124,7 @@ describe('entrega do aviso no celular', () => {
     await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/devices`,
+      headers: bearer(ADMIN),
       payload: { token: TOKEN, platform: 'android' },
     });
     const [{ count }] = await sql`
@@ -160,12 +167,14 @@ describe('entrega do aviso no celular', () => {
     await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/imports`,
+      headers: bearer(ADMIN),
       payload: toImportPayload(clinicaTesoura),
     });
     for (const b of clinicaTesoura.balances) {
       await app.inject({
         method: 'POST',
         url: `/companies/${companyId}/balances`,
+        headers: bearer(ADMIN),
         payload: { observedOn: b.observedOn, balanceCents: b.balanceCents },
       });
     }
@@ -174,6 +183,7 @@ describe('entrega do aviso no celular', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaTesoura.asOf },
     });
     expect(res.statusCode).toBe(201);
@@ -196,6 +206,7 @@ describe('entrega do aviso no celular', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaTesoura.asOf },
     });
     expect(res.statusCode).toBe(201);
@@ -211,12 +222,18 @@ describe('entrega do aviso no celular', () => {
       payload: { name: 'Clínica Sem Aparelho' },
     });
     const id = created.json().id as string;
-    await app.inject({ method: 'POST', url: `/companies/${id}/devices`, payload: { token: 'ExponentPushToken[outro]' } });
+    await app.inject({
+      method: 'POST',
+      url: `/companies/${id}/devices`,
+      headers: bearer(ADMIN),
+      payload: { token: 'ExponentPushToken[outro]' },
+    });
 
     push.enviadas = [];
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${id}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: '2026-07-15' },
     });
     expect(res.statusCode).toBe(201);
@@ -226,7 +243,7 @@ describe('entrega do aviso no celular', () => {
 
   it('push-test envia para o aparelho registrado', async () => {
     push.enviadas = [];
-    const res = await app.inject({ method: 'POST', url: `/companies/${companyId}/push-test` });
+    const res = await app.inject({ method: 'POST', url: `/companies/${companyId}/push-test`, headers: bearer(ADMIN) });
     expect(res.statusCode).toBe(200);
     expect(res.json().sent).toBe(1);
     expect(push.enviadas[0]!.title).toMatch(/teste/i);

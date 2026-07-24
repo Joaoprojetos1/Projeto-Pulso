@@ -5,6 +5,7 @@ import type { Sql } from '../db';
 import { companyParamsSchema } from '../http';
 import { QuotaExceededError, quotaExceededPayload } from '../quota';
 import { CompanyNotFoundError, converse } from '../services/conversation';
+import { requireAdmin } from './admin/guard';
 
 /**
  * Canal APP da conversa — uma casca fina. Todo o cérebro (contexto, memória,
@@ -48,6 +49,9 @@ export function registerChat(app: FastifyInstance, sql: Sql, chatModel: ChatMode
     '/companies/:id/chat',
     { schema: { params: companyParamsSchema, body: chatBodySchema } },
     async (req, reply) => {
+      // canal APP legado por id: superfície de operador (o dono usa /me/chat)
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       try {
         return await converse(
           { sql, chatModel },

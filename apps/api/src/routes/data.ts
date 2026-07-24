@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany } from '../http';
+import { requireAdmin } from './admin/guard';
 
 /**
  * Entrada de dados.
@@ -76,6 +77,9 @@ export function registerData(app: FastifyInstance, sql: Sql) {
     '/companies/:id/imports',
     { schema: { params: companyParamsSchema, body: importBodySchema } },
     async (req, reply) => {
+      // superfície de operador: só admin carrega dados de uma empresa por id
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
 
@@ -157,6 +161,8 @@ export function registerData(app: FastifyInstance, sql: Sql) {
       },
     },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
 

@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5499;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-test');
@@ -17,6 +18,8 @@ const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '
 let pg: EmbeddedPostgres;
 let sql: Sql;
 let app: ReturnType<typeof buildApp>;
+/** Token de operador (admin): a superfície /companies/:id/* exige papel admin. */
+let ADMIN: string;
 
 beforeAll(async () => {
   rmSync(DATA_DIR, { recursive: true, force: true });
@@ -35,6 +38,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql);
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -71,6 +75,7 @@ async function setupCompany(name: string, snap: CompanySnapshot): Promise<string
   const imported = await app.inject({
     method: 'POST',
     url: `/companies/${companyId}/imports`,
+    headers: bearer(ADMIN),
     payload: toImportPayload(snap),
   });
   expect(imported.statusCode).toBe(201);
@@ -79,6 +84,7 @@ async function setupCompany(name: string, snap: CompanySnapshot): Promise<string
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/balances`,
+      headers: bearer(ADMIN),
       payload: { observedOn: b.observedOn, balanceCents: b.balanceCents },
     });
     expect(res.statusCode).toBe(201);
@@ -95,6 +101,7 @@ describe('fluxo completo: clínica da tesoura', () => {
     const again = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/imports`,
+      headers: bearer(ADMIN),
       payload: toImportPayload(clinicaTesoura),
     });
     expect(again.statusCode).toBe(200);
@@ -109,6 +116,7 @@ describe('fluxo completo: clínica da tesoura', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaTesoura.asOf },
     });
     expect(res.statusCode).toBe(201);
@@ -130,7 +138,7 @@ describe('fluxo completo: clínica da tesoura', () => {
   });
 
   it('dashboard: devolve o último snapshot com o pior alerta primeiro', async () => {
-    const res = await app.inject({ method: 'GET', url: `/companies/${companyId}/dashboard` });
+    const res = await app.inject({ method: 'GET', url: `/companies/${companyId}/dashboard`, headers: bearer(ADMIN) });
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
@@ -153,6 +161,7 @@ describe('fluxo completo: clínica da tesoura', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaTesoura.asOf },
     });
     expect(res.statusCode).toBe(201);
@@ -170,11 +179,12 @@ describe('fluxo completo: clínica saudável', () => {
     const snap = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaSaudavel.asOf },
     });
     expect(snap.statusCode).toBe(201);
 
-    const dash = await app.inject({ method: 'GET', url: `/companies/${companyId}/dashboard` });
+    const dash = await app.inject({ method: 'GET', url: `/companies/${companyId}/dashboard`, headers: bearer(ADMIN) });
     const body = dash.json();
     expect(body.alerts).toHaveLength(1);
     expect(body.alerts[0].ruleKey).toBe('all_clear');
@@ -194,6 +204,7 @@ describe('bordas', () => {
     const res = await app.inject({
       method: 'GET',
       url: '/companies/00000000-0000-0000-0000-000000000000/dashboard',
+      headers: bearer(ADMIN),
     });
     expect(res.statusCode).toBe(404);
     expect(res.json().error).toMatch(/não encontrada/);
@@ -210,6 +221,7 @@ describe('bordas', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: '2026-07-15' },
     });
     expect(res.statusCode).toBe(201);
@@ -223,10 +235,16 @@ describe('bordas', () => {
       payload: { name: 'Clínica Chat Sem IA' },
     });
     const id = created.json().id as string;
-    await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, payload: { asOf: '2026-07-15' } });
+    await app.inject({
+      method: 'POST',
+      url: `/companies/${id}/snapshots`,
+      headers: bearer(ADMIN),
+      payload: { asOf: '2026-07-15' },
+    });
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${id}/chat`,
+      headers: bearer(ADMIN),
       payload: { messages: [{ role: 'user', content: 'Como está meu caixa?' }] },
     });
     expect(res.statusCode).toBe(200);
@@ -244,6 +262,7 @@ describe('bordas', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/imports`,
+      headers: bearer(ADMIN),
       payload: {
         periodStart: '2026-07-01',
         periodEnd: '2026-07-15',
@@ -251,5 +270,56 @@ describe('bordas', () => {
       },
     });
     expect(res.statusCode).toBe(400);
+  });
+});
+
+describe('autorização: /companies/:id/* é superfície de operador (só admin)', () => {
+  let alvo: string;
+  let ownerToken: string;
+
+  beforeAll(async () => {
+    alvo = (await app.inject({ method: 'POST', url: '/companies', payload: { name: 'Alvo' } })).json().id as string;
+    // um dono comum de OUTRA empresa: não pode alcançar a empresa 'alvo' por id
+    const s = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: { businessName: 'Clínica de Outro Dono', email: 'outro-dono@pulso.teste', password: 'senha-forte-123' },
+    });
+    ownerToken = s.json().token as string;
+  });
+
+  it('sem sessão: ler dados de uma empresa por id é 404 (nem revela que existe)', async () => {
+    for (const url of [`/companies/${alvo}/dashboard`, `/companies/${alvo}/alerts`]) {
+      const res = await app.inject({ method: 'GET', url });
+      expect(res.statusCode).toBe(404);
+    }
+    const snap = await app.inject({ method: 'POST', url: `/companies/${alvo}/snapshots`, payload: {} });
+    expect(snap.statusCode).toBe(404);
+  });
+
+  it('dono comum (não-admin) não acessa outra empresa por id', async () => {
+    for (const url of [`/companies/${alvo}/dashboard`, `/companies/${alvo}/alerts`]) {
+      const res = await app.inject({ method: 'GET', url, headers: bearer(ownerToken) });
+      expect(res.statusCode).toBe(404);
+    }
+    const snap = await app.inject({
+      method: 'POST',
+      url: `/companies/${alvo}/snapshots`,
+      headers: bearer(ownerToken),
+      payload: {},
+    });
+    expect(snap.statusCode).toBe(404);
+  });
+
+  it('com operador (admin) a mesma rota funciona', async () => {
+    const snap = await app.inject({
+      method: 'POST',
+      url: `/companies/${alvo}/snapshots`,
+      headers: bearer(ADMIN),
+      payload: {},
+    });
+    expect(snap.statusCode).toBe(201);
+    const ok = await app.inject({ method: 'GET', url: `/companies/${alvo}/dashboard`, headers: bearer(ADMIN) });
+    expect(ok.statusCode).toBe(200);
   });
 });

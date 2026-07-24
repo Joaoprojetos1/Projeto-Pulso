@@ -4,6 +4,7 @@ import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { companyParamsSchema, findCompany } from '../http';
 import { isExpoPushToken, type PushMessage, type PushSender } from '../push';
+import { requireAdmin } from './admin/guard';
 
 const deviceBodySchema = {
   type: 'object',
@@ -59,11 +60,13 @@ export function registerDevices(
     },
   );
 
-  // Rota legada (por id): mantida só para o seed/testes internos. O app usa /me/devices.
+  // Rota legada (por id): superfície de operador (só admin). O app usa /me/devices.
   app.post<{ Params: { id: string }; Body: { token: string; platform?: string } }>(
     '/companies/:id/devices',
     { schema: { params: companyParamsSchema, body: deviceBodySchema } },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
       if (!isExpoPushToken(req.body.token)) {
@@ -79,6 +82,8 @@ export function registerDevices(
     '/companies/:id/push-test',
     { schema: { params: companyParamsSchema } },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
       if (!pushSender) {

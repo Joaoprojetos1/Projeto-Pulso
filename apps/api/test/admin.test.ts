@@ -69,6 +69,7 @@ async function companyWithData(name: string, snap: CompanySnapshot): Promise<str
   await app.inject({
     method: 'POST',
     url: `/companies/${id}/imports`,
+    headers: authH(adminAuth),
     payload: {
       source: 'fixture_json',
       periodStart: '2026-01-01',
@@ -81,9 +82,9 @@ async function companyWithData(name: string, snap: CompanySnapshot): Promise<str
     },
   });
   for (const b of snap.balances) {
-    await app.inject({ method: 'POST', url: `/companies/${id}/balances`, payload: { observedOn: b.observedOn, balanceCents: b.balanceCents } });
+    await app.inject({ method: 'POST', url: `/companies/${id}/balances`, headers: authH(adminAuth), payload: { observedOn: b.observedOn, balanceCents: b.balanceCents } });
   }
-  await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, payload: { asOf: snap.asOf } });
+  await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, headers: authH(adminAuth), payload: { asOf: snap.asOf } });
   return id;
 }
 

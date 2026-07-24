@@ -10,6 +10,7 @@ import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
 import { chatQuota, DEFAULT_CHAT_QUOTA, saoPauloMonthWindow, saoPauloToday } from '../src/quota';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5499;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-quota-test');
@@ -17,6 +18,7 @@ const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '
 let pg: EmbeddedPostgres;
 let sql: Sql;
 let app: ReturnType<typeof buildApp>;
+let ADMIN: string;
 
 // modelo dublê: responde SEM números (passa no fiscal) e reporta consumo, para
 // que uma pergunta bem-sucedida grave uma linha kind='chat' em ai_usage.
@@ -45,6 +47,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql, { chatModel });
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -84,6 +87,7 @@ function perguntar(companyId: string) {
   return app.inject({
     method: 'POST',
     url: `/companies/${companyId}/chat`,
+    headers: bearer(ADMIN),
     payload: { messages: [{ role: 'user', content: 'Como está meu caixa?' }] },
   });
 }

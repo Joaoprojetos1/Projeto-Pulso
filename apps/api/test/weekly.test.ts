@@ -9,6 +9,7 @@ import { weeklyTemplate } from '../src/ai/weekly-writer';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5507;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-weekly-test');
@@ -16,6 +17,7 @@ const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '
 let pg: EmbeddedPostgres;
 let sql: Sql;
 let app: ReturnType<typeof buildApp>;
+let ADMIN: string;
 
 beforeAll(async () => {
   rmSync(DATA_DIR, { recursive: true, force: true });
@@ -28,6 +30,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql);
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -74,18 +77,19 @@ describe('resumo da semana (ponta a ponta)', () => {
     await app.inject({
       method: 'POST',
       url: `/companies/${id}/balances`,
+      headers: bearer(ADMIN),
       payload: { observedOn: '2026-06-28', balanceCents: 2_000_000 },
     });
 
     // 1º snapshot: ainda não há anterior → sem resumo
-    const s1 = await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, payload: { asOf: '2026-07-01' } });
+    const s1 = await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, headers: bearer(ADMIN), payload: { asOf: '2026-07-01' } });
     expect(s1.statusCode).toBe(201);
 
     // 2º snapshot 9 dias depois → há um anterior de >= 5 dias → resumo gerado
-    const s2 = await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, payload: { asOf: '2026-07-10' } });
+    const s2 = await app.inject({ method: 'POST', url: `/companies/${id}/snapshots`, headers: bearer(ADMIN), payload: { asOf: '2026-07-10' } });
     expect(s2.statusCode).toBe(201);
 
-    const dash = await app.inject({ method: 'GET', url: `/companies/${id}/dashboard` });
+    const dash = await app.inject({ method: 'GET', url: `/companies/${id}/dashboard`, headers: bearer(ADMIN) });
     const body = dash.json();
     expect(body.weeklySummary).toBeTruthy();
     expect(body.weeklySummary.text.body).toBeTruthy();

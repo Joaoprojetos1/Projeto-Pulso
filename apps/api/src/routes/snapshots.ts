@@ -11,6 +11,7 @@ import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 import type { PushMessage, PushSender } from '../push';
 import { saoPauloToday } from '../quota';
+import { requireAdmin } from './admin/guard';
 
 /**
  * Cálculo e leitura.
@@ -433,6 +434,8 @@ export function registerSnapshots(
       },
     },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
       const asOf = req.body?.asOf ?? saoPauloToday();
@@ -445,6 +448,8 @@ export function registerSnapshots(
     '/companies/:id/dashboard',
     { schema: { params: companyParamsSchema } },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
 
@@ -462,6 +467,8 @@ export function registerSnapshots(
     '/companies/:id/alerts',
     { schema: { params: companyParamsSchema } },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
 

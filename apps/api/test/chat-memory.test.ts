@@ -9,6 +9,7 @@ import type { ChatModel } from '../src/ai/chat';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5501;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-chatmem-test');
@@ -16,6 +17,7 @@ const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '
 let pg: EmbeddedPostgres;
 let sql: Sql;
 let app: ReturnType<typeof buildApp>;
+let ADMIN: string;
 
 // modelo dublê que CAPTURA o prompt recebido (para inspecionar a memória)
 const captured: Array<{ system: string; turns: Array<{ role: string; content: string }> }> = [];
@@ -37,6 +39,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql, { chatModel });
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -62,7 +65,12 @@ async function seedCompany(): Promise<string> {
 }
 
 const chat = (id: string, content: string) =>
-  app.inject({ method: 'POST', url: `/companies/${id}/chat`, payload: { messages: [{ role: 'user', content }] } });
+  app.inject({
+    method: 'POST',
+    url: `/companies/${id}/chat`,
+    headers: bearer(ADMIN),
+    payload: { messages: [{ role: 'user', content }] },
+  });
 
 describe('memória do chat (ponta a ponta)', () => {
   it('continuidade: a 2ª pergunta enxerga a 1ª pergunta e a resposta anterior', async () => {

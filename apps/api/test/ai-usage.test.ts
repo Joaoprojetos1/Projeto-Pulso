@@ -12,6 +12,7 @@ import type { AlertWriterModel } from '../src/ai/writer';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5495;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-ai-usage-test');
@@ -47,6 +48,7 @@ class FakeChatModel implements ChatModel {
 let pg: EmbeddedPostgres;
 let sql: Sql;
 let app: ReturnType<typeof buildApp>;
+let ADMIN: string;
 
 beforeAll(async () => {
   rmSync(DATA_DIR, { recursive: true, force: true });
@@ -65,6 +67,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql, { alertWriter: new FakeAlertWriter(), chatModel: new FakeChatModel() });
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 });
 
 afterAll(async () => {
@@ -118,12 +121,14 @@ async function setupCompany(name: string, snap: CompanySnapshot): Promise<string
   await app.inject({
     method: 'POST',
     url: `/companies/${companyId}/imports`,
+    headers: bearer(ADMIN),
     payload: toImportPayload(snap),
   });
   for (const b of snap.balances) {
     await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/balances`,
+      headers: bearer(ADMIN),
       payload: { observedOn: b.observedOn, balanceCents: b.balanceCents },
     });
   }
@@ -140,6 +145,7 @@ describe('medição do consumo da IA', () => {
     const snap = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/snapshots`,
+      headers: bearer(ADMIN),
       payload: { asOf: clinicaTesoura.asOf },
     });
     expect(snap.statusCode).toBe(201);
@@ -162,6 +168,7 @@ describe('medição do consumo da IA', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/companies/${companyId}/chat`,
+      headers: bearer(ADMIN),
       payload: { messages: [{ role: 'user', content: 'Como está meu caixa?' }] },
     });
     expect(res.statusCode).toBe(200);

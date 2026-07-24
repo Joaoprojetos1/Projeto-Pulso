@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
 import { migrate } from '../src/migrate';
+import { bearer, seedAdminToken } from './helpers';
 
 const PORT = 5494;
 const DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.pgdata-simulate-test');
@@ -18,6 +19,7 @@ let app: ReturnType<typeof buildApp>;
 
 let token: string;
 let companyId: string;
+let ADMIN: string;
 
 beforeAll(async () => {
   rmSync(DATA_DIR, { recursive: true, force: true });
@@ -36,6 +38,7 @@ beforeAll(async () => {
   await migrate(sql);
   app = buildApp(sql);
   await app.ready();
+  ADMIN = await seedAdminToken(sql);
 
   // dono se cadastra (empresa vazia) e pega o token
   const signup = await app.inject({
@@ -51,6 +54,7 @@ beforeAll(async () => {
   await app.inject({
     method: 'POST',
     url: `/companies/${companyId}/imports`,
+    headers: bearer(ADMIN),
     payload: {
       source: 'fixture_json',
       periodStart: '2026-05-01',
@@ -69,6 +73,7 @@ beforeAll(async () => {
   await app.inject({
     method: 'POST',
     url: `/companies/${companyId}/balances`,
+    headers: bearer(ADMIN),
     payload: { observedOn: '2026-06-01', balanceCents: 500_000 },
   });
 });
