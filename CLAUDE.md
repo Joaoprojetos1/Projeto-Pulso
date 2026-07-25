@@ -86,6 +86,34 @@ devolve alerta ou nada. O modelo só transforma o alerta em texto.
 - Margem caindo 2 meses seguidos
 - 1 cliente > 30% do faturamento
 
+## Como o dado entra: direção do produto
+
+Documentação de direção (não é implementação agora): orienta decisões futuras de
+captura de dados.
+
+O objetivo do produto é que o dono **não digite nada**. Informar caixa e custo
+fixo à mão é uma muleta temporária para ligar o motor, não o destino. A captura
+evolui em três etapas:
+
+- **Agora: arquivo.** Extrato bancário em OFX ou CSV é a porta principal, porque
+  é gratuito, universal e cobre entrada e saída. O atrito real não é o formato, é
+  o cliente não saber onde achar o arquivo no banco dele; então acompanha um guia
+  por banco. A entrada manual de caixa e custo fixo passa a ser alternativa,
+  nunca o caminho padrão.
+- **Depois: maquininha de cartão.** As APIs de adquirentes costumam ser gratuitas,
+  com autorização do lojista. O dado mais valioso ali é a **agenda de recebíveis**:
+  o que foi vendido e ainda não caiu. Isso é o "dinheiro preso" da tese do produto,
+  e o extrato bancário nunca mostra. Extrato conta o passado; maquininha conta o
+  futuro. Começar por um adquirente só.
+- **Com investimento: Open Finance.** Via agregador autorizado (Pluggy, Belvo,
+  Tecnospeed, Celcoin), pois acesso direto exige autorização do Banco Central.
+  Tecnicamente simples, mas o piso mensal dos agregadores hoje inviabiliza no
+  estágio atual. Entra quando o volume de clientes pagantes justificar.
+
+**Consequência de arquitetura:** toda nova fonte de dado **converte para o mesmo
+schema canônico de lançamentos** antes de chegar ao core. O core nunca sabe de
+onde o dado veio.
+
 ## Convenções
 
 - Dinheiro em **centavos**, inteiro. Nunca float. Nunca.

@@ -105,8 +105,8 @@ export default function RootLayout() {
         <Stack.Screen name="admin/saude" />
         <Stack.Screen
           name="alerta/[index]"
-          // o alerta sobe como um painel, deslizando de baixo
-          options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }}
+          // o alerta sobe como uma folha, de baixo para cima, e fecha por gesto (arrastar)
+          options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: true, headerShown: false }}
         />
       </Stack>
       </BiometricGate>
