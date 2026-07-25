@@ -43,6 +43,21 @@ export const fonts = {
   mono: 'Manrope_600SemiBold',
 } as const;
 
+/**
+ * Escala de espaço VERTICAL (ritmo). Espelhada de packages/tokens. Nomes de
+ * INTENÇÃO: use ESTES na UI, nunca um número avulso.
+ *
+ * Regra: espaço PEQUENO dentro de um grupo, espaço GRANDE entre grupos. Se dois
+ * blocos têm o mesmo espaço entre si que têm dos vizinhos, a hierarquia some.
+ */
+export const space = {
+  tight: 8, // rótulo e valor, ícone e texto (elementos colados)
+  item: 12, // itens irmãos de uma mesma lista
+  group: 16, // blocos relacionados dentro do mesmo grupo
+  section: 32, // seções distintas da tela
+  block: 40, // antes/depois de um bloco herói (cartão principal, folha de formulário)
+} as const;
+
 export type Severity = 'ok' | 'warn' | 'critical';
 
 export const severityColor: Record<Severity, string> = {

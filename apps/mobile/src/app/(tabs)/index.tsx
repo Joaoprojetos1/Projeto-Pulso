@@ -31,7 +31,7 @@ import type { CashProjectionPoint } from '@/lib/api';
 import { toqueLeve } from '@/lib/haptic';
 import { brl, dataBR, dias, pct } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts, severityColor, type Severity } from '@/theme';
+import { colors, fonts, severityColor, space, type Severity } from '@/theme';
 
 interface Tend {
   seta: string;
@@ -646,8 +646,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     backgroundColor: colors.mata,
     borderRadius: 20,
-    padding: 18,
-    gap: 4,
+    padding: space.group,
+    gap: space.tight,
   },
   cashRotulo: {
     fontFamily: fonts.mono,
@@ -668,7 +668,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 0.3,
     color: colors.rotuloSobreMata,
-    marginTop: 2,
   },
   cashOk: { fontFamily: fonts.corpoForte, color: colors.vivo },
   cashRuim: { fontFamily: fonts.corpoForte, color: '#F0A196' },
@@ -676,18 +675,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
   },
   cashTend: { fontFamily: fonts.corpoMedio, fontSize: 11 },
 
-  // barra de fôlego (autonomia)
-  folego: { marginTop: 14, gap: 6 },
+  // barra de fôlego (autonomia): meio grupo de respiro acima do texto do caixa
+  folego: { marginTop: space.tight, gap: space.tight },
   folegoFrase: { fontFamily: fonts.corpoForte, fontSize: 14, lineHeight: 20, color: colors.papel },
   folegoTrilha: { height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.14)', overflow: 'hidden' },
   folegoCheia: { height: '100%', borderRadius: 6 },
   folegoPontas: { flexDirection: 'row', justifyContent: 'space-between' },
   folegoPonta: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 0.4, color: colors.rotuloSobreMata },
-  verDetalhe: { marginTop: 14, alignSelf: 'flex-start' },
+  verDetalhe: { marginTop: space.tight, alignSelf: 'flex-start' },
   verDetalheTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.papelSobreMata },
   momentoLinha: {
     marginHorizontal: 16,
@@ -732,7 +730,8 @@ const styles = StyleSheet.create({
     color: '#F0A196',
   },
 
-  chips: { paddingHorizontal: 16, paddingVertical: 12, flexGrow: 0 },
+  // chips de indicadores: nova SEÇÃO depois do grupo do caixa (space.section acima)
+  chips: { paddingHorizontal: 16, marginTop: space.section, flexGrow: 0 },
   chip: {
     backgroundColor: colors.branco,
     borderWidth: 1,
@@ -740,8 +739,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 9,
-    marginRight: 8,
-    minWidth: 132,
+    marginRight: space.tight,
+    // largura folgada: o rótulo cabe inteiro e o próximo card assoma como fatia parcial
+    minWidth: 150,
   },
   chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   chipRotulo: { fontFamily: fonts.corpoForte, fontSize: 10.5, letterSpacing: 0.2, color: colors.tinta },
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
 
   explica: {
     marginHorizontal: 16,
-    marginBottom: 4,
+    marginTop: space.item,
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.linha,
@@ -770,15 +770,16 @@ const styles = StyleSheet.create({
   explicaTexto: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.tinta },
 
   // ---- primeiros passos (termine seu cadastro) ----
+  // bloco herói: separa do cartão de caixa por space.block
   passos: {
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: space.block,
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.vivo,
     borderRadius: 16,
     padding: 16,
-    gap: 8,
+    gap: space.tight,
   },
   passosTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, letterSpacing: -0.2 },
   passosSub: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza, marginBottom: 2 },
@@ -795,7 +796,8 @@ const styles = StyleSheet.create({
   passoBolinhaFeita: { backgroundColor: colors.vivo, borderColor: colors.vivo },
   passoCheck: { fontFamily: fonts.corpoForte, fontSize: 11, color: '#06231A' },
   passoLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
-  passoLabelFeito: { color: colors.cinza, textDecorationLine: 'line-through' },
+  // concluído: apenas esmaecido (o check verde já sinaliza), sem risco de "cancelado"
+  passoLabelFeito: { color: colors.cinza },
   passoSeta: { fontFamily: fonts.display, fontSize: 18, color: colors.cinza },
 
   vazioScroll: { paddingBottom: 28 },
@@ -817,7 +819,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: -0.3,
   },
-  alertas: { paddingHorizontal: 16, gap: 8 },
+  // faixa de atenção: mesmo grupo do cartão de caixa (space.group acima);
+  // faixas irmãs entre si por space.item.
+  alertas: { paddingHorizontal: 16, gap: space.item, marginTop: space.group },
   alerta: {
     flexDirection: 'row',
     backgroundColor: colors.branco,
@@ -835,11 +839,13 @@ const styles = StyleSheet.create({
   alertaTitulo: { flex: 1, fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta },
   alertaCorpo: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza },
 
-  verHistorico: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },
+  // histórico: seção própria (space.section acima)
+  verHistorico: { alignSelf: 'center', paddingVertical: space.item, marginTop: space.section },
   verHistoricoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.mata },
+  // botão de testar decisão: fecha o grupo do cartão de caixa (space.group acima)
   simular: {
     marginHorizontal: 16,
-    marginTop: 10,
+    marginTop: space.group,
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.vivo,
@@ -855,7 +861,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     color: colors.cinza,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: space.section,
   },
 
   // esqueleto (carregando)

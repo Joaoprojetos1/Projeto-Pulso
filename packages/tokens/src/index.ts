@@ -75,8 +75,20 @@ export const type = {
 
 export const radius = { sm: 2, md: 10, lg: 14, pill: 999 } as const;
 
-/** Grid base 4. */
-export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 40 } as const;
+/**
+ * Escala de espaço VERTICAL (ritmo). Nomes que dizem a INTENÇÃO, não o tamanho.
+ *
+ * Regra que rege tudo: espaço PEQUENO dentro de um grupo, espaço GRANDE entre
+ * grupos. Se dois blocos têm o mesmo espaço entre si que têm dos vizinhos, a
+ * hierarquia não existe.
+ */
+export const space = {
+  tight: 8, // entre elementos colados (rótulo e valor, ícone e texto)
+  item: 12, // entre itens irmãos de uma mesma lista
+  group: 16, // entre blocos relacionados dentro do mesmo grupo
+  section: 32, // entre seções distintas da tela
+  block: 40, // antes e depois de um bloco herói (cartão principal, folha de formulário)
+} as const;
 
 export type ColorToken = keyof typeof color;
 export type Severity = keyof typeof severityColor;

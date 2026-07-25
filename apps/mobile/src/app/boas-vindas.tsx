@@ -32,7 +32,7 @@ import { Heartbeat } from '@/components/heartbeat';
 import { PulsoLogo } from '@/components/logo';
 import { authForgotPassword, authResetPassword, AuthError } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 const VERSAO_APP = Constants.expoConfig?.version ?? '';
 const TERMOS_URL = 'https://pulso-site.onrender.com/termos.html';
@@ -483,20 +483,24 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   claimForte: { fontFamily: fonts.corpoForte, color: colors.papel },
+  // folha clara: space.block a separa do texto do cabeçalho escuro (não encosta)
   form: {
     backgroundColor: colors.papel,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    padding: 28,
-    paddingBottom: 40,
-    gap: 8,
+    padding: space.section,
+    paddingBottom: space.block,
+    marginTop: space.block,
+    // gap 0: o ritmo é explícito (tight rótulo->campo, group entre campos)
+    gap: 0,
   },
+  // rótulo: space.group acima separa um campo do anterior; o campo cola nele (tight)
   label: {
     fontFamily: fonts.mono,
     fontSize: 11,
     letterSpacing: 1.2,
     color: colors.cinza,
-    marginTop: 10,
+    marginTop: space.group,
   },
   input: {
     backgroundColor: colors.branco,
@@ -505,6 +509,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    marginTop: space.tight,
     fontFamily: fonts.corpo,
     fontSize: 16,
     color: colors.tinta,
@@ -518,6 +523,7 @@ const styles = StyleSheet.create({
     borderColor: colors.linha,
     borderRadius: 12,
     paddingHorizontal: 14,
+    marginTop: space.tight,
   },
   senhaInput: {
     flex: 1,
@@ -527,12 +533,13 @@ const styles = StyleSheet.create({
     color: colors.tinta,
   },
   olho: { paddingLeft: 8, paddingVertical: 6 },
+  // botão principal: space.section o separa dos campos acima
   botao: {
     backgroundColor: colors.vivo,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 18,
+    marginTop: space.section,
   },
   pressionado: { opacity: 0.85 },
   botaoTexto: {
@@ -547,9 +554,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     color: colors.okEscuro,
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: space.group,
   },
-  trocaModo: { marginTop: 16, alignItems: 'center' },
+  // botões/links secundários abaixo do principal: space.item entre eles
+  trocaModo: { marginTop: space.item, alignItems: 'center' },
   trocaModoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.mata },
   demoBtn: {
     borderWidth: 1,
@@ -557,7 +565,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: space.item,
   },
   demoBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   erroTexto: {
@@ -566,7 +574,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: colors.critico,
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: space.group,
   },
   avisoTexto: {
     fontFamily: fonts.corpo,
@@ -574,7 +582,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: colors.okEscuro,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: space.tight,
   },
   instrucao: {
     fontFamily: fonts.corpo,

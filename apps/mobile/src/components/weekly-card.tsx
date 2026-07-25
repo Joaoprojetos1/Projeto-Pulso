@@ -12,7 +12,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 
 import type { WeeklySummaryJson } from '@/lib/api';
 import { brl, dias } from '@/lib/format';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 function Variacao({
   rotulo,
@@ -95,22 +95,22 @@ export function WeeklyCard({ summary }: { summary: WeeklySummaryJson }) {
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginTop: space.section,
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.linha,
     borderRadius: 16,
-    padding: 16,
-    gap: 4,
+    padding: space.group,
+    gap: space.tight,
   },
   pressionado: { opacity: 0.9 },
   topo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rotulo: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1.2, color: colors.cinza },
   novo: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.vivo },
-  titulo: { fontFamily: fonts.display, fontSize: 17, color: colors.tinta, letterSpacing: -0.2, marginTop: 2 },
+  titulo: { fontFamily: fonts.display, fontSize: 17, color: colors.tinta, letterSpacing: -0.2 },
   corpo: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza },
 
-  variacoes: { marginTop: 10, gap: 8, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 10 },
+  variacoes: { marginTop: space.tight, gap: space.tight, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.item },
   varLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   varRotulo: { flex: 1, fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
   varValor: { fontFamily: fonts.displayMedio, fontSize: 14, color: colors.tinta, fontVariant: ['tabular-nums'] },
