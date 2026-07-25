@@ -17,6 +17,7 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 import { BiometricGate } from '@/components/biometric-gate';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { PulsoProvider, usePulso } from '@/lib/pulso-context';
 import { colors } from '@/theme';
 
@@ -77,6 +78,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
+    <ErrorBoundary>
     <PulsoProvider>
       <StatusBar style="dark" />
       <BiometricGate>
@@ -111,5 +113,6 @@ export default function RootLayout() {
       </Stack>
       </BiometricGate>
     </PulsoProvider>
+    </ErrorBoundary>
   );
 }
