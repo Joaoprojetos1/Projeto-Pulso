@@ -4,6 +4,7 @@ import { companyFromRequest, normalizeEmail } from '../auth';
 import type { Sql } from '../db';
 import { DATE_PATTERN } from '../http';
 import { saoPauloToday } from '../quota';
+import { getSubscriptionTestMode } from '../settings';
 
 /**
  * Assinatura (entitlement) — o "gatilho de ativação".
@@ -48,12 +49,16 @@ async function lerAssinatura(sql: Sql, companyId: string) {
 }
 
 export function registerSubscription(app: FastifyInstance, sql: Sql) {
-  // planos ATIVOS para a tela "Assine" do app (não é segredo).
+  // planos ATIVOS para a tela "Assine" do app (não é segredo). Inclui o modo teste
+  // (vindo do servidor) para o app saber que deve mostrar a tarja e ativar na hora.
   app.get('/plans', async () => {
-    const rows = await sql`
-      SELECT id, name, price_cents, chat_limit_monthly
-      FROM plans WHERE active = true ORDER BY sort, price_cents`;
+    const [rows, testMode] = await Promise.all([
+      sql`SELECT id, name, price_cents, chat_limit_monthly
+          FROM plans WHERE active = true ORDER BY sort, price_cents`,
+      getSubscriptionTestMode(sql),
+    ]);
     return {
+      testMode,
       plans: rows.map((p) => ({
         id: p.id,
         name: p.name,
@@ -112,6 +117,43 @@ export function registerSubscription(app: FastifyInstance, sql: Sql) {
   app.get('/me/subscription', async (req, reply) => {
     const company = await companyFromRequest(sql, req);
     if (!company) return reply.code(401).send({ error: 'Faça login.' });
-    return lerAssinatura(sql, company.id);
+    const [ass, testMode] = await Promise.all([
+      lerAssinatura(sql, company.id),
+      getSubscriptionTestMode(sql),
+    ]);
+    return { ...ass, testMode };
   });
+
+  // Ativação de TESTE: só funciona com o modo teste LIGADO no servidor. Ativa o
+  // plano na hora, SEM cobrança e SEM passar pelo checkout. Com o modo desligado,
+  // recusa (403) — o caminho de cobrança real fica intocado, mas inacessível por
+  // aqui durante os testes, para que nenhum toque dispare cobrança.
+  app.post<{ Body: { planId: string } }>(
+    '/me/subscription/activate-test',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['planId'],
+          additionalProperties: false,
+          properties: { planId: { type: 'string', minLength: 1, maxLength: 40 } },
+        },
+      },
+    },
+    async (req, reply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login.' });
+      if (!(await getSubscriptionTestMode(sql))) {
+        return reply.code(403).send({ error: 'Modo teste desligado.' });
+      }
+      const [p] = await sql`SELECT 1 FROM plans WHERE id = ${req.body.planId}`;
+      if (!p) return reply.code(400).send({ error: 'Plano inexistente.' });
+      await sql`
+        UPDATE companies
+        SET plan_id = ${req.body.planId}, subscription_status = 'ativa', subscribed_until = NULL
+        WHERE id = ${company.id}`;
+      const ass = await lerAssinatura(sql, company.id);
+      return { ...ass, testMode: true };
+    },
+  );
 }

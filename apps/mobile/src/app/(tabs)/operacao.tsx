@@ -15,6 +15,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   useWindowDimensions,
@@ -22,7 +23,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fetchAdminOverview, type AdminOverviewRow, type AdminSummary } from '@/lib/api';
+import { fetchAdminOverview, setAdminTestMode, type AdminOverviewRow, type AdminSummary } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
@@ -64,6 +65,20 @@ export default function Operacao() {
     await carregar();
     setAtualizando(false);
   }, [carregar]);
+
+  // liga/desliga o modo teste de assinatura (otimista; recarrega se falhar)
+  const alternarTeste = useCallback(
+    async (v: boolean) => {
+      if (!token) return;
+      setResumo((r) => (r ? { ...r, subscriptionTestMode: v } : r));
+      try {
+        await setAdminTestMode(token, v);
+      } catch {
+        void carregar();
+      }
+    },
+    [token, carregar],
+  );
 
   const filtradas = useMemo(() => {
     if (!linhas) return [];
@@ -128,6 +143,26 @@ export default function Operacao() {
               rotulo="IA no mês"
               valor={String(resumo.aiInteractionsMonth)}
               onPress={() => router.push('/admin/ia' as Href)}
+            />
+          </View>
+        )}
+
+        {/* modo teste de assinatura — controle do operador (auditado no servidor) */}
+        {resumo && (
+          <View style={[styles.testeCard, resumo.subscriptionTestMode && styles.testeCardOn]}>
+            <View style={styles.testeMiolo}>
+              <Text style={styles.testeTitulo}>Modo teste de assinatura</Text>
+              <Text style={styles.testeSub}>
+                {resumo.subscriptionTestMode
+                  ? 'Ligado: tocar num plano ativa na hora, sem cobrar.'
+                  : 'Desligado: fluxo normal de cobrança.'}
+              </Text>
+            </View>
+            <Switch
+              value={resumo.subscriptionTestMode}
+              onValueChange={alternarTeste}
+              trackColor={{ false: colors.linha, true: colors.alerta }}
+              thumbColor={colors.branco}
             />
           </View>
         )}
@@ -299,6 +334,22 @@ const styles = StyleSheet.create({
   kpiAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   kpiValor: { fontFamily: fonts.display, fontSize: 20, color: colors.tinta, letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
   kpiRotulo: { fontFamily: fonts.corpo, fontSize: 12, color: colors.cinza },
+
+  testeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+  },
+  testeCardOn: { borderColor: colors.alerta, backgroundColor: '#FDF5E9' },
+  testeMiolo: { flex: 1, gap: 2 },
+  testeTitulo: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.tinta },
+  testeSub: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
 
   atalhos: { flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' },
   atalho: {

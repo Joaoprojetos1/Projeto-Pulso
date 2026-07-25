@@ -408,6 +408,8 @@ export interface MySubscription {
   until: string | null;
   /** true = pode usar os benefícios do plano. */
   active: boolean;
+  /** Modo teste de assinatura ligado no servidor (ativa sem cobrar). */
+  testMode: boolean;
 }
 
 /** Lê o plano/estado da assinatura do dono logado (o app destrava a partir disto). */
@@ -427,11 +429,24 @@ export interface PlanJson {
   chatLimitMonthly: number;
 }
 
-/** Planos ativos, para a tela "Assine" (não exige login). */
-export async function fetchPlans(): Promise<PlanJson[]> {
+/** Planos ativos + modo teste, para a tela "Assine" (não exige login). */
+export async function fetchPlans(): Promise<{ plans: PlanJson[]; testMode: boolean }> {
   const res = await fetchWithWake(`${apiBase()}/plans`);
   if (!res.ok) throw new Error(`HTTP ${res.status} nos planos`);
-  return ((await res.json()) as { plans: PlanJson[] }).plans;
+  const body = (await res.json()) as { plans: PlanJson[]; testMode?: boolean };
+  return { plans: body.plans, testMode: body.testMode ?? false };
+}
+
+/** Ativa o plano NA HORA (modo teste, sem cobrança). Só funciona com o modo teste ligado. */
+export async function activateTestSubscription(token: string, planId: string): Promise<MySubscription> {
+  const res = await fetchWithWake(`${apiBase()}/me/subscription/activate-test`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ planId }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} na ativação de teste`);
+  return (await res.json()) as MySubscription;
 }
 
 /** Conversa do dono logado. */
@@ -675,6 +690,12 @@ export interface AdminSummary {
   pendingPayment: number;
   monthlyRevenueCents: number;
   aiInteractionsMonth: number;
+  subscriptionTestMode: boolean;
+}
+
+/** Liga/desliga o modo teste de assinatura (auditado no servidor). */
+export function setAdminTestMode(token: string, enabled: boolean): Promise<{ subscriptionTestMode: boolean }> {
+  return adminWrite(token, 'POST', '/admin/settings/test-mode', { enabled });
 }
 
 export interface AdminOverview {

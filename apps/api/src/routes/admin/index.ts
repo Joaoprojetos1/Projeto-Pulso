@@ -7,6 +7,7 @@ import type { Sql } from '../../db';
 import { findCompany, UUID_PATTERN } from '../../http';
 import type { PushSender } from '../../push';
 import { saoPauloToday } from '../../quota';
+import { setSubscriptionTestMode } from '../../settings';
 import { computeAndStore } from '../snapshots';
 import { notFound, rateLimited, recordAudit, requireAdmin } from './guard';
 import { companyDossier, economy, health, leads, operationSummary, overview, pilotMetrics } from './queries';
@@ -304,6 +305,35 @@ export function registerAdmin(
 
       await recordAudit(sql, admin.userId, 'lead.update', { type: 'lead', id: req.params.id }, req.body);
       return { id: updated.id, status: updated.status };
+    },
+  );
+
+  // ---- modo teste de assinatura (liga/desliga, auditado) -----------------
+
+  app.post<{ Body: { enabled: boolean } }>(
+    '/admin/settings/test-mode',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['enabled'],
+          additionalProperties: false,
+          properties: { enabled: { type: 'boolean' } },
+        },
+      },
+    },
+    async (req, reply) => {
+      const admin = await gate(req, reply);
+      if (!admin) return reply;
+      await setSubscriptionTestMode(sql, req.body.enabled);
+      await recordAudit(
+        sql,
+        admin.userId,
+        'settings.subscription_test_mode',
+        { type: 'settings', id: 'subscription_test_mode' },
+        { enabled: req.body.enabled },
+      );
+      return { subscriptionTestMode: req.body.enabled };
     },
   );
 

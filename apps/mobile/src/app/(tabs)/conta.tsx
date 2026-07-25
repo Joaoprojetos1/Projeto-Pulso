@@ -176,6 +176,13 @@ export default function Conta() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* modo teste de assinatura: tarja permanente, impossível de ignorar */}
+      {assinatura?.testMode && (
+        <View style={styles.tarjaTeste}>
+          <Ionicons name="flask" size={15} color="#06231A" />
+          <Text style={styles.tarjaTesteTexto}>Modo teste, nenhuma cobrança</Text>
+        </View>
+      )}
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.titulo}>Conta</Text>
 
@@ -354,6 +361,16 @@ function Linha({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
+  tarjaTeste: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.alerta,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#06231A', letterSpacing: 0.2 },
   scroll: { padding: 18, gap: 14 },
   titulo: {
     fontFamily: fonts.display,

@@ -2,6 +2,7 @@ import { CORE_VERSION } from '@pulso/core';
 
 import { callCostCents } from '../../ai/prices';
 import type { Sql } from '../../db';
+import { getSubscriptionTestMode } from '../../settings';
 
 /**
  * Leituras da área de operação. Só SELECT — nenhuma conta financeira aqui
@@ -38,6 +39,8 @@ export interface OperationSummary {
   pendingPayment: number;
   monthlyRevenueCents: number;
   aiInteractionsMonth: number;
+  /** Modo teste de assinatura ligado? (ativa sem cobrar, para testes). */
+  subscriptionTestMode: boolean;
 }
 
 export async function operationSummary(sql: Sql): Promise<OperationSummary> {
@@ -57,6 +60,7 @@ export async function operationSummary(sql: Sql): Promise<OperationSummary> {
     pendingPayment: (subs?.pendentes as number) ?? 0,
     monthlyRevenueCents: Number(subs?.receita_cents ?? 0),
     aiInteractionsMonth: (ia?.n as number) ?? 0,
+    subscriptionTestMode: await getSubscriptionTestMode(sql),
   };
 }
 

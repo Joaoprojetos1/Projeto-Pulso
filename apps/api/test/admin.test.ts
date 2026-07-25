@@ -290,3 +290,77 @@ describe('GET /admin/health', () => {
     expect(body.lastSnapshotAt).not.toBeNull();
   });
 });
+
+describe('modo teste de assinatura', () => {
+  it('padrão desligado: /plans testMode false e a ativação de teste recusa (403)', async () => {
+    const plans = await app.inject({ method: 'GET', url: '/plans' });
+    expect(plans.json().testMode).toBe(false);
+
+    const act = await app.inject({
+      method: 'POST',
+      url: '/me/subscription/activate-test',
+      headers: authH(ownerAuth),
+      payload: { planId: 'pro' },
+    });
+    expect(act.statusCode).toBe(403);
+  });
+
+  it('admin liga (owner não), ativa na hora, audita e depois desliga', async () => {
+    // não-admin não liga (a área nem se revela)
+    const negado = await app.inject({
+      method: 'POST',
+      url: '/admin/settings/test-mode',
+      headers: authH(ownerAuth),
+      payload: { enabled: true },
+    });
+    expect(negado.statusCode).toBe(404);
+
+    // admin liga
+    const on = await app.inject({
+      method: 'POST',
+      url: '/admin/settings/test-mode',
+      headers: authH(adminAuth),
+      payload: { enabled: true },
+    });
+    expect(on.statusCode).toBe(200);
+    expect(on.json().subscriptionTestMode).toBe(true);
+
+    // /plans reflete o modo teste
+    const plans = await app.inject({ method: 'GET', url: '/plans' });
+    expect(plans.json().testMode).toBe(true);
+
+    // owner ativa o plano NA HORA, sem checkout
+    const act = await app.inject({
+      method: 'POST',
+      url: '/me/subscription/activate-test',
+      headers: authH(ownerAuth),
+      payload: { planId: 'pro' },
+    });
+    expect(act.statusCode).toBe(200);
+    expect(act.json().active).toBe(true);
+    expect(act.json().testMode).toBe(true);
+
+    const sub = await app.inject({ method: 'GET', url: '/me/subscription', headers: authH(ownerAuth) });
+    expect(sub.json().active).toBe(true);
+
+    const [audit] = await sql`SELECT 1 FROM admin_audit WHERE action = 'settings.subscription_test_mode'`;
+    expect(audit).toBeTruthy();
+
+    // desliga: a ativação de teste volta a recusar
+    const off = await app.inject({
+      method: 'POST',
+      url: '/admin/settings/test-mode',
+      headers: authH(adminAuth),
+      payload: { enabled: false },
+    });
+    expect(off.json().subscriptionTestMode).toBe(false);
+
+    const act2 = await app.inject({
+      method: 'POST',
+      url: '/me/subscription/activate-test',
+      headers: authH(ownerAuth),
+      payload: { planId: 'pro' },
+    });
+    expect(act2.statusCode).toBe(403);
+  });
+});
