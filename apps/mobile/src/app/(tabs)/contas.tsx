@@ -34,7 +34,7 @@ import { textoParaCents } from '@/components/money-input';
 import { toqueSucesso } from '@/lib/haptic';
 import { brl, dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 // categorias neutras (público indefinido, sem termos de setor)
 const CATEGORIAS: Record<ContaKind, string[]> = {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   },
   previsaoTagTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.alerta },
 
-  abas: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  abas: { flexDirection: 'row', gap: space.tight, paddingHorizontal: 16, paddingVertical: space.item },
   aba: {
     flex: 1,
     borderWidth: 1,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   abaTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
   abaTextoAtivo: { color: colors.papel },
 
-  lista: { paddingHorizontal: 16, paddingBottom: 28, gap: 10 },
+  lista: { paddingHorizontal: 16, paddingBottom: space.section, gap: space.item },
 
   novo: {
     flexDirection: 'row',
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   novoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
   pressionado: { opacity: 0.85 },
 
-  vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 40 },
+  vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.group, paddingHorizontal: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.cinza, textAlign: 'center' },
   semContas: {
     fontFamily: fonts.corpo,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     borderColor: colors.linha,
     borderRadius: 14,
     padding: 14,
-    gap: 4,
+    gap: space.tight,
   },
   cardTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardValor: {
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   chipStatusTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.6 },
   cardQuem: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.tinta },
   cardDetalhe: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
-  cardAcoes: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
+  cardAcoes: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: space.tight },
   confirmar: {
     flex: 1,
     backgroundColor: colors.vivo,
@@ -576,10 +576,10 @@ const styles = StyleSheet.create({
     borderColor: colors.linha,
     borderRadius: 16,
     padding: 16,
-    gap: 6,
+    gap: space.tight,
   },
-  formTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, marginBottom: 4 },
-  label: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.cinza, marginTop: 8 },
+  formTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, marginBottom: space.tight },
+  label: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.cinza, marginTop: space.tight },
   input: {
     backgroundColor: colors.papel,
     borderWidth: 1,
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
     color: colors.tinta,
   },
   inputErro: { borderColor: colors.critico },
-  chipsLinha: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  chipsLinha: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight, marginTop: space.tight },
   chip: {
     borderWidth: 1,
     borderColor: colors.linha,
@@ -604,10 +604,10 @@ const styles = StyleSheet.create({
   chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   chipTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
   chipTextoAtivo: { color: colors.okEscuro },
-  dataEscolhida: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: 6 },
-  natureza: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  dataEscolhida: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: space.tight },
+  natureza: { flexDirection: 'row', alignItems: 'center', gap: space.tight, marginTop: space.item },
   naturezaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 13, color: colors.tinta },
-  formAcoes: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 12, marginTop: 14 },
+  formAcoes: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: space.item, marginTop: space.group },
   cancelar: { paddingVertical: 10, paddingHorizontal: 12 },
   cancelarTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
   salvar: {

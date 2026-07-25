@@ -24,7 +24,7 @@ import { MarkdownLite } from '@/components/markdown-lite';
 import { QuotaError, sendMyChat, type ChatTurnJson } from '@/lib/api';
 import { responderDeterministico } from '@/lib/perguntas';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 interface Mensagem {
   id: string;
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     letterSpacing: -0.3,
   },
-  lista: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
+  lista: { paddingHorizontal: 16, paddingBottom: space.item, gap: space.item },
   msgWrap: { width: '100%' },
   msg: { maxWidth: '86%', borderRadius: 14, paddingHorizontal: 13, paddingVertical: 10 },
   msgFalhou: { opacity: 0.6 },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   digitandoBolha: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 14 },
   ponto: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.cinza },
 
-  sugestoes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  sugestoes: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight, paddingHorizontal: 16, paddingBottom: space.tight },
   sugestao: {
     backgroundColor: colors.branco,
     borderWidth: 1,

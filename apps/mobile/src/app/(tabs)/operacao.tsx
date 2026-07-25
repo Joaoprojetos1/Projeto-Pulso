@@ -26,7 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchAdminOverview, setAdminTestMode, type AdminOverviewRow, type AdminSummary } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 const PARADO = 10; // dias sem dado a partir dos quais a bolinha fica amarela
 
@@ -316,8 +316,8 @@ function Metrica({ valor, rotulo, alerta }: { valor: number; rotulo: string; ale
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
-  conteudo: { padding: 16, gap: 4, paddingBottom: 40 },
-  titulo: { fontFamily: fonts.display, fontSize: 22, color: colors.tinta, letterSpacing: -0.4, marginBottom: 10 },
+  conteudo: { padding: 16, paddingBottom: space.block },
+  titulo: { fontFamily: fonts.display, fontSize: 22, color: colors.tinta, letterSpacing: -0.4, marginBottom: space.group },
 
   kpis: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   kpi: {
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     borderColor: colors.linha,
     borderRadius: 14,
     padding: 14,
-    marginBottom: 12,
+    marginBottom: space.group,
   },
   testeCardOn: { borderColor: colors.alerta, backgroundColor: '#FDF5E9' },
   testeMiolo: { flex: 1, gap: 2 },
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    marginBottom: 10,
+    marginBottom: space.group,
   },
   buscaInput: { flex: 1, fontFamily: fonts.corpo, fontSize: 15, color: colors.tinta, padding: 0 },
 
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   centro: { paddingVertical: 60, alignItems: 'center', justifyContent: 'center' },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center' },
 
-  lista: { gap: 10 },
+  lista: { gap: space.item },
   item: {
     backgroundColor: colors.branco,
     borderWidth: 1,

@@ -17,7 +17,7 @@ import { SimLine } from '@/components/sim-line';
 import { sendSimulate, type SimulationDelta, type SimulationResult } from '@/lib/api';
 import { dataBR, hojeISO } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 function addDays(iso: string, n: number): string {
   const t = Date.parse(`${iso}T00:00:00Z`) + n * 86_400_000;
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.cinza, textAlign: 'center' },
 
-  scroll: { padding: 16, gap: 12 },
+  scroll: { padding: 16, gap: space.item },
   selo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
   intro: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza },
 
@@ -194,19 +194,19 @@ const styles = StyleSheet.create({
   spinnerCanto: { position: 'absolute', top: 12, right: 12 },
   erroTexto: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza, textAlign: 'center' },
 
-  legendas: { gap: 6 },
+  legendas: { gap: space.tight },
   legItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tra: { width: 18, height: 3, borderRadius: 2 },
   traSim: { backgroundColor: colors.mata },
   legTexto: { fontFamily: fonts.corpo, fontSize: 13, color: colors.tinta },
 
-  secao: { fontFamily: fonts.display, fontSize: 15, color: colors.tinta, marginTop: 6 },
-  chips: { gap: 8 },
+  secao: { fontFamily: fonts.display, fontSize: 15, color: colors.tinta, marginTop: space.group },
+  chips: { gap: space.tight },
   chip: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   chipOn: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   chipTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
   chipTextoOn: { color: colors.okEscuro },
 
-  limpar: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },
+  limpar: { alignSelf: 'center', paddingVertical: space.item, marginTop: space.tight },
   limparTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.mata, textDecorationLine: 'underline' },
 });

@@ -15,7 +15,7 @@ import { markAlertActed, markAlertOpened } from '@/lib/api';
 import { toqueSucesso } from '@/lib/haptic';
 import { rotuloFact, valorFact } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts, severityColor, severityLabel, type Severity } from '@/theme';
+import { colors, fonts, severityColor, severityLabel, space, type Severity } from '@/theme';
 
 export default function DetalheAlerta() {
   const { index } = useLocalSearchParams<{ index: string }>();
@@ -123,7 +123,7 @@ export default function DetalheAlerta() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
-  scroll: { padding: 22, paddingBottom: 34 },
+  scroll: { padding: space.group, paddingBottom: space.section },
   vazio: { fontFamily: fonts.corpo, color: colors.cinza, textAlign: 'center', marginTop: 60 },
 
   fechar: { alignSelf: 'flex-end', marginBottom: 4 },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     borderColor: colors.linha,
     borderRadius: 16,
     padding: 16,
-    marginTop: 18,
+    marginTop: space.group,
   },
   porqueRotulo: {
     fontFamily: fonts.mono,
@@ -187,8 +187,8 @@ const styles = StyleSheet.create({
   },
 
   passos: {
-    marginTop: 18,
-    gap: 14,
+    marginTop: space.group,
+    gap: space.item,
   },
   passosRotulo: {
     fontFamily: fonts.mono,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
-    marginTop: 18,
+    marginTop: space.group,
   },
   fizFeito: { borderColor: colors.linha, backgroundColor: '#F0FBF6' },
   fizTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.mata },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: space.item,
   },
   pressionado: { opacity: 0.85 },
   ctaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },

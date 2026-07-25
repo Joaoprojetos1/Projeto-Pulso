@@ -18,7 +18,7 @@ import { escolherDaGaleria, tirarFoto, type FotoComprimida } from '@/lib/foto-av
 import { dataBR } from '@/lib/format';
 import { toqueLeve, toqueSucesso } from '@/lib/haptic';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts, severityColor, type Severity } from '@/theme';
+import { colors, fonts, severityColor, space, type Severity } from '@/theme';
 
 type IonName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#06231A', letterSpacing: 0.2 },
-  scroll: { padding: 18, gap: 14 },
+  scroll: { padding: space.group, gap: space.group },
   titulo: {
     fontFamily: fonts.display,
     fontSize: 19,
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
-  cabecalho: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 4 },
+  cabecalho: { flexDirection: 'row', alignItems: 'center', gap: space.group, paddingVertical: space.tight },
   avatar: {
     width: 56,
     height: 56,
