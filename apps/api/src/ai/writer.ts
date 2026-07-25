@@ -107,11 +107,17 @@ function bodyWithinLimit(body: string): boolean {
  * `onUsage` (opcional) recebe o consumo de CADA chamada ao modelo — inclusive
  * a que o fiscal reprova antes do retry. É só medição: não muda a decisão.
  */
+/** Log operacional mínimo (compatível com o logger do Fastify). Sem PII/valores. */
+export interface WriterLog {
+  warn: (obj: unknown, msg?: string) => void;
+}
+
 export async function writeAlert(
   model: AlertWriterModel | null,
   alert: AlertFact,
   profile: CompanyProfile,
   onUsage?: UsageSink,
+  log?: WriterLog,
 ): Promise<WrittenAlert> {
   const fallback: WrittenAlert = { ...templateFor(alert), modelVersion: TEMPLATE_VERSION };
   if (!model) return fallback;
@@ -122,8 +128,10 @@ export async function writeAlert(
     let out: WrittenAlert;
     try {
       out = await model.write(prompt);
-    } catch {
-      // erro de API: o SDK já fez os retries de transporte; não insistimos
+    } catch (err) {
+      // erro de API: o SDK já fez os retries de transporte; não insistimos.
+      // Evento operacional (sem texto nem facts no log — só a regra e o erro).
+      log?.warn({ err, ruleKey: alert.ruleKey }, 'falha ao chamar a API de IA (alerta); usando texto padrão');
       return fallback;
     }
 
@@ -135,6 +143,8 @@ export async function writeAlert(
     // reprovou no fiscal: uma segunda chance, depois template
   }
 
+  // esgotou as tentativas com o fiscal reprovando: cai no texto padrão (seguro)
+  log?.warn({ ruleKey: alert.ruleKey }, 'texto da IA reprovado pelo fiscal (grounding); usando texto padrão');
   return fallback;
 }
 

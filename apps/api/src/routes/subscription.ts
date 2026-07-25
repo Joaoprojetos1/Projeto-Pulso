@@ -91,6 +91,7 @@ export function registerSubscription(app: FastifyInstance, sql: Sql) {
     async (req, reply) => {
       const secret = process.env.PULSO_WEBHOOK_SECRET;
       if (!secret || req.headers['x-webhook-secret'] !== secret) {
+        req.log.warn({ temSegredo: Boolean(secret) }, 'webhook de assinatura recusado (segredo inválido)');
         return reply.code(401).send({ error: 'não autorizado' });
       }
 
@@ -109,6 +110,11 @@ export function registerSubscription(app: FastifyInstance, sql: Sql) {
             subscription_status = ${req.body.status},
             subscribed_until    = ${req.body.periodEnd ?? null}
         WHERE id = ${user.company_id}`;
+      // evento operacional (sem e-mail nem valor no log)
+      req.log.info(
+        { companyId: user.company_id, status: req.body.status, planId: req.body.planId ?? null },
+        'assinatura atualizada por webhook',
+      );
       return reply.send({ ok: true });
     },
   );
@@ -152,6 +158,7 @@ export function registerSubscription(app: FastifyInstance, sql: Sql) {
         UPDATE companies
         SET plan_id = ${req.body.planId}, subscription_status = 'ativa', subscribed_until = NULL
         WHERE id = ${company.id}`;
+      req.log.info({ companyId: company.id, planId: req.body.planId }, 'assinatura ativada em modo teste');
       const ass = await lerAssinatura(sql, company.id);
       return { ...ass, testMode: true };
     },

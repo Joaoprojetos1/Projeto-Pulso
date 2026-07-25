@@ -278,7 +278,7 @@ export async function computeAndStore(
   asOf: string,
   alertWriter: AlertWriterModel | null,
   pushSender: PushSender | null,
-  log?: { error: (obj: unknown, msg?: string) => void },
+  log?: { error: (obj: unknown, msg?: string) => void; warn: (obj: unknown, msg?: string) => void },
 ) {
   // lido antes de recalcular: o recálculo do dia apaga os alertas (e o pushed_at)
   const jaAvisado = pushSender
@@ -301,7 +301,7 @@ export async function computeAndStore(
       const written = await Promise.all(
         alerts.map(async (a) => ({
           alert: a,
-          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u)),
+          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u), log),
         })),
       );
 

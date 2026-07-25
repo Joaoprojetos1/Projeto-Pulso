@@ -35,6 +35,8 @@ export async function requireAdmin(
 ): Promise<AuthedUser | null> {
   const user = await userFromRequest(sql, req);
   if (!user || user.role !== 'admin') {
+    // evento operacional: tentativa de acesso à área restrita (sem PII no log)
+    req.log.warn({ path: req.url, method: req.method, autenticado: Boolean(user) }, 'acesso admin negado');
     notFound(reply);
     return null;
   }

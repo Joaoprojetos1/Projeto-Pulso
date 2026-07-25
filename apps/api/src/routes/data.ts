@@ -90,6 +90,7 @@ export function registerData(app: FastifyInstance, sql: Sql) {
       const [existing] = await sql`
         SELECT id FROM imports WHERE company_id = ${company.id} AND file_hash = ${fileHash}`;
       if (existing) {
+        req.log.info({ companyId: company.id }, 'import ignorado (arquivo duplicado)');
         return reply.code(200).send({
           imported: false,
           importId: existing.id,
@@ -126,6 +127,10 @@ export function registerData(app: FastifyInstance, sql: Sql) {
           return imp.id as string;
         });
 
+        req.log.info(
+          { companyId: company.id, source: b.source ?? 'manual_json', rowCount: b.entries.length },
+          'import registrado',
+        );
         return reply.code(201).send({ imported: true, importId, rowCount: b.entries.length });
       } catch (err) {
         // corrida entre duas importações iguais: o UNIQUE segura, respondemos idempotente
