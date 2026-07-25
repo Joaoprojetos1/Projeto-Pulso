@@ -46,7 +46,13 @@ afterAll(async () => {
 });
 
 describe('foto do avatar', () => {
-  const png = Buffer.from('conteudo-de-imagem-falso').toString('base64');
+  // PNG de verdade: assinatura 89 50 4E 47 + conteúdo mínimo
+  const png = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    Buffer.from('conteudo-minimo-de-png'),
+  ]).toString('base64');
+  // bytes que NÃO são imagem (para o teste de mime spoofado)
+  const naoImagem = Buffer.from('isto-nao-e-uma-imagem').toString('base64');
 
   it('sem foto ainda: devolve dataUri null', async () => {
     const res = await app.inject({ method: 'GET', url: '/me/avatar', headers: bearer(TOKEN) });
@@ -86,6 +92,16 @@ describe('foto do avatar', () => {
     const ler = await app.inject({ method: 'GET', url: '/me/avatar', headers: bearer(TOKEN) });
     expect(ler.statusCode).toBe(200);
     expect(ler.json().dataUri).toBe(`data:image/png;base64,${png}`);
+  });
+
+  it('recusa arquivo disfarçado de imagem (mime spoofado)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/me/avatar',
+      headers: bearer(TOKEN),
+      payload: { dataBase64: naoImagem, mime: 'image/png' },
+    });
+    expect(res.statusCode).toBe(400);
   });
 
   it('recusa imagem grande demais', async () => {

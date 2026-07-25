@@ -7,6 +7,20 @@ import type { Sql } from '../db';
 const MIMES = ['image/jpeg', 'image/png'] as const;
 const MAX_BYTES = 400 * 1024; // 400 KB — folga confortável para 256px
 
+/**
+ * Tipo REAL pelos bytes mágicos (não confia no mime declarado pelo cliente).
+ * PNG: 89 50 4E 47 ; JPEG: FF D8 FF. Qualquer outra coisa é rejeitada.
+ */
+function tipoReal(bytes: Buffer): 'image/png' | 'image/jpeg' | null {
+  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return 'image/png';
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  return null;
+}
+
 const avatarBodySchema = {
   type: 'object',
   required: ['dataBase64', 'mime'],
@@ -42,6 +56,11 @@ export function registerAvatar(app: FastifyInstance, sql: Sql) {
       if (bytes.length === 0) return reply.code(400).send({ error: 'Imagem vazia.' });
       if (bytes.length > MAX_BYTES) {
         return reply.code(413).send({ error: 'Imagem muito grande.' });
+      }
+      // tipo REAL pelos bytes: barra arquivo disfarçado de imagem (mime spoofado)
+      const real = tipoReal(bytes);
+      if (!real || real !== req.body.mime) {
+        return reply.code(400).send({ error: 'Imagem inválida (o tipo do arquivo não confere).' });
       }
 
       await sql`
