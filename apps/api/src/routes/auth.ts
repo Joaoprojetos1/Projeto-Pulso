@@ -14,6 +14,7 @@ import type { Sql } from '../db';
 import { toCompanyJson, UUID_PATTERN, type CompanyRow } from '../http';
 import { resolveMailer, type Mailer } from '../mailer';
 import { QuotaExceededError, quotaExceededPayload } from '../quota';
+import { keyByToken, makeRateLimiter } from '../ratelimit';
 import { converse } from '../services/conversation';
 import { currentUserMessage } from './chat';
 import { buildDashboard } from './snapshots';
@@ -128,10 +129,19 @@ export function registerAuth(
   chatModel: ChatModel | null = null,
   mailer: Mailer = resolveMailer(),
 ) {
+  // rate limit por app (fresco a cada instância): força bruta, enumeração e
+  // custo de IA. Limites por IP (auth) e por token (conversa). Ajustáveis por env.
+  const rl = {
+    login: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_LOGIN ?? 20), name: 'auth/login' }),
+    signup: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_SIGNUP ?? 20), name: 'auth/signup' }),
+    forgot: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_FORGOT ?? 20), name: 'auth/forgot' }),
+    chat: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_CHAT ?? 30), name: 'me/chat', keyFn: keyByToken }),
+  };
+
   // cadastro: cria a empresa (vazia) + o usuário + um token de sessão
   app.post<{ Body: SignupBody }>(
     '/auth/signup',
-    { schema: { body: signupSchema } },
+    { schema: { body: signupSchema }, preHandler: async (req, reply) => { if (rl.signup.check(req, reply)) return reply; } },
     async (req, reply) => {
       const email = normalizeEmail(req.body.email);
 
@@ -179,7 +189,7 @@ export function registerAuth(
   // entrada: confere e-mail + senha e devolve um token novo
   app.post<{ Body: LoginBody }>(
     '/auth/login',
-    { schema: { body: loginSchema } },
+    { schema: { body: loginSchema }, preHandler: async (req, reply) => { if (rl.login.check(req, reply)) return reply; } },
     async (req, reply) => {
       const email = normalizeEmail(req.body.email);
       const [user] = await sql`
@@ -234,7 +244,7 @@ export function registerAuth(
   // Responde 200 sempre — não revela se o e-mail existe (mesma prudência do login).
   app.post<{ Body: { email: string } }>(
     '/auth/forgot-password',
-    { schema: { body: forgotSchema } },
+    { schema: { body: forgotSchema }, preHandler: async (req, reply) => { if (rl.forgot.check(req, reply)) return reply; } },
     async (req, reply) => {
       const email = normalizeEmail(req.body.email);
       const [user] = await sql`SELECT id FROM users WHERE email = ${email}`;
@@ -306,7 +316,7 @@ export function registerAuth(
   // conversa do dono logado
   app.post<{ Body: ChatBody }>(
     '/me/chat',
-    { schema: { body: chatBodySchema } },
+    { schema: { body: chatBodySchema }, preHandler: async (req, reply) => { if (rl.chat.check(req, reply)) return reply; } },
     async (req, reply) => {
       const company = await companyFromRequest(sql, req);
       if (!company) return reply.code(401).send({ error: 'Faça login para conversar.' });
