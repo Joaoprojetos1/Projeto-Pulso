@@ -162,4 +162,25 @@ describe('login de verdade', () => {
     });
     expect(depois.statusCode).toBe(401);
   });
+
+  it('token expirado é recusado (401)', async () => {
+    const login = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email, password: senha },
+    });
+    const token = login.json().token as string;
+
+    // envelhece o token no banco (expirado ontem)
+    await sql`
+      UPDATE auth_tokens SET expires_at = now() - interval '1 day'
+      WHERE user_id = (SELECT id FROM users WHERE email = ${email})`;
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/me/dashboard',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(401);
+  });
 });

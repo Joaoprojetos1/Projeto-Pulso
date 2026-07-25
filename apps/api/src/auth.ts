@@ -58,7 +58,8 @@ export async function companyFromRequest(
     FROM auth_tokens t
     JOIN users u     ON u.id = t.user_id
     JOIN companies c ON c.id = u.company_id
-    WHERE t.token_hash = ${hashToken(token)}`;
+    WHERE t.token_hash = ${hashToken(token)}
+      AND (t.expires_at IS NULL OR t.expires_at > now())`;
   return (row as CompanyRow | undefined) ?? null;
 }
 
@@ -92,7 +93,8 @@ export async function userFromRequest(
     FROM auth_tokens t
     JOIN users u     ON u.id = t.user_id
     JOIN companies c ON c.id = u.company_id
-    WHERE t.token_hash = ${hashToken(token)}`;
+    WHERE t.token_hash = ${hashToken(token)}
+      AND (t.expires_at IS NULL OR t.expires_at > now())`;
   if (!row) return null;
 
   return {
