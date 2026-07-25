@@ -38,10 +38,10 @@ const VERSAO_APP = Constants.expoConfig?.version ?? '';
 const TERMOS_URL = 'https://pulso-site.onrender.com/termos.html';
 const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
-// O servidor no plano grátis "dorme"; a 1ª visita leva ~30-50s pra acordar.
+// espera longa na 1ª abertura do dia: mensagens centradas no cliente, nunca em infra.
 const MENSAGENS_CARREGANDO = [
   'Ligando o monitor…',
-  'Acordando o servidor. O primeiro acesso demora um pouco…',
+  'Preparando seus números. A primeira abertura do dia demora um pouco.',
   'Quase lá, buscando seus números…',
 ];
 

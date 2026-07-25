@@ -151,7 +151,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
         await limparSessao();
         setErro('Sua sessão expirou. Entre de novo.');
       } else {
-        setErro('Não consegui falar com o servidor agora.');
+        setErro('Sem conexão agora. Verifique sua internet e tente de novo.');
       }
       return false;
     } finally {

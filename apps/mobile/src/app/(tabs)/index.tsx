@@ -26,7 +26,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
-import { PulseLine } from '@/components/pulse-line';
 import { WeeklyCard } from '@/components/weekly-card';
 import type { CashProjectionPoint } from '@/lib/api';
 import { toqueLeve } from '@/lib/haptic';
@@ -111,6 +110,9 @@ export default function Dashboard() {
   const projInputs = (ind.cash_projection?.inputs ?? {}) as Record<string, number | string | null>;
   const plannedCount = typeof projInputs.plannedCount === 'number' ? projInputs.plannedCount : 0;
   const plannedTotal = typeof projInputs.plannedTotalCents === 'number' ? projInputs.plannedTotalCents : 0;
+  // dias de autonomia até o risco: CALCULADO PELO CORE (daysBetween no snapshot),
+  // não nasce aqui. null = não zera no horizonte.
+  const zeroInDays = typeof projInputs.zeroInDays === 'number' ? projInputs.zeroInDays : null;
 
   // primeiros passos: só para conta de verdade e enquanto faltar algo
   const passos = montarPassos(ind, plannedCount);
@@ -129,7 +131,6 @@ export default function Dashboard() {
     : [saldoHoje, ...(projecao ?? []).map((p) => p.projectedCents)].filter(
         (v): v is number => typeof v === 'number',
       );
-  const curvaDatas = usaDiaria ? curvaDiaria.map((p) => p.day) : undefined;
 
   const saudavel = !zeroOn;
 
@@ -240,7 +241,9 @@ export default function Dashboard() {
 
         {mostrarPassos && <PrimeirosPassos passos={passos} />}
 
-        {/* cartão de caixa — o herói absoluto da tela, com o estágio como selo */}
+        {/* ===== PRIMEIRA DOBRA: até quando o dinheiro dura ===== */}
+
+        {/* cartão de caixa — herói, com a BARRA DE FÔLEGO no lugar do gráfico */}
         <View style={styles.cash}>
           {diag && (
             <View style={styles.cashTopo}>
@@ -262,18 +265,11 @@ export default function Dashboard() {
             <Text style={styles.cashValor}>-</Text>
           )}
           <Text style={styles.cashDetalhe}>
-            {saudavel ? (
-              <>
-                Pulso <Text style={styles.cashOk}>saudável</Text> · hoje em caixa:{' '}
-                {saldoHoje !== null ? brl(saldoHoje) : '·'}
-              </>
-            ) : (
-              <>
-                Risco de zerar em <Text style={styles.cashRuim}>{dataBR(zeroOn!)}</Text> · hoje:{' '}
-                {saldoHoje !== null ? brl(saldoHoje) : '·'}
-              </>
-            )}
+            Hoje em caixa: {saldoHoje !== null ? brl(saldoHoje) : '·'}
           </Text>
+
+          <BarraFolego zeroInDays={zeroInDays} zeroOn={zeroOn} saudavel={saudavel} cor={diagCor} />
+
           {plannedCount > 0 && (
             <Text style={styles.cashPrevistas}>
               Considera {plannedCount}{' '}
@@ -281,33 +277,40 @@ export default function Dashboard() {
               {brl(plannedTotal)}
             </Text>
           )}
-          <PulseLine points={curva} dates={curvaDatas} color={saudavel ? colors.vivo : colors.critico} />
-          {/* legenda do tempo sob o gráfico: horizontes que o servidor mandou */}
           {curva.length >= 2 && (
-            <View style={styles.legenda}>
-              {['hoje', ...(projecao ?? []).map((p) => `+${p.horizonDays}d`)]
-                .slice(0, curva.length)
-                .map((r) => (
-                  <Text key={r} style={styles.legendaTexto}>
-                    {r}
-                  </Text>
-                ))}
-            </View>
-          )}
-          {!saudavel && zeroOn && (
-            <View style={styles.pontoRisco}>
-              <View style={styles.pontoRiscoBolha} />
-              <Text style={styles.pontoRiscoTexto}>
-                ponto de risco: {dataBR(zeroOn)}
-              </Text>
-            </View>
+            <Pressable
+              onPress={() => router.push('/projecao' as Href)}
+              style={({ pressed }) => [styles.verDetalhe, pressed && styles.pressionado]}
+            >
+              <Text style={styles.verDetalheTexto}>Ver o detalhe da projeção →</Text>
+            </Pressable>
           )}
         </View>
 
-        {/* o momento, em uma linha; o "porquê" fica no detalhe, não na home */}
-        {diag && diag.text.title ? (
-          <Text style={styles.momentoLinha}>{diag.text.title}</Text>
-        ) : null}
+        {/* faixa de atenção — de uma linha, tocável */}
+        <View style={styles.alertas}>
+          {dashboard.alerts.map((a, i) => (
+            <Pressable
+              key={`${a.ruleKey}-${i}`}
+              style={({ pressed }) => [styles.faixa, pressed && styles.pressionado]}
+              onPress={() => {
+                toqueLeve();
+                router.push(`/alerta/${i}`);
+              }}
+            >
+              <View style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]} />
+              {fonte !== 'demo' && !a.openedAt && (
+                <View
+                  style={[styles.naoLidoPonto, { backgroundColor: severityColor[a.severity as Severity] }]}
+                />
+              )}
+              <Text style={styles.faixaTitulo} numberOfLines={1}>
+                {a.textTitle ?? a.ruleKey}
+              </Text>
+              <Text style={styles.faixaChevron}>›</Text>
+            </Pressable>
+          ))}
+        </View>
 
         {fonte !== 'demo' && (
           <Pressable
@@ -317,6 +320,8 @@ export default function Dashboard() {
             <Text style={styles.simularTexto}>Testar uma decisão →</Text>
           </Pressable>
         )}
+
+        {/* ===== SEGUNDA DOBRA: indicadores, resumo, histórico ===== */}
 
         {/* chips de indicadores — tocáveis, abrem "de onde vem esse número" */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
@@ -341,36 +346,8 @@ export default function Dashboard() {
           </Animated.View>
         )}
 
-        {/* resumo da semana — cartão discreto, mais abaixo (não disputa a home) */}
+        {/* resumo da semana — cartão discreto */}
         {dashboard.weeklySummary && <WeeklyCard summary={dashboard.weeklySummary} />}
-
-        {/* atenção — faixas de uma linha, tocáveis; o detalhe completo abre no toque */}
-        {dashboard.alerts.length > 0 && (
-          <Text style={styles.secao}>O que pede sua atenção</Text>
-        )}
-        <View style={styles.alertas}>
-          {dashboard.alerts.map((a, i) => (
-            <Pressable
-              key={`${a.ruleKey}-${i}`}
-              style={({ pressed }) => [styles.faixa, pressed && styles.pressionado]}
-              onPress={() => {
-                toqueLeve();
-                router.push(`/alerta/${i}`);
-              }}
-            >
-              <View style={[styles.barra, { backgroundColor: severityColor[a.severity as Severity] }]} />
-              {fonte !== 'demo' && !a.openedAt && (
-                <View
-                  style={[styles.naoLidoPonto, { backgroundColor: severityColor[a.severity as Severity] }]}
-                />
-              )}
-              <Text style={styles.faixaTitulo} numberOfLines={1}>
-                {a.textTitle ?? a.ruleKey}
-              </Text>
-              <Text style={styles.faixaChevron}>›</Text>
-            </Pressable>
-          ))}
-        </View>
 
         {fonte !== 'demo' && (
           <Pressable
@@ -438,6 +415,44 @@ function PrimeirosPassos({ passos }: { passos: Passo[] }) {
           {!p.feito && <Text style={styles.passoSeta}>›</Text>}
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+/**
+ * Barra de fôlego (autonomia do caixa). É o herói de leitura do painel: numa
+ * ponta "hoje", na outra a data de risco, preenchida na cor de severidade, com a
+ * frase por cima em linguagem de dono. Não cria número: os dias de autonomia
+ * (zeroInDays) e a data (zeroOn) vêm calculados do core no snapshot.
+ */
+function BarraFolego({
+  zeroInDays,
+  zeroOn,
+  saudavel,
+  cor,
+}: {
+  zeroInDays: number | null;
+  zeroOn: string | null;
+  saudavel: boolean;
+  cor: string;
+}) {
+  const HORIZONTE = 90; // janela da projeção; só define a escala visual da barra
+  const prop = saudavel || zeroInDays === null ? 1 : Math.max(0.06, Math.min(zeroInDays / HORIZONTE, 1));
+  const frase =
+    saudavel || zeroOn === null
+      ? 'Seu caixa está saudável. Sem risco à vista nos próximos 90 dias.'
+      : `Seu caixa aguenta até ${dataBR(zeroOn)}${zeroInDays !== null ? `, ${dias(zeroInDays)}` : ''}.`;
+  const fim = saudavel || zeroOn === null ? '+90 dias' : dataBR(zeroOn);
+  return (
+    <View style={styles.folego}>
+      <Text style={styles.folegoFrase}>{frase}</Text>
+      <View style={styles.folegoTrilha}>
+        <View style={[styles.folegoCheia, { width: `${prop * 100}%`, backgroundColor: cor }]} />
+      </View>
+      <View style={styles.folegoPontas}>
+        <Text style={styles.folegoPonta}>hoje</Text>
+        <Text style={styles.folegoPonta}>{fim}</Text>
+      </View>
     </View>
   );
 }
@@ -664,6 +679,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   cashTend: { fontFamily: fonts.corpoMedio, fontSize: 11 },
+
+  // barra de fôlego (autonomia)
+  folego: { marginTop: 14, gap: 6 },
+  folegoFrase: { fontFamily: fonts.corpoForte, fontSize: 14, lineHeight: 20, color: colors.papel },
+  folegoTrilha: { height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.14)', overflow: 'hidden' },
+  folegoCheia: { height: '100%', borderRadius: 6 },
+  folegoPontas: { flexDirection: 'row', justifyContent: 'space-between' },
+  folegoPonta: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 0.4, color: colors.rotuloSobreMata },
+  verDetalhe: { marginTop: 14, alignSelf: 'flex-start' },
+  verDetalheTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.papelSobreMata },
   momentoLinha: {
     marginHorizontal: 16,
     marginTop: 12,

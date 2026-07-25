@@ -208,7 +208,7 @@ async function postAuth(path: string, body: unknown): Promise<AuthResult> {
       body: JSON.stringify(body),
     });
   } catch {
-    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+    throw new AuthError('rede', 'Sem conexão agora. Verifique sua internet e tente de novo.');
   }
   if (res.ok) return (await res.json()) as AuthResult;
   if (res.status === 401) throw new AuthError('credenciais', 'E-mail ou senha incorretos.');
@@ -238,7 +238,7 @@ export async function authForgotPassword(email: string): Promise<void> {
       body: JSON.stringify({ email }),
     });
   } catch {
-    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+    throw new AuthError('rede', 'Sem conexão agora. Verifique sua internet e tente de novo.');
   }
 }
 
@@ -252,7 +252,7 @@ export async function authResetPassword(token: string, password: string): Promis
       body: JSON.stringify({ token, password }),
     });
   } catch {
-    throw new AuthError('rede', 'Não consegui falar com o servidor.');
+    throw new AuthError('rede', 'Sem conexão agora. Verifique sua internet e tente de novo.');
   }
   if (res.status === 400) throw new AuthError('credenciais', 'Código inválido ou expirado. Peça um novo.');
   if (!res.ok) throw new AuthError('desconhecido', `Não deu certo agora (${res.status}).`);
