@@ -186,3 +186,63 @@ describe('contas previstas (a pagar e a receber)', () => {
     expect(editar.statusCode).toBe(404);
   });
 });
+
+describe('isolamento entre empresas (cross-tenant) nas contas', () => {
+  let contaId: string;
+  let tokenB: string;
+  const authB = () => ({ authorization: `Bearer ${tokenB}` });
+
+  beforeAll(async () => {
+    const criada = await app.inject({
+      method: 'POST',
+      url: '/me/contas',
+      headers: auth.authorization(),
+      payload: { kind: 'payable', amountCents: 123_400, dueOn: '2999-02-02' },
+    });
+    contaId = criada.json().id as string;
+
+    const signupB = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: { businessName: 'Outra Empresa', email: 'dono-b@outra.com', password: 'senha-boa-123', phone: '11912345678' },
+    });
+    tokenB = signupB.json().token as string;
+  });
+
+  it('B não vê a conta de A na listagem', async () => {
+    const res = await app.inject({ method: 'GET', url: '/me/contas', headers: authB() });
+    const ids = (res.json().contas as Array<{ id: string }>).map((c) => c.id);
+    expect(ids).not.toContain(contaId);
+  });
+
+  it('B não edita a conta de A (404)', async () => {
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/me/contas/${contaId}`,
+      headers: authB(),
+      payload: { amountCents: 1, dueOn: '2999-03-03' },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('B não confirma a conta de A (404)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/me/contas/${contaId}/confirmar`,
+      headers: authB(),
+      payload: {},
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('B não exclui a conta de A (404)', async () => {
+    const res = await app.inject({ method: 'DELETE', url: `/me/contas/${contaId}`, headers: authB() });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('a conta de A continua intacta para A', async () => {
+    const res = await app.inject({ method: 'GET', url: '/me/contas', headers: auth.authorization() });
+    const ids = (res.json().contas as Array<{ id: string }>).map((c) => c.id);
+    expect(ids).toContain(contaId);
+  });
+});
