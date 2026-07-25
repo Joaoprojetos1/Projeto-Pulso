@@ -72,13 +72,15 @@ function tendencia(
 }
 
 export default function Dashboard() {
-  const { dashboard, fonte, carregando, carregar, mostrandoCache } = usePulso();
+  const { dashboard, fonte, carregando, carregar, mostrandoCache, logado } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
 
   if (!dashboard) {
     // enquanto busca sem dados ainda, mostra o "esqueleto" (não uma tela branca)
     if (carregando) return <SkeletonDashboard />;
+    // saindo da conta: não pisca a tela de configuração — o AuthGate já redireciona
+    if (!logado && fonte !== 'demo') return <SafeAreaView style={styles.safe} edges={['top']} />;
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.vazioScroll}>

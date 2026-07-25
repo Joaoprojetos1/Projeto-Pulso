@@ -8,7 +8,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import {
@@ -208,9 +208,10 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     if (t) void authLogout(t);
     void limparSessao();
     // reset de navegação: sair de QUALQUER tela volta à porta de entrada.
-    // dismissAll fecha modais abertos (alerta) antes de trocar a raiz.
+    // '/boas-vindas' é rota própria (não divide o '/' com o painel), então o
+    // reset funciona mesmo saindo de dentro das abas. dismissAll fecha modais.
     if (router.canDismiss?.()) router.dismissAll();
-    router.replace('/');
+    router.replace('/boas-vindas' as Href);
   }, [limparSessao]);
 
   // abertura do app: se havia token salvo, entra direto (mantém logado)

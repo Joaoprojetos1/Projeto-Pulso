@@ -6,17 +6,10 @@ import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function TabsLayout() {
-  const { ehAdmin, assinatura, fonte, logado, restaurando } = usePulso();
+  const { ehAdmin, assinatura, fonte, logado } = usePulso();
 
-  // Sem sessão, as abas não ficam de pé: qualquer logout (de qualquer tela)
-  // ejeta para a porta de entrada. É a rede de segurança do reset de navegação.
-  useEffect(() => {
-    if (!restaurando && !logado) {
-      router.replace('/');
-    }
-  }, [restaurando, logado]);
-
-  // Gate da assinatura: quem está logado e PENDENTE não usa as abas — cai na tela
+  // O reset de navegação por logout vive no AuthGate (raiz). Aqui fica só o gate
+  // da assinatura: quem está logado e PENDENTE não usa as abas — cai na tela
   // de planos. Fail-open: só bloqueia com 'pendente' explícito (erro, carregando,
   // ativa e demonstração passam, para nunca trancar quem já é ativo).
   useEffect(() => {

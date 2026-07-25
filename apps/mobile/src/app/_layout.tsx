@@ -11,16 +11,44 @@ import {
 } from '@expo-google-fonts/manrope';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useRouter, useSegments, type Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 import { BiometricGate } from '@/components/biometric-gate';
-import { PulsoProvider } from '@/lib/pulso-context';
+import { PulsoProvider, usePulso } from '@/lib/pulso-context';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+/**
+ * Guarda de sessão — a ÚNICA autoridade de navegação por login. Vive no topo, sob
+ * o provider, então enxerga qualquer rota. Sem sessão, ninguém fica numa rota
+ * logada (o logout de qualquer tela cai aqui e volta à porta de entrada); com
+ * sessão restaurada na abertura, sai da porta de entrada para o painel. Concentrar
+ * aqui evita as corridas de redirecionamentos espalhados pelas telas.
+ */
+function AuthGate() {
+  const { logado, restaurando } = usePulso();
+  const segments = useSegments();
+  const nav = useRouter();
+
+  useEffect(() => {
+    if (restaurando) return;
+    const raiz = segments[0] as string | undefined; // undefined = '/', 'boas-vindas' = tela de entrada
+    const naEntrada = raiz === undefined || raiz === 'boas-vindas';
+    if (!logado && !naEntrada) {
+      // sessão encerrada mas ainda numa rota logada: volta à porta de entrada
+      nav.replace('/boas-vindas' as Href);
+    } else if (logado && raiz === 'boas-vindas') {
+      // logado mas parou na tela de entrada: vai para o painel
+      nav.replace('/(tabs)');
+    }
+  }, [logado, restaurando, segments, nav]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -52,6 +80,7 @@ export default function RootLayout() {
     <PulsoProvider>
       <StatusBar style="dark" />
       <BiometricGate>
+      <AuthGate />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -61,6 +90,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="boas-vindas" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="assinar" />
