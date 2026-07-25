@@ -1,4 +1,4 @@
-/**
+﻿/**
  * O CÉREBRO da conversa — independente de canal.
  *
  * Um só lugar monta o contexto (snapshot + memória + alertas + diagnóstico),
@@ -40,6 +40,19 @@ export interface ConversationDeps {
   chatModel: ChatModel | null;
 }
 
+/**
+ * Higieniza a mensagem do dono antes de chegar ao modelo (defesa em profundidade
+ * contra prompt injection): tira bytes nulos e caracteres de controle (mantém
+ * quebra de linha e tab), colapsa espaços em excesso e impõe um teto duro de
+ * tamanho — mesmo que o schema mude. A defesa principal continua sendo o system
+ * prompt (papéis separados) + o fiscal de grounding sobre números.
+ */
+export function sanitizeUserMessage(raw: string): string {
+  // remove bytes nulos e caracteres de controle (mantem quebra de linha e tab)
+  const controle = new RegExp('[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]', 'g');
+  return raw.replace(controle, ' ').replace(/[ \t]{4,}/g, '   ').trim().slice(0, 2000);
+}
+
 /** A empresa não existe (id inválido). A casca do canal decide o código HTTP. */
 export class CompanyNotFoundError extends Error {
   constructor(public readonly companyId: string) {
@@ -50,7 +63,9 @@ export class CompanyNotFoundError extends Error {
 
 export async function converse(deps: ConversationDeps, input: ConverseInput): Promise<ConverseResult> {
   const { sql, chatModel } = deps;
-  const { companyId, userMessage } = input;
+  const { companyId } = input;
+  // defesa em profundidade contra prompt injection nos campos que chegam ao modelo
+  const userMessage = sanitizeUserMessage(input.userMessage);
   // `channel` fica reservado: hoje app e whatsapp compartilham o mesmo cérebro,
   // sem diferença de comportamento (item de arquitetura, não de conteúdo).
 
