@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
+
 import cors from '@fastify/cors';
-import fastify from 'fastify';
+import fastify, { type FastifyError } from 'fastify';
 
 import type { ChatModel } from './ai/chat';
 import type { AlertWriterModel } from './ai/writer';
@@ -32,7 +34,43 @@ export interface AppOptions {
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
-  const app = fastify({ logger: opts.logger ?? false });
+  const app = fastify({
+    logger: (opts.logger ?? false)
+      ? {
+          level: process.env.LOG_LEVEL ?? 'info',
+          // LGPD/segurança: credenciais NUNCA vão para o log de requisição.
+          // (O Fastify já não registra corpo nem headers gerais; isto blinda os
+          // sensíveis caso um serializer futuro os inclua.)
+          redact: {
+            paths: [
+              'req.headers.authorization',
+              'req.headers.cookie',
+              'req.headers["x-webhook-secret"]',
+              'req.headers["x-admin-token"]',
+            ],
+            remove: true,
+          },
+        }
+      : false,
+    // correlaciona toda a cadeia de uma requisição: usa o id do proxy se vier,
+    // senão gera um. O Fastify inclui esse reqId em cada linha de req.log.
+    genReqId: (req) => {
+      const h = req.headers['x-request-id'];
+      return (typeof h === 'string' && h.length > 0 ? h : randomUUID());
+    },
+  });
+
+  // Erros: registra com stack (nunca engole em silêncio) e não vaza detalhe
+  // interno ao cliente em 5xx. 4xx (validação etc.) preservam a mensagem.
+  app.setErrorHandler((err: FastifyError, req, reply) => {
+    const status = err.statusCode ?? 500;
+    if (status >= 500) {
+      req.log.error({ err }, 'erro não tratado');
+      return reply.code(500).send({ error: 'Erro interno. Tente de novo em instantes.' });
+    }
+    req.log.info({ statusCode: status }, 'requisição rejeitada');
+    return reply.code(status).send({ error: err.message });
+  });
 
   // o site (outra origem) chama a API do navegador; auth é por Bearer, não cookie
   app.register(cors, { origin: true });

@@ -22,23 +22,25 @@ if (!url) {
 }
 
 const sql = createSql(url);
-const applied = await migrate(sql);
-if (applied.length) console.log(`Migrações aplicadas: ${applied.join(', ')}`);
 
 // com ANTHROPIC_API_KEY a IA redige alertas e responde a conversa;
 // sem ela, entram o texto padrão e o aviso honesto no chat
 const temIA = Boolean(process.env.ANTHROPIC_API_KEY);
 const alertWriter = temIA ? new AnthropicAlertWriter() : null;
 const chatModel = temIA ? new AnthropicChatModel() : null;
-if (!temIA) {
-  console.log('ANTHROPIC_API_KEY ausente: alertas com texto padrão e conversa desligada.');
-}
 
 // entrega de push pelo serviço do Expo (não precisa de chave)
 const pushSender = new ExpoPushSender();
 
 const app = buildApp(sql, { logger: true, alertWriter, chatModel, pushSender });
+
+// migrações no boot (idempotentes) — registradas pelo logger estruturado
+const applied = await migrate(sql);
+if (applied.length) app.log.info({ applied }, 'migrações aplicadas');
+if (!temIA) app.log.warn('ANTHROPIC_API_KEY ausente: alertas com texto padrão e conversa desligada');
+
 const port = Number(process.env.PORT ?? 3000);
 // HOST=0.0.0.0 deixa o celular (Expo Go) acessar a API pela rede local
 const host = process.env.HOST ?? '127.0.0.1';
 await app.listen({ port, host });
+app.log.info({ port, host }, 'API no ar');
