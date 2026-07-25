@@ -72,8 +72,33 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
     return reply.code(status).send({ error: err.message });
   });
 
-  // o site (outra origem) chama a API do navegador; auth é por Bearer, não cookie
-  app.register(cors, { origin: true });
+  // CORS restrito às origens reais (o site e a demo web). O app NATIVO não manda
+  // Origin (CORS é coisa de navegador), então requisições sem Origin passam. Auth
+  // é por Bearer, não cookie. Origens extras via PULSO_CORS_ORIGINS (vírgula).
+  const origensPadrao = ['https://pulso-site.onrender.com', 'https://joaoprojetos1.github.io'];
+  const extras = (process.env.PULSO_CORS_ORIGINS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const permitidas = new Set([...origensPadrao, ...extras]);
+  app.register(cors, {
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // app nativo / server-to-server / curl
+      const ok = permitidas.has(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin);
+      cb(null, ok); // origem desconhecida: não reflete (navegador bloqueia)
+    },
+  });
+
+  // headers de segurança em toda resposta (API JSON; nunca é enquadrada nem sniffed)
+  app.addHook('onSend', async (_req, reply, payload) => {
+    reply.header('X-Content-Type-Options', 'nosniff');
+    reply.header('X-Frame-Options', 'DENY');
+    reply.header('Referrer-Policy', 'no-referrer');
+    if (process.env.NODE_ENV === 'production') {
+      reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    return payload;
+  });
 
   app.get('/health', async () => ({ ok: true }));
 
