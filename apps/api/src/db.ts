@@ -21,6 +21,11 @@ export function createSql(url: string) {
 
   return postgres(url, {
     ssl: isLocal ? false : 'require',
+    // pool dimensionado e com timeouts: Neon free tem poucas conexões; falhar
+    // rápido é melhor do que pendurar a requisição. Ajustável por PGPOOL_MAX.
+    max: Number(process.env.PGPOOL_MAX ?? 10),
+    idle_timeout: 20, // segundos: fecha conexões ociosas (libera o pool do Neon)
+    connect_timeout: 10, // segundos: falha rápido se o banco não responde
     types: {
       bigint: {
         to: 20,

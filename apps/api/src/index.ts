@@ -44,3 +44,39 @@ const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? '127.0.0.1';
 await app.listen({ port, host });
 app.log.info({ port, host }, 'API no ar');
+
+// keepalive: pinga o PRÓPRIO /health para o Render free não hibernar entre
+// visitas (~15 min sem tráfego = dorme, e a 1ª visita seguinte demora). É
+// PALIATIVO — a solução definitiva é plano pago (ver README). Liga em produção.
+const keepaliveOn = process.env.NODE_ENV === 'production' || process.env.PULSO_KEEPALIVE === '1';
+if (keepaliveOn) {
+  const intervalo = Number(process.env.PULSO_KEEPALIVE_MS ?? 10 * 60_000);
+  setInterval(() => {
+    fetch(`http://127.0.0.1:${port}/health`).catch(() => {
+      /* best-effort: manter vivo, nunca derrubar */
+    });
+  }, intervalo).unref();
+}
+
+// desligar com elegância: fecha o servidor e o pool antes de sair
+async function shutdown(sinal: string) {
+  app.log.info({ sinal }, 'encerrando com elegância');
+  try {
+    await app.close();
+    await sql.end({ timeout: 5 });
+  } catch (err) {
+    app.log.error({ err }, 'erro ao encerrar');
+  }
+  process.exit(0);
+}
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
+
+// erros de processo NUNCA são engolidos: registra com stack.
+process.on('unhandledRejection', (reason) => {
+  app.log.error({ reason }, 'unhandledRejection');
+});
+process.on('uncaughtException', (err) => {
+  app.log.error({ err }, 'uncaughtException — encerrando para reiniciar limpo');
+  process.exit(1);
+});

@@ -100,7 +100,17 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
     return payload;
   });
 
-  app.get('/health', async () => ({ ok: true }));
+  // healthcheck DE VERDADE: confirma que o banco responde (não é 200 fixo).
+  // Serve de readiness e de alvo do keepalive.
+  app.get('/health', async (_req, reply) => {
+    try {
+      await sql`SELECT 1`;
+      return { ok: true };
+    } catch (err) {
+      app.log.error({ err }, 'healthcheck: banco indisponível');
+      return reply.code(503).send({ ok: false });
+    }
+  });
 
   registerAuth(app, sql, opts.chatModel ?? null, opts.mailer);
   registerAdmin(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);

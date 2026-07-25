@@ -199,7 +199,12 @@ export class AnthropicChatModel implements ChatModel {
   private model: string;
 
   constructor(opts: { apiKey?: string; model?: string } = {}) {
-    this.client = new Anthropic(opts.apiKey ? { apiKey: opts.apiKey } : undefined);
+    // timeout + retries com backoff (o SDK faz backoff exponencial nos retries)
+    this.client = new Anthropic({
+      ...(opts.apiKey ? { apiKey: opts.apiKey } : {}),
+      timeout: 30_000,
+      maxRetries: 3,
+    });
     this.model = opts.model ?? CHAT_MODEL;
   }
 

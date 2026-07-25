@@ -3,15 +3,33 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
 import type { Sql } from '../src/db';
 
-// /health e o CORS/headers não tocam o banco: um sql stub basta (registro de
-// rotas não consulta nada). Teste rápido, sem Postgres.
-const app = buildApp({} as unknown as Sql);
+// CORS/headers não tocam o banco; o /health faz um SELECT 1. Um sql stub que
+// resolve qualquer query basta — teste rápido, sem Postgres de verdade.
+const sqlStub = (() => Promise.resolve([{ ok: 1 }])) as unknown as Sql;
+const app = buildApp(sqlStub);
 
 beforeAll(async () => {
   await app.ready();
 });
 afterAll(async () => {
   await app.close();
+});
+
+describe('healthcheck de verdade (checa o banco)', () => {
+  it('ok quando o banco responde', async () => {
+    const res = await app.inject({ method: 'GET', url: '/health' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ ok: true });
+  });
+
+  it('503 quando o banco não responde', async () => {
+    const appRuim = buildApp((() => Promise.reject(new Error('db down'))) as unknown as Sql);
+    await appRuim.ready();
+    const res = await appRuim.inject({ method: 'GET', url: '/health' });
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({ ok: false });
+    await appRuim.close();
+  });
 });
 
 describe('headers de segurança', () => {

@@ -48,6 +48,23 @@ pelo fiscal (grounding)** — é registrada na tabela `ai_usage` (empresa, tipo,
 em nada o comportamento da IA.
 
 O consumo agregado por empresa, tipo, modelo e mês fica em `GET /admin/ai-usage`
-(total de tokens + número de chamadas). É um endpoint interno; se
-`PULSO_ADMIN_TOKEN` estiver definido no ambiente, ele passa a exigir o header
-`x-admin-token` com esse valor.
+(total de tokens + número de chamadas). É uma rota da área de operação: exige
+**papel admin** (o guard responde 404 para quem não é), como todas as `/admin/*`.
+
+## Deploy e operação
+
+- **Migrações no boot.** `pnpm start` (index.ts) roda `migrate()` antes de escutar.
+  As migrações são **idempotentes** (`CREATE TABLE IF NOT EXISTS`, `ADD COLUMN IF
+  NOT EXISTS`, `ON CONFLICT DO NOTHING`) e registradas em `schema_migrations` — só
+  aplicam o que falta. Não há passo manual de migração no deploy.
+- **Healthcheck de verdade.** `GET /health` faz um `SELECT 1`: responde `200 {ok:true}`
+  quando o banco responde e `503 {ok:false}` quando não. Serve de readiness no Render.
+- **Desligamento gracioso.** `SIGTERM`/`SIGINT` fecham o servidor e o pool antes de sair.
+- **Cold start (Render free).** O plano gratuito hiberna após ~15 min sem tráfego,
+  e a primeira visita seguinte demora ~30–50s. Há um **keepalive** que pinga o
+  próprio `/health` a cada ~10 min (liga com `NODE_ENV=production` ou
+  `PULSO_KEEPALIVE=1`; intervalo por `PULSO_KEEPALIVE_MS`). Isso é **paliativo** —
+  a **solução definitiva é um plano pago** (sem hibernação). Um monitor externo de
+  uptime batendo na URL pública também ajuda enquanto o plano for gratuito.
+- **Pool do banco.** Dimensionado por `PGPOOL_MAX` (padrão 10), com `idle_timeout`
+  e `connect_timeout` (falha rápido em vez de pendurar a requisição).
