@@ -70,8 +70,11 @@ function tendencia(
   return { seta: subiu ? '↑' : '↓', pct, bom: menorEhMelhor ? !subiu : subiu };
 }
 
+/** Estado de expansão do card "Primeiros passos" — persiste na sessão (não no disco). */
+let primeirosPassosAbertoSessao = false;
+
 export default function Dashboard() {
-  const { dashboard, fonte, carregando, carregar, mostrandoCache, logado } = usePulso();
+  const { dashboard, fonte, carregando, carregar, mostrandoCache, logado, erro } = usePulso();
   // qual mini-card está aberto mostrando "de onde vem esse número" (null = nenhum)
   const [abertoChip, setAbertoChip] = useState<string | null>(null);
 
@@ -86,14 +89,25 @@ export default function Dashboard() {
           <View style={styles.topo}>
             <PulsoLogo size={26} />
           </View>
-          <Text style={styles.vazioBoas}>Bem-vindo ao Pulso</Text>
-          <PrimeirosPassos passos={montarPassos(null, 0)} />
-          <Pressable
-            style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
-            onPress={carregar}
-          >
-            <Text style={styles.tentarTexto}>Tentar de novo</Text>
-          </Pressable>
+          {erro ? (
+            // ESTADO DE ERRO de carregamento: título e texto que dizem isso
+            <>
+              <Text style={styles.vazioTitulo}>Não consegui carregar seus números</Text>
+              <Text style={styles.vazioSub}>Verifique sua conexão e tente de novo.</Text>
+              <Pressable
+                style={({ pressed }) => [styles.tentar, pressed && styles.pressionado]}
+                onPress={carregar}
+              >
+                <Text style={styles.tentarTexto}>Tentar de novo</Text>
+              </Pressable>
+            </>
+          ) : (
+            // CONTA NOVA sem dados: boas-vindas + primeiros passos (a ação principal)
+            <>
+              <Text style={styles.vazioBoas}>Bem-vindo ao Pulso</Text>
+              <PrimeirosPassos passos={montarPassos(null, 0)} />
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     );
@@ -395,26 +409,53 @@ function montarPassos(
   ];
 }
 
-/** Card de primeiros passos: o que falta configurar. Some quando tudo está feito. */
+/**
+ * Card de primeiros passos, RECOLHÍVEL. Nasce fechado (uma linha: título +
+ * progresso + chevron) para o cartão de caixa dominar a tela desde a abertura;
+ * expande no toque e o estado persiste na sessão. Some inteiro quando tudo pronto
+ * (o chamador só o renderiza enquanto há passo pendente).
+ */
 function PrimeirosPassos({ passos }: { passos: Passo[] }) {
+  const [aberto, setAberto] = useState(primeirosPassosAbertoSessao);
+  const feitos = passos.filter((p) => p.feito).length;
+
+  function alternar() {
+    const novo = !aberto;
+    setAberto(novo);
+    primeirosPassosAbertoSessao = novo; // persiste enquanto o app estiver aberto
+  }
+
   return (
     <View style={styles.passos}>
-      <Text style={styles.passosTitulo}>Primeiros passos</Text>
-      <Text style={styles.passosSub}>Termine seu cadastro para o Pulso projetar seu caixa.</Text>
-      {passos.map((p) => (
-        <Pressable
-          key={p.chave}
-          disabled={p.feito}
-          onPress={() => router.push(p.rota)}
-          style={({ pressed }) => [styles.passoItem, pressed && !p.feito && styles.pressionado]}
-        >
-          <View style={[styles.passoBolinha, p.feito && styles.passoBolinhaFeita]}>
-            {p.feito ? <Text style={styles.passoCheck}>✓</Text> : null}
-          </View>
-          <Text style={[styles.passoLabel, p.feito && styles.passoLabelFeito]}>{p.label}</Text>
-          {!p.feito && <Text style={styles.passoSeta}>›</Text>}
-        </Pressable>
-      ))}
+      <Pressable onPress={alternar} style={({ pressed }) => [styles.passosCab, pressed && styles.pressionado]}>
+        <View style={styles.passosCabTexto}>
+          <Text style={styles.passosTitulo}>Primeiros passos</Text>
+          <Text style={styles.passosProgresso}>
+            {feitos} de {passos.length} concluídos
+          </Text>
+        </View>
+        <Text style={[styles.passosChevron, aberto && styles.passosChevronAberto]}>›</Text>
+      </Pressable>
+
+      {aberto && (
+        <View style={styles.passosLista}>
+          {passos.map((p) => (
+            <Pressable
+              key={p.chave}
+              disabled={p.feito}
+              onPress={() => router.push(p.rota)}
+              style={({ pressed }) => [styles.passoItem, pressed && !p.feito && styles.pressionado]}
+            >
+              {/* concluído: check verde + texto esmaecido, SEM risco (não é cancelado) */}
+              <View style={[styles.passoBolinha, p.feito && styles.passoBolinhaFeita]}>
+                {p.feito ? <Text style={styles.passoCheck}>✓</Text> : null}
+              </View>
+              <Text style={[styles.passoLabel, p.feito && styles.passoLabelFeito]}>{p.label}</Text>
+              {!p.feito && <Text style={styles.passoSeta}>›</Text>}
+            </Pressable>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -544,15 +585,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 21,
   },
+  // secundário: contornado, largura normal (dentro do gutter), mesma altura dos demais botões
   tentar: {
-    backgroundColor: colors.mata,
+    borderWidth: 1.5,
+    borderColor: colors.linha,
     borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 26,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 2,
+    marginHorizontal: space.group,
+    marginTop: space.group,
   },
-  tentarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
+  tentarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   configurar: {
     backgroundColor: colors.vivo,
     borderRadius: 14,
@@ -689,7 +732,7 @@ const styles = StyleSheet.create({
   verDetalheTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.papelSobreMata },
   momentoLinha: {
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: space.item,
     fontFamily: fonts.corpoForte,
     fontSize: 15,
     lineHeight: 21,
@@ -721,7 +764,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: colors.rotuloSobreMata,
   },
-  pontoRisco: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  pontoRisco: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.tight },
   pontoRiscoBolha: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F0A196' },
   pontoRiscoTexto: {
     fontFamily: fonts.mono,
@@ -769,21 +812,27 @@ const styles = StyleSheet.create({
   explicaRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.cinza },
   explicaTexto: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.tinta },
 
-  // ---- primeiros passos (termine seu cadastro) ----
+  // ---- primeiros passos (recolhível) ----
   // bloco herói: separa do cartão de caixa por space.block
   passos: {
-    marginHorizontal: 16,
+    marginHorizontal: space.group,
     marginBottom: space.block,
     backgroundColor: colors.branco,
     borderWidth: 1,
     borderColor: colors.vivo,
     borderRadius: 16,
-    padding: 16,
-    gap: space.tight,
+    padding: space.group,
+    gap: space.group,
   },
+  passosCab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.tight },
+  passosCabTexto: { flex: 1, gap: 2 },
+  passosProgresso: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
+  passosChevron: { fontFamily: fonts.display, fontSize: 20, color: colors.cinza },
+  passosChevronAberto: { transform: [{ rotate: '90deg' }] },
+  passosLista: { gap: space.tight },
   passosTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, letterSpacing: -0.2 },
   passosSub: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza, marginBottom: 2 },
-  passoItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  passoItem: { flexDirection: 'row', alignItems: 'center', gap: space.tight, paddingVertical: space.tight },
   passoBolinha: {
     width: 20,
     height: 20,
@@ -807,7 +856,22 @@ const styles = StyleSheet.create({
     color: colors.tinta,
     letterSpacing: -0.4,
     paddingHorizontal: 18,
-    marginBottom: 12,
+    marginBottom: space.item,
+  },
+  vazioTitulo: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    color: colors.tinta,
+    letterSpacing: -0.4,
+    paddingHorizontal: space.group,
+    marginBottom: space.tight,
+  },
+  vazioSub: {
+    fontFamily: fonts.corpo,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.cinza,
+    paddingHorizontal: space.group,
   },
 
   secao: {
@@ -815,8 +879,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.tinta,
     paddingHorizontal: 18,
-    marginTop: 6,
-    marginBottom: 10,
+    marginTop: space.tight,
+    marginBottom: space.tight,
     letterSpacing: -0.3,
   },
   // faixa de atenção: mesmo grupo do cartão de caixa (space.group acima);

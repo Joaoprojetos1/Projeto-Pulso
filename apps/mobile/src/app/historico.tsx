@@ -18,7 +18,7 @@ import { acoesParaAlerta } from '@/lib/acoes';
 import { fetchMyAlerts, markAlertActed, markAlertOpened, type AlertHistoryJson } from '@/lib/api';
 import { dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts, severityColor, type Severity } from '@/theme';
+import { colors, fonts, severityColor, space, type Severity } from '@/theme';
 
 export default function Historico() {
   const { token, fonte } = usePulso();
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   vazio: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.cinza, textAlign: 'center' },
 
-  lista: { padding: 16, gap: 10 },
+  lista: { padding: 16, gap: space.item },
   item: {
     backgroundColor: colors.branco,
     borderWidth: 1,
@@ -168,12 +168,12 @@ const styles = StyleSheet.create({
   itemTituloNaoLido: { fontFamily: fonts.display },
   itemData: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.4, color: colors.cinza },
 
-  detalhe: { marginTop: 12, gap: 6, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 12 },
+  detalhe: { marginTop: space.item, gap: space.tight, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.item },
   corpo: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.tinta },
-  oQueRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.cinza, marginTop: 4 },
+  oQueRotulo: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.cinza, marginTop: space.tight },
   passo: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.tinta },
   fiz: {
-    marginTop: 8,
+    marginTop: space.tight,
     borderWidth: 1,
     borderColor: colors.mata,
     borderRadius: 12,

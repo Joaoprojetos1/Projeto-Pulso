@@ -35,7 +35,7 @@ import {
 } from '@/lib/api';
 import { brl, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts, severityColor, type Severity } from '@/theme';
+import { colors, fonts, severityColor, space, type Severity } from '@/theme';
 
 // título claro para cada regra (nunca a chave técnica na tela)
 const TITULO_ALERTA: Record<string, string> = {
@@ -550,9 +550,9 @@ const styles = StyleSheet.create({
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center' },
 
-  conteudo: { padding: 16, gap: 12, paddingBottom: 48 },
-  cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: 8 },
-  cartaoPerigo: { backgroundColor: colors.branco, borderWidth: 1, borderColor: 'rgba(216,80,63,0.4)', borderRadius: 14, padding: 14, gap: 8 },
+  conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
+  cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: space.tight },
+  cartaoPerigo: { backgroundColor: colors.branco, borderWidth: 1, borderColor: 'rgba(216,80,63,0.4)', borderRadius: 14, padding: 14, gap: space.tight },
 
   aviso: { backgroundColor: '#F0FBF6', borderWidth: 1, borderColor: colors.vivo, borderRadius: 12, padding: 12 },
   avisoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   chipAtivo: { borderColor: colors.vivo, backgroundColor: '#F0FBF6' },
   chipTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
   chipTextoAtivo: { color: colors.okEscuro },
-  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 6 },
+  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: space.tight },
   botaoTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.branco },
 
   acao: {
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: colors.linha,
-    paddingTop: 12,
+    paddingTop: space.item,
     marginTop: 4,
   },
   acaoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.mata },
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   excluirBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: 'rgba(216,80,63,0.4)', borderRadius: 12, paddingVertical: 12, marginTop: 4 },
   excluirTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.critico },
 
-  confirmaLinha: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  confirmaLinha: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: space.tight },
   confirmaPergunta: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
   confirmaBtn: { flex: 1, borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.linha, alignItems: 'center' },
   confirmaCancelar: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.cinza },

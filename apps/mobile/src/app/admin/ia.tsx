@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchAdminAiUsage, fetchAdminEconomy, type AdminAiUsageRow, type AdminEconomy } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 export default function IaCustos() {
   const { token, ehAdmin } = usePulso();
@@ -82,7 +82,7 @@ export default function IaCustos() {
                 {m.model}: {brl(m.avgCostCents)}/interação · {m.calls} chamadas
               </Text>
             ))}
-            <View style={{ height: 6 }} />
+            <View style={{ height: space.tight }} />
             {eco.plans.map((p) => (
               <View key={p.id} style={styles.ecoPlano}>
                 <Text style={styles.ecoNome}>
@@ -101,7 +101,7 @@ export default function IaCustos() {
         {erro ? (
           <Text style={styles.vazioTexto}>Não consegui carregar o consumo.</Text>
         ) : linhas === null ? (
-          <ActivityIndicator color={colors.mata} style={{ marginTop: 20 }} />
+          <ActivityIndicator color={colors.mata} style={{ marginTop: space.group }} />
         ) : linhas.length === 0 ? (
           <Text style={styles.vazioTexto}>Nenhum consumo de IA registrado ainda.</Text>
         ) : (
@@ -172,14 +172,14 @@ const styles = StyleSheet.create({
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center' },
 
-  conteudo: { padding: 16, gap: 12, paddingBottom: 40 },
-  cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: 8 },
+  conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
+  cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: space.tight },
   secaoTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, letterSpacing: -0.2 },
   secaoSub: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },
-  ecoPlano: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 8, gap: 2 },
+  ecoPlano: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight, gap: 2 },
   ecoNome: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: colors.tinta },
   ecoDetalhe: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
-  mesTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', borderBottomWidth: 1, borderBottomColor: colors.linha, paddingBottom: 8 },
+  mesTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', borderBottomWidth: 1, borderBottomColor: colors.linha, paddingBottom: space.tight },
   mes: { fontFamily: fonts.mono, fontSize: 13, letterSpacing: 0.5, color: colors.tinta },
   mesTotal: { fontFamily: fonts.display, fontSize: 15, color: colors.tinta },
 
@@ -190,5 +190,5 @@ const styles = StyleSheet.create({
   kvValor: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.tinta },
   detalhesToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 4 },
   detalhesTexto: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
-  detalhesBloco: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 8, gap: 6, marginTop: 4 },
+  detalhesBloco: { borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight, gap: space.tight, marginTop: 4 },
 });

@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { fetchAdminHealth, type AdminHealth } from '@/lib/api';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 function quando(iso: string | null): string {
   if (!iso) return 'nunca';
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center' },
 
-  conteudo: { padding: 16, gap: 12, paddingBottom: 40 },
+  conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
   destaque: { backgroundColor: colors.mata, borderRadius: 16, padding: 20, gap: 6 },
   destaqueRotulo: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.rotuloSobreMata },
   destaqueValor: { fontFamily: fonts.display, fontSize: 26, color: colors.branco, letterSpacing: -0.5 },

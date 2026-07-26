@@ -16,7 +16,7 @@ import { Heartbeat } from '@/components/heartbeat';
 import { activateTestSubscription, fetchPlans, type PlanJson } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 // checkout no site (sem comissão de loja). Configurável por env.
 const CHECKOUT_BASE =
@@ -107,7 +107,7 @@ export default function Assinar() {
         )}
 
         {planos === null ? (
-          <ActivityIndicator color={colors.mata} style={{ marginTop: 30 }} />
+          <ActivityIndicator color={colors.mata} style={{ marginTop: space.section }} />
         ) : (
           planos.map((p) => {
             const atual = jaAtivo && assinatura?.planId === p.id;
@@ -187,11 +187,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#06231A', letterSpacing: 0.2 },
-  conteudo: { padding: 20, gap: 12, paddingBottom: 40 },
+  conteudo: { padding: 20, gap: space.item, paddingBottom: space.block },
   voltar: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start' },
   voltarTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.tinta },
 
-  cabecalho: { gap: 8, marginTop: 8, marginBottom: 4 },
+  cabecalho: { gap: space.tight, marginTop: space.tight, marginBottom: 4 },
   titulo: { fontFamily: fonts.display, fontSize: 26, color: colors.tinta, letterSpacing: -0.5 },
   subtitulo: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.cinza },
 

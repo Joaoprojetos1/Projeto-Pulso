@@ -14,7 +14,7 @@ import { MoneyInput } from '@/components/money-input';
 import { createAdminPlan, fetchAdminPlans, patchAdminPlan, type AdminPlan } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 export default function Planos() {
   const { token, ehAdmin } = usePulso();
@@ -62,7 +62,7 @@ export default function Planos() {
         )}
 
         {planos === null ? (
-          <ActivityIndicator color={colors.mata} style={{ marginTop: 30 }} />
+          <ActivityIndicator color={colors.mata} style={{ marginTop: space.section }} />
         ) : (
           <>
             {planos.map((p) => (
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   tituloTopo: { flex: 1, textAlign: 'center', fontFamily: fonts.display, fontSize: 17, color: colors.tinta },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center' },
-  conteudo: { padding: 16, gap: 12, paddingBottom: 48 },
+  conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
 
   aviso: { backgroundColor: '#F0FBF6', borderWidth: 1, borderColor: colors.vivo, borderRadius: 12, padding: 12 },
   avisoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },
@@ -199,11 +199,11 @@ const styles = StyleSheet.create({
   toggleTextoOn: { color: colors.okEscuro },
   novoTitulo: { fontFamily: fonts.display, fontSize: 16, color: colors.tinta, marginBottom: 4 },
 
-  rotulo: { fontFamily: fonts.corpoMedio, fontSize: 12, color: colors.cinza, marginTop: 10 },
+  rotulo: { fontFamily: fonts.corpoMedio, fontSize: 12, color: colors.cinza, marginTop: space.tight },
   input: { borderWidth: 1, borderColor: colors.linha, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, fontFamily: fonts.corpo, fontSize: 15, color: colors.tinta, backgroundColor: colors.papel, marginTop: 4 },
   money: { marginTop: 4, fontSize: 16, paddingVertical: 10 },
 
-  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 14 },
+  botao: { backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: space.group },
   botaoTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.branco },
   pressionado: { opacity: 0.7 },
 });

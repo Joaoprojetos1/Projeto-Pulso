@@ -9,7 +9,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PulsoLogo } from '@/components/logo';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 export default function Onboarding() {
   return (
@@ -55,7 +55,7 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
   wrap: { flex: 1, padding: 24, paddingTop: 16 },
-  miolo: { flex: 1, justifyContent: 'center', gap: 16 },
+  miolo: { flex: 1, justifyContent: 'center', gap: space.group },
   titulo: {
     fontFamily: fonts.display,
     fontSize: 26,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.vivo,
     borderRadius: 16,
     padding: 16,
-    gap: 8,
+    gap: space.tight,
   },
   cartaoRotulo: {
     fontFamily: fonts.mono,

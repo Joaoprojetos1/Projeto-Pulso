@@ -28,7 +28,7 @@ import { MoneyInput } from '@/components/money-input';
 import { fetchMySetup, saveMySetup } from '@/lib/api';
 import { brl } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 // o servidor grátis "dorme"; o 1º cálculo pode demorar. Mensagens de etapa
 // (sem porcentagem, que seria teatro) enquanto o motor roda (A3).
@@ -127,7 +127,7 @@ export default function Configurar() {
         </Animated.View>
 
         {carregandoSetup ? (
-          <ActivityIndicator color={colors.mata} style={{ marginTop: 30 }} />
+          <ActivityIndicator color={colors.mata} style={{ marginTop: space.section }} />
         ) : salvando ? (
           <View style={styles.esperando}>
             <Heartbeat color={colors.vivo} width={72} height={26} />
@@ -145,7 +145,7 @@ export default function Configurar() {
             />
             <Text style={styles.ajuda}>O que está em conta agora, somando tudo.</Text>
 
-            <Text style={[styles.label, { marginTop: 20 }]}>CUSTO FIXO POR MÊS</Text>
+            <Text style={[styles.label, { marginTop: space.group }]}>CUSTO FIXO POR MÊS</Text>
             <MoneyInput
               valueCents={custoInicial}
               onChangeCents={setCustoCents}
@@ -192,7 +192,7 @@ export default function Configurar() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.papel },
   flex: { flex: 1 },
-  esperando: { alignItems: 'center', justifyContent: 'center', gap: 14, paddingTop: 60 },
+  esperando: { alignItems: 'center', justifyContent: 'center', gap: space.item, paddingTop: 60 },
   esperandoMsg: { fontFamily: fonts.display, fontSize: 18, color: colors.tinta, letterSpacing: -0.2 },
   esperandoSub: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.cinza, textAlign: 'center' },
   cabecalho: {
@@ -205,23 +205,23 @@ const styles = StyleSheet.create({
   },
   voltar: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   tituloTopo: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.tinta },
-  corpo: { paddingHorizontal: 20, paddingBottom: 40 },
+  corpo: { paddingHorizontal: 20, paddingBottom: space.block },
   titulo: {
     fontFamily: fonts.display,
     fontSize: 22,
     lineHeight: 28,
     color: colors.tinta,
     letterSpacing: -0.4,
-    marginTop: 8,
+    marginTop: space.tight,
   },
   subtitulo: {
     fontFamily: fonts.corpo,
     fontSize: 14,
     lineHeight: 21,
     color: colors.cinza,
-    marginTop: 10,
+    marginTop: space.tight,
   },
-  label: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.cinza, marginTop: 22 },
+  label: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1, color: colors.cinza, marginTop: space.group },
   input: {
     backgroundColor: colors.branco,
     borderWidth: 1,
@@ -232,10 +232,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 20,
     color: colors.tinta,
-    marginTop: 8,
+    marginTop: space.tight,
     fontVariant: ['tabular-nums'],
   },
-  ajuda: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: 6 },
+  ajuda: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: space.tight },
   contasNota: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -243,16 +243,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FBF6',
     borderRadius: 12,
     padding: 12,
-    marginTop: 24,
+    marginTop: space.group,
   },
   contasNotaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.tinta },
-  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico, textAlign: 'center', marginTop: 16 },
+  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico, textAlign: 'center', marginTop: space.group },
   botao: {
     backgroundColor: colors.vivo,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: space.section,
   },
   botaoOff: { opacity: 0.5 },
   botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: colors.cinza,
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: space.item,
     fontVariant: ['tabular-nums'],
   },
 });

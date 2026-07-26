@@ -42,6 +42,12 @@ export function PulseLine({ points, dates, width = 300, height = 56, color = col
   const [scrub, setScrub] = useState<number | null>(null);
   const interativo = !!dates && dates.length === points.length && points.length >= 2;
 
+  // O PanResponder é criado uma vez só; para não capturar valores obsoletos no
+  // closure (largura=0, pontos antigos), o handler lê sempre a partir de refs.
+  const larguraRef = useRef(0);
+  const pointsRef = useRef(points);
+  pointsRef.current = points;
+
   useEffect(() => {
     t.value = withRepeat(withTiming(1, { duration: 1600, easing: Easing.out(Easing.ease) }), -1, false);
   }, [t]);
@@ -79,8 +85,12 @@ export function PulseLine({ points, dates, width = 300, height = 56, color = col
   // scrubbing: o toque (em pixels de tela) vira índice do dia
   const pan = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => interativo,
-      onMoveShouldSetPanResponder: () => interativo,
+      onStartShouldSetPanResponder: () => interativoRef.current,
+      onStartShouldSetPanResponderCapture: () => interativoRef.current,
+      onMoveShouldSetPanResponder: () => interativoRef.current,
+      onMoveShouldSetPanResponderCapture: () => interativoRef.current,
+      // segura o gesto: impede o ScrollView pai de roubar o arraste no meio
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: (e) => atualizar(e.nativeEvent.locationX),
       onPanResponderMove: (e) => atualizar(e.nativeEvent.locationX),
       onPanResponderRelease: () => setScrub(null),
@@ -88,10 +98,15 @@ export function PulseLine({ points, dates, width = 300, height = 56, color = col
     }),
   ).current;
 
+  const interativoRef = useRef(interativo);
+  interativoRef.current = interativo;
+
   function atualizar(xTela: number) {
-    if (larguraReal <= 0) return;
-    const frac = Math.min(1, Math.max(0, xTela / larguraReal));
-    setScrub(Math.round(frac * (points.length - 1)));
+    const largura = larguraRef.current;
+    const pontos = pointsRef.current;
+    if (largura <= 0 || pontos.length < 2) return;
+    const frac = Math.min(1, Math.max(0, xTela / largura));
+    setScrub(Math.round(frac * (pontos.length - 1)));
   }
 
   const rotulo = useMemo(() => {
@@ -108,7 +123,10 @@ export function PulseLine({ points, dates, width = 300, height = 56, color = col
 
   return (
     <View
-      onLayout={(e) => setLarguraReal(e.nativeEvent.layout.width)}
+      onLayout={(e) => {
+        larguraRef.current = e.nativeEvent.layout.width;
+        setLarguraReal(e.nativeEvent.layout.width);
+      }}
       {...(interativo ? pan.panHandlers : {})}
       accessibilityLabel={rotulo}
       accessible

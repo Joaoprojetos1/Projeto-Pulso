@@ -12,7 +12,7 @@ import { AppState, Pressable, StyleSheet, Text, View, type AppStateStatus } from
 
 import { autenticar, biometriaDisponivel, biometriaLigada } from '@/lib/biometria';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 import { Heartbeat } from './heartbeat';
 
 export function BiometricGate({ children }: { children: React.ReactNode }) {
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mata,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: space.item,
     padding: 32,
   },
   marca: { fontFamily: fonts.display, fontSize: 28, color: colors.papel, letterSpacing: -0.5 },
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(245,244,242,0.7)',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: space.tight,
   },
   botao: {
     backgroundColor: colors.vivo,

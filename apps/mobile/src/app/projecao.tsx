@@ -16,7 +16,7 @@ import { PulseLine } from '@/components/pulse-line';
 import type { CashProjectionPoint } from '@/lib/api';
 import { brl, brlInteiro, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 export default function Projecao() {
   const { dashboard } = usePulso();
@@ -55,7 +55,12 @@ export default function Projecao() {
 
           {curva.length >= 2 ? (
             <>
-              <PulseLine points={curva} dates={curvaDatas} color={saudavel ? colors.vivo : colors.critico} />
+              <PulseLine
+                points={curva}
+                dates={curvaDatas}
+                height={130}
+                color={saudavel ? colors.vivo : colors.critico}
+              />
               <View style={styles.legenda}>
                 {['hoje', ...(projecao ?? []).map((p) => `+${p.horizonDays}d`)]
                   .slice(0, curva.length)
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   tituloTopo: { flex: 1, textAlign: 'center', fontFamily: fonts.display, fontSize: 17, color: colors.tinta },
-  conteudo: { padding: 16, gap: 12, paddingBottom: 40 },
+  conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
   cartao: { backgroundColor: colors.mata, borderRadius: 20, padding: 18, gap: 4 },
   rotulo: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1.4, color: colors.rotuloSobreMata },
   valor: {
@@ -107,8 +112,8 @@ const styles = StyleSheet.create({
   detalhe: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata, marginBottom: 4 },
   legenda: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6, marginTop: 2 },
   legendaTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.5, color: colors.rotuloSobreMata },
-  semDados: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata, marginTop: 8 },
-  pontoRisco: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  semDados: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata, marginTop: space.tight },
+  pontoRisco: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.tight },
   pontoRiscoBolha: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F0A196' },
   pontoRiscoTexto: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.4, color: '#F0A196' },
   dica: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.cinza, textAlign: 'center' },

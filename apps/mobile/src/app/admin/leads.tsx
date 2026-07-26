@@ -21,7 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchAdminLeads, patchLeadStatus, type AdminLead, type LeadStatus } from '@/lib/api';
 import { dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
-import { colors, fonts } from '@/theme';
+import { colors, fonts, space } from '@/theme';
 
 const STATUS: LeadStatus[] = ['novo', 'contatado', 'convertido', 'descartado'];
 const STATUS_COR: Record<LeadStatus, string> = {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: space.tight,
     borderWidth: 1,
     borderColor: colors.linha,
     borderRadius: 12,
@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
   },
   buscaInput: { flex: 1, fontFamily: fonts.corpo, fontSize: 14, color: colors.tinta, paddingVertical: 10 },
 
-  lista: { padding: 16, paddingTop: 4, gap: 10 },
-  item: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: 10 },
+  lista: { padding: 16, paddingTop: 4, gap: space.item },
+  item: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: space.item },
   itemTopo: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   itemMiolo: { flex: 1, gap: 2 },
   nome: { fontFamily: fonts.displayMedio, fontSize: 14.5, color: colors.tinta },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 },
   statusTexto: { fontFamily: fonts.corpoForte, fontSize: 11 },
 
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: 10 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight },
   chip: { borderWidth: 1, borderColor: colors.linha, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
   chipTexto: { fontFamily: fonts.corpoMedio, fontSize: 12, color: colors.tinta },
 });
