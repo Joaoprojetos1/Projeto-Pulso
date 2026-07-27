@@ -182,14 +182,14 @@
   <section class="hero">
     <p class="k">Onde estamos</p>
     <h1>De produto a negócio: o Pulso agora sabe cobrar, operar e encher o próprio caixa.</h1>
-    <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Pulso ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
+    <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Pulso ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. Por baixo, o Pulso foi blindado para produção: proteção contra abuso, isolamento entre empresas, registros sem dado pessoal e mais robustez sob carga. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
 
     <div class="stat">
-      <b class="tnum">61<span> / 79 tarefas</span></b>
+      <b class="tnum">70<span> / 88 tarefas</span></b>
       <span class="leg">concluídas. Cada frente abaixo mostra o que está feito e o que falta.</span>
     </div>
-    <div class="barra" role="img" aria-label="77% concluído"><div class="fill" style="width:77%"></div></div>
-    <p class="obs">≈ 77% · app polido de ponta a ponta (entrada, cadastro com WhatsApp, primeiros passos) e painel de operação reformulado · falta testar o aviso no aparelho, plugar o pagamento, ler o arquivo real e ir a campo</p>
+    <div class="barra" role="img" aria-label="80% concluído"><div class="fill" style="width:80%"></div></div>
+    <p class="obs">≈ 80% · blindagem para produção (segurança, robustez e registros) + app polido de ponta a ponta · falta testar o aviso no aparelho, plugar o pagamento, ler o arquivo real e ir a campo</p>
   </section>
 
   <div class="focus">
@@ -359,7 +359,7 @@
       </div>
     </details>
 
-    <details class="dia" open>
+    <details class="dia">
       <summary>
         <span class="dnum">DIA 7</span>
         <span class="dtit">24–25 de julho — polimento do app e reforma da operação</span>
@@ -376,6 +376,29 @@
           <li><span class="ok">✓</span><span><b>Resumo para o contador</b> foi para a tela de Conta: gera uma imagem limpa (situação do caixa e avisos, com "de onde vem cada número") para enviar ou salvar</span></li>
           <li><span class="ok">✓</span><span><b>Painel de operação reformulado</b>: no topo, os números do negócio (assinantes ativos, receita mensal, pendentes de pagamento, uso da IA no mês); busca e filtros; e cada empresa com uma bolinha de status de dados. O perfil de cada empresa foi refeito — contato com botão de WhatsApp, números do negócio em reais (corrigido um erro que mostrava centavos), avisos em linguagem clara e uso da IA com barra de progresso</span></li>
           <li><span class="ok">✓</span><span><b>Excluir cadastro</b> (nos bastidores): remove uma empresa e todos os seus dados, com dupla confirmação (digitar o nome) e registro na auditoria; o telefone da empresa também virou editável</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia" open>
+      <summary>
+        <span class="dnum">DIA 8</span>
+        <span class="dtit">25–26 de julho — blindagem para produção</span>
+        <span class="dresumo tnum">10 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Proteção contra abuso (limite de tentativas)</b>: login, cadastro, recuperação de senha e conversa com a IA passam a recusar excesso de tentativas — trava ataque de força bruta e uso indevido que custa dinheiro</span></li>
+          <li><span class="ok">✓</span><span><b>Sessão expira sozinha</b> (60 dias): um acesso antigo deixa de valer, e o servidor recusa qualquer sessão vencida</span></li>
+          <li><span class="ok">✓</span><span><b>Cadeado do navegador</b>: só os endereços oficiais falam com o servidor (CORS restrito) e as respostas trazem os cabeçalhos de segurança que os navegadores esperam</span></li>
+          <li><span class="ok">✓</span><span><b>Defesa da conversa</b>: a mensagem do usuário é higienizada antes de chegar à IA — ninguém consegue "dar ordens" ao modelo escondidas no texto</span></li>
+          <li><span class="ok">✓</span><span><b>Foto do avatar conferida de verdade</b>: o servidor olha o conteúdo real do arquivo (não confia na extensão) antes de aceitar a imagem</span></li>
+          <li><span class="ok">✓</span><span><b>Isolamento entre empresas testado também nas contas</b>: um cadastro nunca enxerga, edita ou apaga a conta de outro — travado com teste automático</span></li>
+          <li><span class="ok">✓</span><span><b>Registros para operar sem enxergar dado pessoal</b>: o servidor passou a anotar os eventos importantes (antes invisíveis), com as credenciais escondidas e sem nenhum dado do cliente nos logs</span></li>
+          <li><span class="ok">✓</span><span><b>App não trava mais em tela branca</b>: se algo dá errado ao desenhar uma tela, aparece uma mensagem amigável em vez de o app "sumir"</span></li>
+          <li><span class="ok">✓</span><span><b>Robustez de produção</b>: verificação de saúde real do servidor, desligamento sem perder requisição em andamento, tempo-limite e nova tentativa nas chamadas de IA, índices no banco para as consultas ficarem rápidas e todas as configurações documentadas</span></li>
+          <li><span class="ok">✓</span><span><b>Acabamento</b>: a barra de fôlego virou o herói do painel, espaçamento mais respirado nas telas, o alerta agora fecha com um gesto, e o site ficou sem travessões no texto (padrão da marca)</span></li>
         </ul>
       </div>
     </details>
@@ -497,12 +520,13 @@
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>9 · Cobrança e assinatura</h3><span class="gcount tnum">4 de 5</span></div>
+      <div class="ghead"><h3>9 · Cobrança e assinatura</h3><span class="gcount tnum">5 de 6</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">O servidor sabe quem é assinante e até quando</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">App mostra o plano e "Assinar" abre o pagamento no site (sem comissão de loja)</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Ativação manual pelo operador (Pix no piloto)</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Planos reais (Essencial/Pro/Premium) e fluxo de assinatura no app, com bloqueio até pagar</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Modo de teste da assinatura, ligado/desligado pelo operador (validar o bloqueio sem cobrar)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Plugar o provedor de pagamento e ligar a ativação automática</span></li>
       </ul>
     </div>
@@ -538,15 +562,29 @@
       </ul>
     </div>
 
+    <div class="grupo">
+      <div class="ghead"><h3>13 · Segurança e robustez</h3><span class="gcount full tnum">8 de 8</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Limite de tentativas (login, cadastro, recuperação de senha e IA), contra força bruta e abuso</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Sessão expira sozinha (60 dias); o servidor recusa acesso vencido</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Só os endereços oficiais falam com o servidor (CORS) + cabeçalhos de segurança</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Defesa contra "injeção de instrução" na conversa (higieniza a mensagem antes da IA)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Upload de foto validado pelo conteúdo real do arquivo, não pela extensão</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Isolamento entre empresas testado também nas contas (uma nunca alcança a de outra)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Registros de eventos e logs sem dado pessoal; app não quebra em tela branca</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Robustez: saúde real, desligamento sem perder requisição, timeout+retry da IA, índices no banco</span></li>
+      </ul>
+    </div>
+
   </div>
 
   <div class="grid2">
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
-        <div class="metric"><b class="tnum">61</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">70</b><span>tarefas concluídas</span></div>
         <div class="metric"><b class="tnum">18</b><span>pela frente</span></div>
-        <div class="metric"><b class="tnum">133</b><span>testes no servidor</span></div>
+        <div class="metric"><b class="tnum">154</b><span>testes no servidor</span></div>
       </div>
     </div>
     <div class="card">
@@ -565,7 +603,7 @@
 
   <footer class="foot">
     <span>Pulso</span>
-    <span>Atualizado 25 jul 2026</span>
+    <span>Atualizado 26 jul 2026</span>
   </footer>
 
 </div>
