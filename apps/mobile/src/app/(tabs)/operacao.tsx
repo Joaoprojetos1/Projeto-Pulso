@@ -298,6 +298,15 @@ function Linha({ c, denso }: { c: AdminOverviewRow; denso: boolean }) {
       </View>
 
       <View style={styles.metricas}>
+        <View style={styles.metrica}>
+          <Text
+            style={[styles.metricaValor, c.coverageComplete === 0 && { color: colors.alerta }]}
+            numberOfLines={1}
+          >
+            {c.coverageTotal > 0 ? `${c.coverageComplete}/${c.coverageTotal}` : '·'}
+          </Text>
+          <Text style={styles.metricaRotulo}>calculados</Text>
+        </View>
         <Metrica valor={c.unopenedAlerts} rotulo="não lidos" alerta={c.unopenedAlerts > 0} />
         <Metrica valor={c.chatQuestionsMonth} rotulo="perguntas" />
       </View>

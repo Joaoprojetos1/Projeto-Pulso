@@ -7,6 +7,7 @@
 
 import { addDays, daysBetween } from './dates';
 import { fusePlannedIntoProjection } from './planned';
+import { explainNeed } from './sources';
 import type {
   Cents,
   CompanySnapshot,
@@ -572,7 +573,7 @@ export function computeAll(snap: CompanySnapshot): IndicatorSet {
   const prevTo = addDays(snap.asOf, -31);
   const currFrom = addDays(snap.asOf, -30);
 
-  return {
+  const set: IndicatorSet = {
     cash_balance: cashBalance(snap),
     cash_projection: projectCash(snap),
     pmr: averageReceivableDays(snap),
@@ -587,4 +588,16 @@ export function computeAll(snap: CompanySnapshot): IndicatorSet {
     break_even_revenue: operatingBreakEven(snap),
     delinquency_rate: delinquencyRate(snap),
   };
+
+  // Degradação elegante (ADITIVO): todo indicador sem valor passa a carregar,
+  // de forma estruturada, quais campos faltaram e quais fontes os forneceriam.
+  // Reaproveita as declarações de requirements.ts. Não toca no cálculo.
+  for (const key of Object.keys(set)) {
+    const ind = set[key]!;
+    if (ind.value === null && ind.missing === undefined) {
+      ind.missing = explainNeed(key);
+    }
+  }
+
+  return set;
 }

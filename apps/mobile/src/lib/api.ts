@@ -683,6 +683,9 @@ export interface AdminOverviewRow {
   daysSinceData: number | null;
   unopenedAlerts: number;
   chatQuestionsMonth: number;
+  /** Cobertura de dados: indicadores calculados por completo / total. */
+  coverageComplete: number;
+  coverageTotal: number;
 }
 
 export interface AdminSummary {
@@ -727,6 +730,17 @@ export interface AdminDossier {
     fixedCostCents: number | null;
     revenueCents: number | null;
     revenuePreviousCents: number | null;
+  };
+  /** O que conseguimos calcular com o que a empresa enviou. */
+  coverage: {
+    complete: number;
+    partial: number;
+    blocked: number;
+    total: number;
+    /** O que falta, em linguagem clara e sem repetir campo. */
+    missing: string[];
+    /** Detalhe por indicador que ainda não fecha. */
+    items: Array<{ question: string; status: 'partial' | 'blocked'; missing: string[] }>;
   };
   chatUsedMonth: number;
   snapshot: {

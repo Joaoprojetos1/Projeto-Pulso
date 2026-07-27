@@ -252,6 +252,42 @@ export default function EmpresaDossie() {
             )}
           </View>
 
+          {/* o que conseguimos calcular com o que a empresa enviou */}
+          <View style={styles.cartao}>
+            <Rotulo texto="O QUE CONSEGUIMOS CALCULAR" />
+            <View style={styles.covLinha}>
+              <View style={styles.covNum}>
+                <Text style={[styles.covValor, { color: colors.okEscuro }]}>{d.coverage.complete}</Text>
+                <Text style={styles.covRotulo}>completos</Text>
+              </View>
+              <View style={styles.covNum}>
+                <Text style={[styles.covValor, { color: colors.alerta }]}>{d.coverage.partial}</Text>
+                <Text style={styles.covRotulo}>parciais</Text>
+              </View>
+              <View style={styles.covNum}>
+                <Text
+                  style={[styles.covValor, { color: d.coverage.blocked > 0 ? colors.critico : colors.cinza }]}
+                >
+                  {d.coverage.blocked}
+                </Text>
+                <Text style={styles.covRotulo}>bloqueados</Text>
+              </View>
+            </View>
+            {d.coverage.missing.length > 0 ? (
+              <View style={styles.covFalta}>
+                <Text style={styles.covFaltaTitulo}>Para calcular o resto, falta:</Text>
+                {d.coverage.missing.map((m) => (
+                  <View key={m} style={styles.covFaltaItem}>
+                    <Text style={styles.covFaltaBullet}>•</Text>
+                    <Text style={styles.covFaltaTexto}>{m}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.vazioTexto}>Temos todos os dados para os indicadores.</Text>
+            )}
+          </View>
+
           {/* avisos, com título em linguagem clara */}
           <View style={styles.cartao}>
             <Rotulo texto={`AVISOS (${d.alerts.length})`} />
@@ -553,6 +589,15 @@ const styles = StyleSheet.create({
   conteudo: { padding: 16, gap: space.item, paddingBottom: space.block },
   cartao: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, gap: space.tight },
   cartaoPerigo: { backgroundColor: colors.branco, borderWidth: 1, borderColor: 'rgba(216,80,63,0.4)', borderRadius: 14, padding: 14, gap: space.tight },
+  covLinha: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: space.tight },
+  covNum: { alignItems: 'center', gap: 2 },
+  covValor: { fontFamily: fonts.display, fontSize: 26, fontVariant: ['tabular-nums'] },
+  covRotulo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 0.6, color: colors.cinza, textTransform: 'uppercase' },
+  covFalta: { gap: 4, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight },
+  covFaltaTitulo: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
+  covFaltaItem: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+  covFaltaBullet: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.alerta },
+  covFaltaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 13.5, color: colors.tinta },
 
   aviso: { backgroundColor: '#F0FBF6', borderWidth: 1, borderColor: colors.vivo, borderRadius: 12, padding: 12 },
   avisoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },

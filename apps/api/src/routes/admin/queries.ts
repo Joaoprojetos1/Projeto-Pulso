@@ -1,8 +1,47 @@
-import { CORE_VERSION } from '@pulso/core';
+import {
+  CANONICAL_FIELDS,
+  coverageFor,
+  coverageSummary,
+  CORE_VERSION,
+  type CanonicalField,
+} from '@pulso/core';
 
 import { callCostCents } from '../../ai/prices';
 import type { Sql } from '../../db';
 import { getSubscriptionTestMode } from '../../settings';
+
+/**
+ * Monta o conjunto de campos canônicos PRESENTES nos dados de uma empresa a
+ * partir de sinais simples (tem saldo? tem custo fixo declarado? tem lançamentos
+ * e quais colunas vêm preenchidas?). Alimenta a cobertura do core. Metadados: não
+ * calcula indicador nenhum.
+ */
+interface PresenceFlags {
+  hasBalance: boolean;
+  hasDeclaredFixed: boolean;
+  entries: number;
+  settled: number;
+  counterparty: number;
+  category: number;
+  costType: number;
+}
+
+function presentFields(f: PresenceFlags): Set<CanonicalField> {
+  const present = new Set<CanonicalField>();
+  if (f.hasBalance) present.add('balance.observed');
+  if (f.hasDeclaredFixed) present.add('declared.fixedCost');
+  if (f.entries > 0) {
+    present.add('entry.kind');
+    present.add('entry.amount');
+    present.add('entry.issuedOn');
+    present.add('entry.dueOn');
+    if (f.settled > 0) present.add('entry.settledOn');
+    if (f.counterparty > 0) present.add('entry.counterparty');
+    if (f.category > 0) present.add('entry.category');
+    if (f.costType > 0) present.add('entry.costType');
+  }
+  return present;
+}
 
 /**
  * Leituras da área de operação. Só SELECT — nenhuma conta financeira aqui
@@ -31,6 +70,9 @@ export interface OverviewRow {
   daysSinceData: number | null;
   unopenedAlerts: number;
   chatQuestionsMonth: number;
+  /** Cobertura de dados: indicadores que conseguimos calcular por completo. */
+  coverageComplete: number;
+  coverageTotal: number;
 }
 
 /** Números do topo da operação (o negócio de uma olhada). */
@@ -72,9 +114,23 @@ const num = (rows: readonly Record<string, unknown>[], id: string, field: string
 export async function overview(sql: Sql): Promise<OverviewRow[]> {
   const companies = await sql`
     SELECT c.id::text AS id, c.name, c.phone, p.name AS plan_name, c.subscription_status,
-           c.chat_quota_monthly, p.chat_limit_monthly AS plan_limit, c.is_demo
+           c.chat_quota_monthly, p.chat_limit_monthly AS plan_limit, c.is_demo,
+           c.declared_fixed_cost_cents
     FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
     ORDER BY c.name`;
+
+  // presença de dado por empresa (para a cobertura): lançamentos e suas colunas
+  const entryFlags = await sql`
+    SELECT company_id::text AS id,
+           count(*)::int AS n,
+           count(*) FILTER (WHERE settled_on   IS NOT NULL)::int AS settled,
+           count(*) FILTER (WHERE counterparty IS NOT NULL)::int AS cp,
+           count(*) FILTER (WHERE category     IS NOT NULL)::int AS cat,
+           count(*) FILTER (WHERE cost_type    IS NOT NULL)::int AS cost
+    FROM entries GROUP BY company_id`;
+  const withBalance = new Set(
+    (await sql`SELECT DISTINCT company_id::text AS id FROM cash_balances`).map((r) => r.id as string),
+  );
 
   const lastImport = await sql`
     SELECT company_id::text AS id, max(imported_at) AS last_at
@@ -108,6 +164,20 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
     const lastMs = last ? new Date(last).getTime() : null;
     const lastDataAt = lastData.find((r) => r.id === id)?.last_at as Date | undefined;
     const lastDataMs = lastDataAt ? new Date(lastDataAt).getTime() : null;
+
+    const ef = entryFlags.find((r) => r.id === id);
+    const cov = coverageSummary(
+      presentFields({
+        hasBalance: withBalance.has(id),
+        hasDeclaredFixed: c.declared_fixed_cost_cents != null,
+        entries: (ef?.n as number) ?? 0,
+        settled: (ef?.settled as number) ?? 0,
+        counterparty: (ef?.cp as number) ?? 0,
+        category: (ef?.cat as number) ?? 0,
+        costType: (ef?.cost as number) ?? 0,
+      }),
+    ).indicators;
+
     return {
       companyId: id,
       name: c.name as string,
@@ -123,6 +193,8 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
       daysSinceData: lastDataMs == null ? null : Math.floor((now - lastDataMs) / 86_400_000),
       unopenedAlerts: num(unopened, id, 'n'),
       chatQuestionsMonth: num(chat, id, 'n'),
+      coverageComplete: cov.complete,
+      coverageTotal: cov.total,
     };
   });
 
@@ -198,6 +270,48 @@ export async function companyDossier(sql: Sql, companyId: string) {
       AND (created_at AT TIME ZONE ${SP}) >= date_trunc('month', (now() AT TIME ZONE ${SP}))
     GROUP BY kind, model`;
 
+  // Cobertura de dados: "o que conseguimos calcular" com o que a empresa enviou.
+  const [entryFlags] = await sql`
+    SELECT count(*)::int AS n,
+           count(*) FILTER (WHERE settled_on   IS NOT NULL)::int AS settled,
+           count(*) FILTER (WHERE counterparty IS NOT NULL)::int AS cp,
+           count(*) FILTER (WHERE category     IS NOT NULL)::int AS cat,
+           count(*) FILTER (WHERE cost_type    IS NOT NULL)::int AS cost
+    FROM entries WHERE company_id = ${companyId}`;
+  const present = presentFields({
+    hasBalance: cashInputs.length > 0,
+    hasDeclaredFixed: company.declared_fixed_cost_cents != null,
+    entries: (entryFlags?.n as number) ?? 0,
+    settled: (entryFlags?.settled as number) ?? 0,
+    counterparty: (entryFlags?.cp as number) ?? 0,
+    category: (entryFlags?.cat as number) ?? 0,
+    costType: (entryFlags?.cost as number) ?? 0,
+  });
+  const covItems = coverageFor(present).filter((c) => c.kind === 'indicator');
+  const covSummary = coverageSummary(present).indicators;
+  const coverage = {
+    complete: covSummary.complete,
+    partial: covSummary.partial,
+    blocked: covSummary.blocked,
+    total: covSummary.total,
+    // o que falta, em linguagem clara e sem repetir campo
+    missing: [
+      ...new Set(
+        covItems
+          .filter((c) => c.status !== 'complete')
+          .flatMap((c) => c.missingRequired.map((f) => CANONICAL_FIELDS[f].label)),
+      ),
+    ],
+    // detalhe por indicador que ainda não fecha
+    items: covItems
+      .filter((c) => c.status !== 'complete')
+      .map((c) => ({
+        question: c.question,
+        status: c.status,
+        missing: c.missingRequired.map((f) => CANONICAL_FIELDS[f].label),
+      })),
+  };
+
   // "Números do negócio": lê os indicadores JÁ calculados do último snapshot
   // (valores em CENTAVOS — o app formata em R$; nada é calculado aqui).
   const payload = (snapshot?.payload ?? {}) as Record<string, { value?: unknown } | undefined>;
@@ -226,6 +340,7 @@ export async function companyDossier(sql: Sql, companyId: string) {
       createdAt: company.created_at as Date,
     },
     businessNumbers,
+    coverage,
     chatUsedMonth: (chatUsed?.n as number) ?? 0,
     snapshot: snapshot
       ? {

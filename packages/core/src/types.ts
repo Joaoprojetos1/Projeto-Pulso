@@ -82,6 +82,12 @@ export interface Indicator<T = number> {
   window?: { from: IsoDate; to: IsoDate };
   /** Preenchido quando value é null: por que não deu pra calcular. */
   insufficientReason?: string;
+  /**
+   * Degradação elegante (ADITIVO): quando `value` é null, quais campos canônicos
+   * faltaram e quais fontes os forneceriam. Reaproveita `requirements.ts`.
+   * É metadado de coleta: NÃO afeta o cálculo nem o critério de suficiência.
+   */
+  missing?: { fields: string[]; sources: string[] };
 }
 
 export type IndicatorSet = Record<string, Indicator<any>>;
