@@ -7,6 +7,7 @@
 
 import { addDays, daysBetween } from './dates';
 import { fusePlannedIntoProjection } from './planned';
+import { computeSegmentIndicators } from './segments';
 import { explainNeed } from './sources';
 import type {
   Cents,
@@ -598,6 +599,11 @@ export function computeAll(snap: CompanySnapshot): IndicatorSet {
       ind.missing = explainNeed(key);
     }
   }
+
+  // Composição do SEGMENTO (ADITIVO): núcleo + pacote do segmento da empresa.
+  // Empresa sem segmento conhecido (`niche`) → `{}`, e nada muda no núcleo. Os
+  // indicadores de segmento já trazem o próprio `missing` (números do mês).
+  Object.assign(set, computeSegmentIndicators(snap));
 
   return set;
 }

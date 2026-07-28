@@ -54,6 +54,22 @@ export interface PlannedEntry {
   category?: string;
 }
 
+/**
+ * Um número operacional do mês, que NÃO é lançamento (glosa, CMV, estoque,
+ * atendimentos, horas de agenda). É o insumo dos indicadores de SEGMENTO.
+ *
+ * ADITIVO e genérico de propósito: uma categoria (`field`, slug do campo do
+ * segmento) + um valor inteiro. `value` é centavos, contagem OU horas inteiras,
+ * conforme a `unit` que o campo declara no pacote do segmento (ver
+ * `segments/`). Nunca uma coluna por métrica — assim o schema não incha a cada
+ * segmento novo. O core não sabe de onde o número veio (o dono digita).
+ */
+export interface MonthlyOperation {
+  month: string; // mês de referência 'YYYY-MM'
+  field: string; // slug do campo do segmento (ex.: 'convenio_glosas')
+  value: number; // inteiro: centavos, contagem ou horas — conforme o campo
+}
+
 /** Tudo que o core precisa saber sobre uma empresa. */
 export interface CompanySnapshot {
   asOf: IsoDate;
@@ -63,6 +79,13 @@ export interface CompanySnapshot {
   planned?: PlannedEntry[];
   /** Custo fixo declarado no onboarding, quando não dá pra inferir dos lançamentos. */
   declaredFixedCostCents?: Cents;
+  /**
+   * Segmento da empresa (o `niche`). Seleciona o pacote de indicadores/regras
+   * de segmento em `computeAll`. Ausente ou desconhecido = só o núcleo universal.
+   */
+  niche?: string;
+  /** Números operacionais do mês — insumo dos indicadores de segmento. */
+  monthlyOps?: MonthlyOperation[];
 }
 
 /**
@@ -75,7 +98,9 @@ export interface CompanySnapshot {
 export interface Indicator<T = number> {
   key: string;
   value: T | null; // null = não há dado suficiente. NUNCA chutar.
-  unit: 'cents' | 'days' | 'ratio' | 'date' | 'count';
+  // 'times' (ADITIVO, para segmentos): um múltiplo por ano, ex. giro de estoque
+  // "4x". Não é percentual — o formatador não deve multiplicar por 100.
+  unit: 'cents' | 'days' | 'ratio' | 'date' | 'count' | 'times';
   /** Os números crus que entraram na conta. Auditoria. */
   inputs: Record<string, number | string | null>;
   /** Janela considerada, quando aplicável. */

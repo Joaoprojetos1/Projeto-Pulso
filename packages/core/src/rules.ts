@@ -150,9 +150,18 @@ export const RULES: Rule[] = [
   concentrationRule,
 ];
 
-/** Avalia tudo. Ordena por severidade: o dono vê o pior primeiro. */
-export function evaluate(ind: IndicatorSet): AlertFact[] {
-  const fired = RULES.map((r) => r(ind)).filter((f): f is AlertFact => f !== null);
+/**
+ * Avalia tudo. Ordena por severidade: o dono vê o pior primeiro.
+ *
+ * `segmentRules` (ADITIVO): as regras do pacote do segmento da empresa. Entram
+ * no mesmo julgamento — inclusive contam para o `all_clear` (só há "tudo bem"
+ * quando NENHUMA regra, universal ou de segmento, disparou). Passar `[]` (o
+ * padrão) reproduz exatamente o comportamento anterior.
+ */
+export function evaluate(ind: IndicatorSet, segmentRules: Rule[] = []): AlertFact[] {
+  const fired = [...RULES, ...segmentRules]
+    .map((r) => r(ind))
+    .filter((f): f is AlertFact => f !== null);
 
   const clear = allClearRule(ind, fired);
   if (clear) return [clear];

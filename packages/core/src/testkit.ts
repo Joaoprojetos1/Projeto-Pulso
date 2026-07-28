@@ -4,7 +4,7 @@
  * ficarem legíveis — só o que importa em cada caso aparece no teste.
  */
 
-import type { CashBalance, CompanySnapshot, Entry, PlannedEntry } from './types';
+import type { CashBalance, CompanySnapshot, Entry, MonthlyOperation, PlannedEntry } from './types';
 
 let seq = 0;
 
@@ -48,6 +48,11 @@ export function balance(observedOn: string, balanceCents: number): CashBalance {
   return { observedOn, balanceCents };
 }
 
+/** Número operacional do mês (insumo de segmento). */
+export function op(month: string, field: string, value: number): MonthlyOperation {
+  return { month, field, value };
+}
+
 export function snapshot(
   over: Partial<CompanySnapshot> & Pick<CompanySnapshot, 'asOf'>,
 ): CompanySnapshot {
@@ -57,5 +62,7 @@ export function snapshot(
     balances: over.balances ?? [],
     planned: over.planned ?? [],
     declaredFixedCostCents: over.declaredFixedCostCents,
+    niche: over.niche,
+    monthlyOps: over.monthlyOps,
   };
 }
