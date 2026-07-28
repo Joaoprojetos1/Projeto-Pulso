@@ -242,6 +242,25 @@ export default function Conta() {
           </Pressable>
         )}
 
+        {/* grupo: gestão do mês (segmento) — números do mês + diagnóstico */}
+        {!demo && (
+          <View style={styles.grupo}>
+            <Linha
+              icon="stats-chart-outline"
+              label="Números do mês"
+              sub="Informe os números do seu ramo e veja os indicadores do segmento"
+              onPress={() => router.push('/numeros-do-mes' as Href)}
+            />
+            <Linha
+              icon="clipboard-outline"
+              label="Diagnóstico de gestão"
+              sub="15 perguntas rápidas sobre a sua gestão"
+              onPress={() => router.push('/questionario' as Href)}
+              ultimo
+            />
+          </View>
+        )}
+
         {/* grupo: avisos, segurança, privacidade */}
         <View style={styles.grupo}>
           <Linha icon="notifications-outline" label="Avisos no WhatsApp" sub="Em breve" />

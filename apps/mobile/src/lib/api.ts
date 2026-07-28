@@ -356,6 +356,121 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Números do mês (indicadores de segmento) --------------- */
+
+export type OpsUnit = 'cents' | 'count' | 'hours';
+
+export interface SegmentFieldJson {
+  slug: string;
+  label: string;
+  description: string;
+  unit: OpsUnit;
+  pointInTime?: boolean;
+}
+
+export interface SegmentCoverageJson {
+  key: string;
+  question: string;
+  status: 'complete' | 'blocked';
+  missing: string[];
+}
+
+export interface OperationsJson {
+  /** Segmento da empresa (null = ainda sem segmento definido). */
+  segment: string | null;
+  segmentLabel: string | null;
+  /** Definição do formulário: os campos que este segmento pede. */
+  fields: SegmentFieldJson[];
+  /** Meses já preenchidos, do mais recente ao mais antigo. */
+  months: { month: string; values: Record<string, number> }[];
+  coverage: SegmentCoverageJson[];
+}
+
+/** Lê os números do mês do dono logado + a definição dos campos do segmento. */
+export async function fetchMyOperations(token: string): Promise<OperationsJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/operations`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos números do mês`);
+  return (await res.json()) as OperationsJson;
+}
+
+/**
+ * Grava os números de um mês e manda o motor recalcular. O app só envia os
+ * valores (centavos para dinheiro, contagem/horas inteiras conforme o campo);
+ * o servidor roda o core e devolve o painel já atualizado.
+ */
+export async function saveMyOperations(
+  token: string,
+  month: string,
+  values: Record<string, number>,
+): Promise<OperationsJson & { dashboard: DashboardJson | null }> {
+  const res = await fetchWithWake(`${apiBase()}/me/operations`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ month, values }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar os números do mês`);
+  return (await res.json()) as OperationsJson & { dashboard: DashboardJson | null };
+}
+
+/* --------------- Diagnóstico de gestão (questionário) --------------- */
+
+export type SurveyAnswerValue = 'sim' | 'parcial' | 'nao';
+
+export interface SurveyQuestionJson {
+  id: string;
+  block: string;
+  text: string;
+}
+
+export interface SurveyBlockScoreJson {
+  block: string;
+  label: string;
+  score: number | null; // 0-100
+  answered: number;
+  total: number;
+}
+
+export interface SurveyResultJson {
+  overall: number | null; // 0-100
+  answeredCount: number;
+  totalQuestions: number;
+  blocks: SurveyBlockScoreJson[];
+  weakest: { block: string; label: string; score: number; focus: string }[];
+  weakestGaps: { block: string; questionId: string; text: string }[];
+  answeredOn: string | null;
+}
+
+export interface SurveyJson {
+  questions: SurveyQuestionJson[];
+  blocks: { block: string; label: string; focus: string }[];
+  answers: Record<string, SurveyAnswerValue>;
+  result: SurveyResultJson;
+  devolutiva: string;
+}
+
+export async function fetchMySurvey(token: string): Promise<SurveyJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/survey`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no questionário`);
+  return (await res.json()) as SurveyJson;
+}
+
+export async function saveMySurvey(
+  token: string,
+  answers: Record<string, SurveyAnswerValue>,
+): Promise<SurveyJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/survey`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ answers }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar o questionário`);
+  return (await res.json()) as SurveyJson;
+}
+
 /* --------------- Foto do avatar --------------- */
 
 /** Foto atual do negócio como data URI, ou null (usa as iniciais). */
