@@ -46,8 +46,14 @@ export function registerAdmin(
   app.get('/admin/overview', async (req, reply) => {
     const admin = await gate(req, reply);
     if (!admin) return reply;
-    const [companies, summary] = await Promise.all([overview(sql), operationSummary(sql)]);
-    return { companies, summary };
+    const [companies, summary, segmentRows] = await Promise.all([
+      overview(sql),
+      operationSummary(sql),
+      // contagem de empresas por segmento (item 7 — visão geral)
+      sql`SELECT niche, count(*)::int AS count FROM companies GROUP BY niche ORDER BY count DESC`,
+    ]);
+    const segments = segmentRows.map((r) => ({ niche: r.niche as string, count: r.count as number }));
+    return { companies, summary, segments };
   });
 
   app.get<{ Params: { id: string } }>(
@@ -108,7 +114,7 @@ export function registerAdmin(
 
   app.patch<{
     Params: { id: string };
-    Body: { name?: string; phone?: string; chatQuota?: number; planId?: string; subscriptionStatus?: string };
+    Body: { name?: string; phone?: string; chatQuota?: number; planId?: string; subscriptionStatus?: string; niche?: string };
   }>(
     '/admin/companies/:id',
     {
@@ -123,6 +129,8 @@ export function registerAdmin(
             chatQuota: { type: 'integer', minimum: 0, maximum: 100000 },
             planId: { type: 'string', minLength: 1, maxLength: 40 },
             subscriptionStatus: { enum: ['pendente', 'ativa', 'cancelada'] },
+            // trocar o SEGMENTO muda os indicadores calculados (o front avisa disso)
+            niche: { enum: ['clinica', 'varejo', 'restaurante'] },
           },
         },
       },
@@ -131,13 +139,14 @@ export function registerAdmin(
       const admin = await gate(req, reply);
       if (!admin) return reply;
 
-      const { name, phone, chatQuota, planId, subscriptionStatus } = req.body;
+      const { name, phone, chatQuota, planId, subscriptionStatus, niche } = req.body;
       if (
         name === undefined &&
         phone === undefined &&
         chatQuota === undefined &&
         planId === undefined &&
-        subscriptionStatus === undefined
+        subscriptionStatus === undefined &&
+        niche === undefined
       ) {
         return reply.code(400).send({ error: 'Nada para atualizar.' });
       }
@@ -162,12 +171,31 @@ export function registerAdmin(
           phone               = COALESCE(${phoneDigits}, phone),
           chat_quota_monthly  = COALESCE(${chatQuota ?? null}, chat_quota_monthly),
           plan_id             = COALESCE(${planId ?? null}, plan_id),
-          subscription_status = COALESCE(${subscriptionStatus ?? null}, subscription_status)
+          subscription_status = COALESCE(${subscriptionStatus ?? null}, subscription_status),
+          niche               = COALESCE(${niche ?? null}, niche)
         WHERE id = ${req.params.id}
-        RETURNING id::text AS id, name, phone, plan_id, subscription_status, chat_quota_monthly`;
+        RETURNING id::text AS id, name, phone, plan_id, subscription_status, chat_quota_monthly, niche`;
       if (!updated) return notFound(reply);
 
       await recordAudit(sql, admin.userId, 'company.update', { type: 'company', id: req.params.id }, req.body);
+
+      // trocar o segmento muda os indicadores: recalcula o último dia (best-effort).
+      if (niche !== undefined) {
+        const company = await findCompany(sql, req.params.id);
+        if (company) {
+          const [last] = await sql`
+            SELECT as_of::text AS as_of FROM indicator_snapshots
+            WHERE company_id = ${req.params.id} ORDER BY as_of DESC LIMIT 1`;
+          if (last) {
+            try {
+              await computeAndStore(sql, company, last.as_of as string, alertWriter, pushSender, app.log);
+            } catch (err) {
+              app.log.error({ err }, 'falha ao recalcular após troca de segmento');
+            }
+          }
+        }
+      }
+
       return {
         id: updated.id,
         name: updated.name,
@@ -175,6 +203,7 @@ export function registerAdmin(
         planId: updated.plan_id,
         subscriptionStatus: updated.subscription_status,
         chatQuota: updated.chat_quota_monthly,
+        niche: updated.niche,
       };
     },
   );

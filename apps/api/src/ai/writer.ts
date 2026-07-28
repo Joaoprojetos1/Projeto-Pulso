@@ -55,6 +55,22 @@ const GLOSSARIO: Record<string, string> = {
   concentration:
     'Um único cliente (`topCustomer`) concentra `topCustomerShare` do faturamento.',
   all_clear: 'Nenhuma regra disparou. Semana tranquila — mensagem breve e leve, sem alarme.',
+  // Segmento: clínica
+  clinica_glosa_alta:
+    'Os convênios glosaram `glosaRate` do faturamento bruto de convênio no mês — dinheiro faturado que não entra.',
+  clinica_ocupacao_baixa:
+    'A agenda ficou ociosa: só `ocupacao` das horas disponíveis foram ocupadas no mês.',
+  clinica_convenio_prazo_piorando:
+    'O prazo de recebimento dos convênios (`pmrConvenioDays` dias) piorou contra a própria média (`mediaPropriaDias`).',
+  // Segmento: varejo de roupa
+  varejo_giro_baixo: 'O estoque gira só `giro` vezes por ano — muito capital parado em mercadoria.',
+  varejo_margem_baixa: 'A margem bruta (`margemBruta`) está abaixo do saudável para o varejo de roupa.',
+  varejo_devolucoes_altas: 'As devoluções (`devolucoes` da receita bruta) estão altas no mês.',
+  // Segmento: restaurante
+  restaurante_cmv_alto: 'O custo dos insumos (`cmv` da receita) está alto — a comida está comendo a margem.',
+  restaurante_marketplace_caro: 'A taxa efetiva dos apps de delivery (`taxaEfetiva`) está corroendo o delivery.',
+  restaurante_dependencia_delivery:
+    'O delivery já é `deliveryShare` da receita E a margem operacional está caindo (`margemOperacional` vs `margemMesAnterior`).',
 };
 
 const SYSTEM_PROMPT = `Você é a voz do Pulso, o assistente financeiro de pequenas empresas brasileiras. Você escreve avisos curtos para o DONO de um pequeno negócio — não para um CFO.

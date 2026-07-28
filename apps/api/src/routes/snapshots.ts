@@ -1,4 +1,4 @@
-import { addDays, computeAll, CORE_VERSION, diagnose, evaluate, projectCash } from '@pulso/core';
+import { addDays, computeAll, CORE_VERSION, diagnose, evaluate, projectCash, segmentRules } from '@pulso/core';
 import type { CashProjection, CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
@@ -47,6 +47,12 @@ export async function loadCompanySnapshot(
     FROM planned_entries
     WHERE company_id = ${company.id} AND status = 'prevista'`;
 
+  // Números do mês (insumo dos indicadores de SEGMENTO). O core compõe núcleo +
+  // pacote do segmento a partir do `niche` e destes `monthlyOps`.
+  const opsRows = await sql`
+    SELECT to_char(ref_month, 'YYYY-MM') AS month, field, value_num
+    FROM monthly_operations WHERE company_id = ${company.id}`;
+
   return {
     asOf,
     entries: entryRows.map((r) => ({
@@ -76,6 +82,12 @@ export async function loadCompanySnapshot(
       category: (r.category as string | null) ?? undefined,
     })),
     declaredFixedCostCents: company.declared_fixed_cost_cents ?? undefined,
+    niche: company.niche,
+    monthlyOps: opsRows.map((r) => ({
+      month: r.month as string,
+      field: r.field as string,
+      value: Number(r.value_num),
+    })),
   };
 }
 
@@ -287,7 +299,8 @@ export async function computeAndStore(
 
   const snap = await loadCompanySnapshot(sql, company, asOf);
       const indicators = computeAll(snap);
-      const alerts = evaluate(indicators);
+      // as regras do SEGMENTO da empresa entram no mesmo julgamento (e no all_clear)
+      const alerts = evaluate(indicators, segmentRules(company.niche));
 
       // diagnóstico do momento: o core julga a partir dos indicadores + o
       // histórico dos snapshots anteriores (resumido pela API).
