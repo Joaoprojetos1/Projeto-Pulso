@@ -9,7 +9,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -38,8 +38,10 @@ import {
   type SubscriptionStatus,
   type SurveyJson,
 } from '@/lib/api';
+import { RelatorioMensalCard, type RelatorioMensalHandle } from '@/components/relatorio-mensal';
 import { brl, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
+import { relatorioFromDossier } from '@/lib/relatorio';
 import { colors, fonts, severityColor, space, type Severity } from '@/theme';
 
 /** Segmentos disponíveis (o backend valida o mesmo conjunto). */
@@ -103,6 +105,7 @@ export default function EmpresaDossie() {
   const [excluirNome, setExcluirNome] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const relatorioRef = useRef<RelatorioMensalHandle>(null);
 
   const carregar = useCallback(async () => {
     if (!token || !id) return;
@@ -278,6 +281,17 @@ export default function EmpresaDossie() {
               </Text>
             </View>
           </View>
+
+          {/* relatório do mês — o admin gera para qualquer empresa */}
+          {d.snapshot && (
+            <Pressable
+              onPress={() => relatorioRef.current?.gerar()}
+              style={({ pressed }) => [styles.relatorioBtn, pressed && styles.pressionado]}
+            >
+              <Ionicons name="download-outline" size={16} color={colors.branco} />
+              <Text style={styles.relatorioTexto}>Baixar relatório do mês</Text>
+            </Pressable>
+          )}
 
           {/* números do negócio — em R$, rótulos claros */}
           <View style={styles.cartao}>
@@ -611,6 +625,9 @@ export default function EmpresaDossie() {
               </Pressable>
             )}
           </View>
+
+          {/* relatório do mês (fora da tela) — capturado ao tocar no botão acima */}
+          <RelatorioMensalCard ref={relatorioRef} data={relatorioFromDossier(d, ops, survey)} />
         </ScrollView>
       )}
     </SafeAreaView>
@@ -731,6 +748,8 @@ const styles = StyleSheet.create({
   gestaoDe: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
   gestaoResp: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
   gestaoFraco: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.tinta, marginTop: 4 },
+  relatorioBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.mata, borderRadius: 12, paddingVertical: 12 },
+  relatorioTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.branco },
 
   alerta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   alertaPonto: { width: 8, height: 8, borderRadius: 4 },

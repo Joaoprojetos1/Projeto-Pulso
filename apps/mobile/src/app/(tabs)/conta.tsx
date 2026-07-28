@@ -12,7 +12,9 @@ import { Alert, Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Swi
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EnviarContadorCard, type EnviarContadorHandle } from '@/components/enviar-contador';
-import { fetchMyAvatar, fetchMySubscription, removeMyAvatar, saveMyAvatar, type CashProjectionPoint, type MySubscription } from '@/lib/api';
+import { RelatorioMensalCard, type RelatorioMensalHandle } from '@/components/relatorio-mensal';
+import { fetchMyAvatar, fetchMyOperations, fetchMySubscription, fetchMySurvey, removeMyAvatar, saveMyAvatar, type CashProjectionPoint, type MySubscription, type OperationsJson, type SurveyJson } from '@/lib/api';
+import { relatorioFromDashboard } from '@/lib/relatorio';
 import { autenticar, biometriaDisponivel, biometriaLigada, definirBiometria } from '@/lib/biometria';
 import { escolherDaGaleria, tirarFoto, type FotoComprimida } from '@/lib/foto-avatar';
 import { dataBR } from '@/lib/format';
@@ -51,7 +53,10 @@ export default function Conta() {
   const [bioLigada, setBioLigada] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [subindoFoto, setSubindoFoto] = useState(false);
+  const [ops, setOps] = useState<OperationsJson | null>(null);
+  const [survey, setSurvey] = useState<SurveyJson | null>(null);
   const contadorRef = useRef<EnviarContadorHandle>(null);
+  const relatorioRef = useRef<RelatorioMensalHandle>(null);
   const demo = fonte === 'demo';
   const nome = dashboard?.company.name ?? '·';
   const podeEditarFoto = !demo && Platform.OS !== 'web';
@@ -79,6 +84,9 @@ export default function Conta() {
         demo,
       }
     : null;
+
+  // dados do relatório mensal (documento por segmento para baixar/apresentar)
+  const relatorioData = dashboard ? relatorioFromDashboard(dashboard, ops, survey, demo) : null;
 
   useEffect(() => {
     if (!token) return;
@@ -109,6 +117,15 @@ export default function Conta() {
     fetchMyAvatar(token)
       .then((uri) => { if (vivo) setAvatarUri(uri); })
       .catch(() => { /* silencioso: cai nas iniciais */ });
+    return () => { vivo = false; };
+  }, [token]);
+
+  // números do mês + questionário, para o relatório mensal (best-effort)
+  useEffect(() => {
+    if (!token) return;
+    let vivo = true;
+    fetchMyOperations(token).then((o) => { if (vivo) setOps(o); }).catch(() => {});
+    fetchMySurvey(token).then((s) => { if (vivo) setSurvey(s); }).catch(() => {});
     return () => { vivo = false; };
   }, [token]);
 
@@ -290,6 +307,14 @@ export default function Conta() {
 
         {/* grupo: contador + ajuda */}
         <View style={styles.grupo}>
+          {relatorioData && (
+            <Linha
+              icon="download-outline"
+              label="Baixar relatório do mês"
+              sub="Documento com marca, indicadores e a leitura do Pulso — para salvar ou apresentar"
+              onPress={() => relatorioRef.current?.gerar()}
+            />
+          )}
           {resumoContador && (
             <Linha
               icon="document-text-outline"
@@ -319,6 +344,8 @@ export default function Conta() {
 
         {/* cartão do resumo (fora da tela) — capturado ao tocar em "Resumo para o contador" */}
         {resumoContador && <EnviarContadorCard ref={contadorRef} resumo={resumoContador} />}
+        {/* relatório do mês (fora da tela) — capturado ao tocar em "Baixar relatório do mês" */}
+        {relatorioData && <RelatorioMensalCard ref={relatorioRef} data={relatorioData} />}
       </ScrollView>
     </SafeAreaView>
   );
