@@ -32,6 +32,10 @@ const PARADO = 10; // dias sem dado a partir dos quais a bolinha fica amarela
 
 type Filtro = 'todos' | 'assinantes' | 'pendentes' | 'sem_dados';
 
+const SEGMENT_LABEL: Record<string, string> = {
+  clinica: 'Clínica', varejo: 'Varejo', restaurante: 'Restaurante',
+};
+
 export default function Operacao() {
   const { token, ehAdmin } = usePulso();
   const { width } = useWindowDimensions();
@@ -39,6 +43,7 @@ export default function Operacao() {
 
   const [linhas, setLinhas] = useState<AdminOverviewRow[] | null>(null);
   const [resumo, setResumo] = useState<AdminSummary | null>(null);
+  const [segmentos, setSegmentos] = useState<{ niche: string; count: number }[]>([]);
   const [erro, setErro] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
   const [busca, setBusca] = useState('');
@@ -48,9 +53,10 @@ export default function Operacao() {
     if (!token) return;
     setErro(false);
     try {
-      const { companies, summary } = await fetchAdminOverview(token);
+      const { companies, summary, segments } = await fetchAdminOverview(token);
       setLinhas(companies);
       setResumo(summary);
+      setSegmentos(segments ?? []);
     } catch {
       setErro(true);
     }
@@ -164,6 +170,21 @@ export default function Operacao() {
               trackColor={{ false: colors.linha, true: colors.alerta }}
               thumbColor={colors.branco}
             />
+          </View>
+        )}
+
+        {/* contagem de empresas por segmento */}
+        {segmentos.length > 0 && (
+          <View style={styles.segCard}>
+            <Text style={styles.segTitulo}>EMPRESAS POR SEGMENTO</Text>
+            <View style={styles.segLinha}>
+              {segmentos.map((s) => (
+                <View key={s.niche} style={styles.segItem}>
+                  <Text style={styles.segNum}>{s.count}</Text>
+                  <Text style={styles.segRotulo}>{SEGMENT_LABEL[s.niche] ?? s.niche}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
@@ -359,6 +380,13 @@ const styles = StyleSheet.create({
   testeMiolo: { flex: 1, gap: 2 },
   testeTitulo: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.tinta },
   testeSub: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
+
+  segCard: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, padding: 14, marginBottom: space.group, gap: space.tight },
+  segTitulo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.cinza },
+  segLinha: { flexDirection: 'row', justifyContent: 'space-around' },
+  segItem: { alignItems: 'center', gap: 2 },
+  segNum: { fontFamily: fonts.display, fontSize: 24, color: colors.tinta, fontVariant: ['tabular-nums'] },
+  segRotulo: { fontFamily: fonts.corpo, fontSize: 12, color: colors.cinza },
 
   atalhos: { flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' },
   atalho: {

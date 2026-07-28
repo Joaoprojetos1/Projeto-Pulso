@@ -819,6 +819,8 @@ export function setAdminTestMode(token: string, enabled: boolean): Promise<{ sub
 export interface AdminOverview {
   companies: AdminOverviewRow[];
   summary: AdminSummary;
+  /** Contagem de empresas por segmento (item 7). */
+  segments?: { niche: string; count: number }[];
 }
 
 export function fetchAdminOverview(token: string): Promise<AdminOverview> {
@@ -904,14 +906,26 @@ export interface PatchEmpresa {
   chatQuota?: number;
   planId?: string;
   subscriptionStatus?: SubscriptionStatus;
+  /** Trocar o segmento muda os indicadores calculados (o servidor recalcula). */
+  niche?: string;
 }
 
 export function patchAdminCompany(
   token: string,
   id: string,
   patch: PatchEmpresa,
-): Promise<{ id: string; name: string; phone: string | null; planId: string | null; subscriptionStatus: SubscriptionStatus; chatQuota: number }> {
+): Promise<{ id: string; name: string; phone: string | null; planId: string | null; subscriptionStatus: SubscriptionStatus; chatQuota: number; niche: string }> {
   return adminWrite(token, 'PATCH', `/admin/companies/${id}`, patch);
+}
+
+/** Números do mês (segmento) de uma empresa — para o admin ver. */
+export function fetchAdminCompanyOperations(token: string, id: string): Promise<OperationsJson> {
+  return adminGet<OperationsJson>(token, `/admin/companies/${id}/operations`);
+}
+
+/** Diagnóstico de gestão de uma empresa — para o admin ver. */
+export function fetchAdminCompanySurvey(token: string, id: string): Promise<SurveyJson> {
+  return adminGet<SurveyJson>(token, `/admin/companies/${id}/survey`);
 }
 
 /** Excluir cadastro: exige o nome exato como confirmação. Remove tudo (auditado). */

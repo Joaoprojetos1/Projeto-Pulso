@@ -25,17 +25,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   deleteAdminCompany,
   fetchAdminCompany,
+  fetchAdminCompanyOperations,
+  fetchAdminCompanySurvey,
   fetchAdminPlans,
   patchAdminCompany,
   reprocessAdminCompany,
   resetSenhaUsuario,
   type AdminDossier,
   type AdminPlan,
+  type OperationsJson,
+  type SegmentFieldJson,
   type SubscriptionStatus,
+  type SurveyJson,
 } from '@/lib/api';
 import { brl, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, severityColor, space, type Severity } from '@/theme';
+
+/** Segmentos disponíveis (o backend valida o mesmo conjunto). */
+const SEGMENTOS: { id: string; label: string }[] = [
+  { id: 'clinica', label: 'Clínica' },
+  { id: 'varejo', label: 'Varejo de roupa' },
+  { id: 'restaurante', label: 'Restaurante' },
+];
+const SEGMENT_LABEL: Record<string, string> = Object.fromEntries(SEGMENTOS.map((s) => [s.id, s.label]));
+
+/** Formata o valor de um número do mês conforme a unidade do campo. */
+function formatOp(field: SegmentFieldJson | undefined, value: number): string {
+  if (!field) return String(value);
+  if (field.unit === 'cents') return brl(value);
+  if (field.unit === 'hours') return `${value} h`;
+  return String(value);
+}
 
 // título claro para cada regra (nunca a chave técnica na tela)
 const TITULO_ALERTA: Record<string, string> = {
@@ -73,7 +94,10 @@ export default function EmpresaDossie() {
   const [telefone, setTelefone] = useState('');
   const [planoId, setPlanoId] = useState<string | null>(null);
   const [statusAss, setStatusAss] = useState<SubscriptionStatus>('pendente');
+  const [niche, setNiche] = useState<string | null>(null);
   const [planos, setPlanos] = useState<AdminPlan[]>([]);
+  const [ops, setOps] = useState<OperationsJson | null>(null);
+  const [survey, setSurvey] = useState<SurveyJson | null>(null);
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [detalhesIa, setDetalhesIa] = useState(false);
   const [excluirNome, setExcluirNome] = useState('');
@@ -90,6 +114,7 @@ export default function EmpresaDossie() {
       setTelefone(dossie.company.phone ? mascaraTel(dossie.company.phone) : '');
       setPlanoId(dossie.company.planId);
       setStatusAss(dossie.company.subscriptionStatus);
+      setNiche(dossie.company.niche);
     } catch {
       setErro(true);
     }
@@ -98,6 +123,17 @@ export default function EmpresaDossie() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  // números do mês + diagnóstico de gestão do segmento (best-effort, à parte)
+  const carregarSegmento = useCallback(async () => {
+    if (!token || !id) return;
+    fetchAdminCompanyOperations(token, id).then(setOps).catch(() => {});
+    fetchAdminCompanySurvey(token, id).then(setSurvey).catch(() => {});
+  }, [token, id]);
+
+  useEffect(() => {
+    void carregarSegmento();
+  }, [carregarSegmento]);
 
   useEffect(() => {
     if (token) fetchAdminPlans(token).then(setPlanos).catch(() => {});
@@ -110,20 +146,23 @@ export default function EmpresaDossie() {
     try {
       const q = quota.trim() === '' ? undefined : Number(quota);
       const tel = telefone.replace(/\D/g, '');
+      const trocouSegmento = niche != null && niche !== d?.company.niche;
       await patchAdminCompany(token, id, {
         chatQuota: q !== undefined && Number.isFinite(q) ? q : undefined,
         planId: planoId ?? undefined,
         subscriptionStatus: statusAss,
         phone: tel.length >= 10 ? tel : undefined,
+        niche: trocouSegmento ? niche : undefined,
       });
-      setMsg('Alterações salvas.');
+      setMsg(trocouSegmento ? 'Alterações salvas. Segmento trocado e números recalculados.' : 'Alterações salvas.');
       await carregar();
+      await carregarSegmento();
     } catch {
       setMsg('Não consegui salvar.');
     } finally {
       setOcupado(false);
     }
-  }, [token, id, quota, telefone, planoId, statusAss, carregar]);
+  }, [token, id, quota, telefone, planoId, statusAss, niche, d, carregar, carregarSegmento]);
 
   const reprocessar = useCallback(async () => {
     if (!token || !id) return;
@@ -288,6 +327,53 @@ export default function EmpresaDossie() {
             )}
           </View>
 
+          {/* números do mês (segmento) enviados */}
+          <View style={styles.cartao}>
+            <Rotulo texto={`NÚMEROS DO MÊS · ${SEGMENT_LABEL[d.company.niche] ?? d.company.niche}`} />
+            {ops && ops.months.length > 0 ? (
+              <>
+                <Text style={styles.atualizado}>Mês mais recente: {ops.months[0]!.month}</Text>
+                {ops.fields
+                  .filter((f) => ops.months[0]!.values[f.slug] != null)
+                  .map((f) => (
+                    <View key={f.slug} style={styles.kv}>
+                      <Text style={styles.kvChave} numberOfLines={1}>{f.label}</Text>
+                      <Text style={styles.numeroValor}>{formatOp(f, ops.months[0]!.values[f.slug]!)}</Text>
+                    </View>
+                  ))}
+                <Text style={styles.segCobertura}>
+                  {ops.coverage.filter((c) => c.status === 'complete').length} de {ops.coverage.length} indicadores do segmento completos
+                  {ops.months.length > 1 ? ` · ${ops.months.length} meses preenchidos` : ''}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.vazioTexto}>Nenhum número do mês enviado ainda.</Text>
+            )}
+          </View>
+
+          {/* diagnóstico de gestão (questionário) */}
+          <View style={styles.cartao}>
+            <Rotulo texto="DIAGNÓSTICO DE GESTÃO" />
+            {survey && survey.result.overall != null ? (
+              <>
+                <View style={styles.gestaoTopo}>
+                  <Text style={styles.gestaoNota}>{survey.result.overall}<Text style={styles.gestaoDe}> / 100</Text></Text>
+                  <Text style={styles.gestaoResp}>{survey.result.answeredCount} de {survey.result.totalQuestions} respondidas</Text>
+                </View>
+                {survey.result.weakest.length > 0 && (
+                  <Text style={styles.gestaoFraco}>
+                    Mais frágil: {survey.result.weakest.map((w) => `${w.label} (${w.score})`).join(' · ')}
+                  </Text>
+                )}
+                {survey.result.answeredOn && (
+                  <Text style={styles.atualizado}>Respondido em {dataBR(survey.result.answeredOn)}</Text>
+                )}
+              </>
+            ) : (
+              <Text style={styles.vazioTexto}>A empresa ainda não respondeu o questionário.</Text>
+            )}
+          </View>
+
           {/* avisos, com título em linguagem clara */}
           <View style={styles.cartao}>
             <Rotulo texto={`AVISOS (${d.alerts.length})`} />
@@ -376,6 +462,24 @@ export default function EmpresaDossie() {
           {/* AÇÕES */}
           <View style={styles.cartao}>
             <Rotulo texto="AÇÕES" />
+
+            <Text style={styles.campoRotulo}>Segmento</Text>
+            <View style={styles.chips}>
+              {SEGMENTOS.map((s) => (
+                <Pressable
+                  key={s.id}
+                  onPress={() => setNiche(s.id)}
+                  style={[styles.chip, niche === s.id && styles.chipAtivo]}
+                >
+                  <Text style={[styles.chipTexto, niche === s.id && styles.chipTextoAtivo]}>{s.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {niche != null && niche !== d.company.niche && (
+              <Text style={styles.segAviso}>
+                Trocar o segmento muda os indicadores calculados desta empresa. Ao salvar, os números são recalculados.
+              </Text>
+            )}
 
             <Text style={styles.campoRotulo}>Plano</Text>
             <View style={styles.chips}>
@@ -618,6 +722,15 @@ const styles = StyleSheet.create({
   numeroRotulo: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.cinza, flexShrink: 1 },
   numeroValor: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.tinta, fontVariant: ['tabular-nums'] },
   atualizado: { fontFamily: fonts.corpo, fontSize: 11.5, color: colors.cinza, marginTop: 2 },
+
+  // segmento
+  segCobertura: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.okEscuro, marginTop: space.tight, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight },
+  segAviso: { fontFamily: fonts.corpo, fontSize: 12, lineHeight: 17, color: colors.alerta, marginTop: 2, marginBottom: 4 },
+  gestaoTopo: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
+  gestaoNota: { fontFamily: fonts.display, fontSize: 30, color: colors.tinta, fontVariant: ['tabular-nums'] },
+  gestaoDe: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
+  gestaoResp: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza },
+  gestaoFraco: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.tinta, marginTop: 4 },
 
   alerta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   alertaPonto: { width: 8, height: 8, borderRadius: 4 },
