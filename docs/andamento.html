@@ -185,7 +185,7 @@
     <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Pulso ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. Por baixo, o Pulso foi blindado para produção: proteção contra abuso, isolamento entre empresas, registros sem dado pessoal e mais robustez sob carga. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
 
     <div class="stat">
-      <b class="tnum">70<span> / 88 tarefas</span></b>
+      <b class="tnum">76<span> / 95 tarefas</span></b>
       <span class="leg">concluídas. Cada frente abaixo mostra o que está feito e o que falta.</span>
     </div>
     <div class="barra" role="img" aria-label="80% concluído"><div class="fill" style="width:80%"></div></div>
@@ -380,7 +380,7 @@
       </div>
     </details>
 
-    <details class="dia" open>
+    <details class="dia">
       <summary>
         <span class="dnum">DIA 8</span>
         <span class="dtit">25–26 de julho — blindagem para produção</span>
@@ -399,6 +399,25 @@
           <li><span class="ok">✓</span><span><b>App não trava mais em tela branca</b>: se algo dá errado ao desenhar uma tela, aparece uma mensagem amigável em vez de o app "sumir"</span></li>
           <li><span class="ok">✓</span><span><b>Robustez de produção</b>: verificação de saúde real do servidor, desligamento sem perder requisição em andamento, tempo-limite e nova tentativa nas chamadas de IA, índices no banco para as consultas ficarem rápidas e todas as configurações documentadas</span></li>
           <li><span class="ok">✓</span><span><b>Acabamento</b>: a barra de fôlego virou o herói do painel, espaçamento mais respirado nas telas, o alerta agora fecha com um gesto, e o site ficou sem travessões no texto (padrão da marca)</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia" open>
+      <summary>
+        <span class="dnum">DIA 9</span>
+        <span class="dtit">29 de julho — o Pulso aprende o setor de cada negócio</span>
+        <span class="dresumo tnum">6 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Motor por segmento no ar</b>: além dos indicadores que valem para qualquer negócio, o Pulso agora entende <b>clínica, varejo de roupa e restaurante</b>, cada um com seus próprios sinais (glosa de convênio, giro de estoque, custo da mercadoria vendida). O cérebro universal não foi tocado — o conhecimento de setor entra por cima, e só depois de aprovado</span></li>
+          <li><span class="ok">✓</span><span><b>Números do mês</b>: uma tela onde o dono informa os poucos números do mês do setor dele (a lista muda conforme o negócio) e o motor passa a olhar também esses sinais</span></li>
+          <li><span class="ok">✓</span><span><b>Diagnóstico de gestão</b>: um questionário curto (15 perguntas) que devolve uma nota por área e aponta os dois pontos mais frágeis do negócio</span></li>
+          <li><span class="ok">✓</span><span><b>Relatório do mês</b>: um documento visual por segmento (imagem para salvar ou apresentar) com a situação do caixa, os indicadores do setor, a série do mês e a leitura da IA</span></li>
+          <li><span class="ok">✓</span><span><b>Bastidores por segmento</b>: o operador vê o setor de cada empresa, troca o segmento (recalcula na hora) e acompanha a contagem de empresas por setor</span></li>
+          <li><span class="ok">✓</span><span><b>Premissas validadas pelo CEO e publicadas</b>: as réguas de cada segmento foram revisadas e aprovadas; o motor por segmento foi para o ar em produção (com a atualização do banco de dados), depois de passar em toda a bateria de testes</span></li>
         </ul>
       </div>
     </details>
@@ -576,15 +595,28 @@
       </ul>
     </div>
 
+    <div class="grupo">
+      <div class="ghead"><h3>14 · Motor por segmento</h3><span class="gcount tnum">6 de 7</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Cérebro com pacotes por setor (clínica, varejo, restaurante), só somando ao universal</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">"Números do mês" do setor: formulário no app que muda conforme o negócio</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Diagnóstico de gestão: questionário de 15 perguntas com nota por área</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Relatório do mês por segmento (imagem para salvar ou apresentar)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Segmento nos bastidores: dossiê, troca de setor (recalcula) e contagem por setor</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Premissas de cada segmento validadas pelo CEO e publicadas em produção</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Levar as telas novas ao aplicativo instalado (atualização automática)</span></li>
+      </ul>
+    </div>
+
   </div>
 
   <div class="grid2">
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
-        <div class="metric"><b class="tnum">70</b><span>tarefas concluídas</span></div>
-        <div class="metric"><b class="tnum">18</b><span>pela frente</span></div>
-        <div class="metric"><b class="tnum">154</b><span>testes no servidor</span></div>
+        <div class="metric"><b class="tnum">76</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">19</b><span>pela frente</span></div>
+        <div class="metric"><b class="tnum">167</b><span>testes no servidor</span></div>
       </div>
     </div>
     <div class="card">
