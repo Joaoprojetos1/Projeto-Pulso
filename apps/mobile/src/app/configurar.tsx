@@ -158,7 +158,7 @@ export default function Configurar() {
               <Text style={styles.contasNotaTexto}>
                 {plannedCount > 0
                   ? `${plannedCount} conta(s) a receber/pagar já entram na projeção.`
-                  : 'Cadastre suas contas a receber e a pagar na aba Contas para a projeção ficar mais precisa.'}
+                  : 'Com o caixa e o custo fixo, o motor já projeta. Seus recebimentos e pagamentos deixam a projeção ainda mais precisa.'}
               </Text>
             </View>
 

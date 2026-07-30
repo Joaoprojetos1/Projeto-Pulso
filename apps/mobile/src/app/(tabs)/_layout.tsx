@@ -41,10 +41,16 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="pulse" size={size} color={color} />,
         }}
       />
+      {/* Contas (cadastro manual a pagar/receber): removida da barra por decisão
+          de produto — o dono não digita; os dados a pagar/receber virão prontos do
+          sistema da clínica. href null só ESCONDE a aba: a tela e o motor de
+          previstas seguem intactos (a projeção ainda os considera se existirem), é
+          só religar a aba quando a fonte automática entrar. */}
       <Tabs.Screen
         name="contas"
         options={{
           title: 'Contas',
+          href: null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="receipt-outline" size={size} color={color} />
           ),

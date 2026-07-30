@@ -105,7 +105,7 @@ export default function Dashboard() {
             // CONTA NOVA sem dados: boas-vindas + primeiros passos (a ação principal)
             <>
               <Text style={styles.vazioBoas}>Bem-vindo ao Pulso</Text>
-              <PrimeirosPassos passos={montarPassos(null, 0)} />
+              <PrimeirosPassos passos={montarPassos(null)} />
             </>
           )}
         </ScrollView>
@@ -129,7 +129,7 @@ export default function Dashboard() {
   const zeroInDays = typeof projInputs.zeroInDays === 'number' ? projInputs.zeroInDays : null;
 
   // primeiros passos: só para conta de verdade e enquanto faltar algo
-  const passos = montarPassos(ind, plannedCount);
+  const passos = montarPassos(ind);
   const mostrarPassos = fonte === 'servidor' && passos.some((p) => !p.feito);
 
   const ciclo = (ind.cash_cycle?.value ?? null) as number | null;
@@ -390,7 +390,6 @@ interface Passo {
 /** O que falta o dono fazer para o motor girar. Vazio quando tudo pronto. */
 function montarPassos(
   ind: Record<string, { value?: unknown } | undefined> | null,
-  plannedCount: number,
 ): Passo[] {
   const caixaInformado = (ind?.cash_balance?.value ?? null) !== null;
   return [
@@ -399,12 +398,6 @@ function montarPassos(
       label: 'Alimente o Pulso com seus dados (extrato, maquininha, DRE ou à mão)',
       feito: caixaInformado,
       rota: '/alimentar' as Href,
-    },
-    {
-      chave: 'contas',
-      label: 'Cadastre suas contas a receber e a pagar',
-      feito: plannedCount > 0,
-      rota: '/(tabs)/contas' as Href,
     },
   ];
 }
