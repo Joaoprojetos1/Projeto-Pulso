@@ -396,9 +396,9 @@ function montarPassos(
   return [
     {
       chave: 'caixa',
-      label: 'Informe seu caixa de hoje e o custo fixo do mês',
+      label: 'Alimente o Pulso com seus dados (extrato, maquininha, DRE ou à mão)',
       feito: caixaInformado,
-      rota: '/configurar' as Href,
+      rota: '/alimentar' as Href,
     },
     {
       chave: 'contas',
