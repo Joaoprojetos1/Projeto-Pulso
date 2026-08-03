@@ -16,8 +16,19 @@ google-services.json.bak
 *.pem
 *.key
 
-# dado real de cliente NUNCA entra
+# --- Dado real de cliente NUNCA entra no repositório ---
+# Os arquivos reais (extratos, exports de ERP) ficam FORA do repo, em ~/insumos-pulso.
+# As regras abaixo são defensivas: se algum arquivo real cair aqui por engano, o git ignora.
 fixtures/real/
+insumos-pulso/
+/insumos/
+# extratos e exports normalmente vêm nesses formatos:
 *.ofx
 *.csv
-!fixtures/*.csv
+*.pdf
+*.xls
+*.xlsx
+*.ofc
+*.qif
+# Exceção: fixtures são SINTÉTICAS (dado inventado) e DEVEM ser versionadas.
+!fixtures/**
