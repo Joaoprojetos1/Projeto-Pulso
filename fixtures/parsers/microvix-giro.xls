@@ -1,0 +1,8 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta charset="utf-8"></head><body>
+<table>
+<tr><td>Relatório de Giro Médio</td></tr>
+<tr><td>Considerando: Período: 01/01/2026 a 31/07/2026. Empresa: 1.</td></tr>
+<tr><td>Emp.</td><td>Produto</td><td>Referência</td><td>Cód. Auxiliar</td><td>Cor</td><td>Dt. últ. compra</td><td>Qtde recebida</td><td>Estoque inicial</td><td>Estoque trânsito</td><td>Estoque final</td><td>Preço Custo</td><td>Subtotal Custo</td><td>Preço Venda</td><td>Subtotal Venda</td><td>Qtde vendida</td><td>Giro</td></tr>
+<tr><td>1</td><td>PRODUTO A</td><td>REF1</td><td>AUX1</td><td>AZUL</td><td>01/01/26</td><td>10,00</td><td>5,00</td><td>0,00</td><td>3,00</td><td>10,00</td><td>30,00</td><td>25,00</td><td>75,00</td><td>2,00</td><td>4,00</td></tr>
+<tr><td>1</td><td>PRODUTO B</td><td>REF2</td><td>AUX2</td><td>ROSA</td><td>01/02/26</td><td>4,00</td><td>2,00</td><td>0,00</td><td>1,00</td><td>50,00</td><td>50,00</td><td>100,00</td><td>100,00</td><td>1,00</td><td>2,00</td></tr>
+</table></body></html>

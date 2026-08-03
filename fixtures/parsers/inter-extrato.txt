@@ -1,0 +1,14 @@
+Solicitado em: 31/07/2026 - 10h00
+Empresa Exemplo Ltda
+CPF/CNPJ: 00.000.000/0001-00, Instituição: Banco Inter, Agência: 0001-9, Conta: 12345678-9
+Período: 01/03/2026 a 31/03/2026
+Saldo total
+R$ 1.000,00
+2 de Março de 2026 Saldo do dia: R$ 800,00
+Pix recebido: "Cp :11111111-CLIENTE UM"R$ 300,00R$ 1.300,00
+Pix enviado: "Cp :22222222-FORNECEDOR X"-R$ 500,00R$ 800,00
+Fale com a gente
+SAC: 0800 000 0000 (opção 09)
+3 de Março de 2026 Saldo do dia: R$ 950,00
+Credito domicilio cartao: "CARTAO DE DEBITO - INTER PAG"R$ 200,00R$ 1.000,00
+Pagamento efetuado: "FORNECEDOR Y LTDA"-R$ 50,00R$ 950,00

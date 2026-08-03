@@ -151,7 +151,13 @@ const SANTANDER_RULES: Rule[] = [
   },
 ];
 
-const RULES_BY_BANK = { inter: INTER_RULES, santander: SANTANDER_RULES } as const;
+// 'generic' serve o OFX (qualquer banco): tenta os padrões do Santander e do
+// Inter, do mais específico ao mais geral.
+const RULES_BY_BANK = {
+  inter: INTER_RULES,
+  santander: SANTANDER_RULES,
+  generic: [...SANTANDER_RULES, ...INTER_RULES],
+} as const;
 export type BankKey = keyof typeof RULES_BY_BANK;
 
 /**

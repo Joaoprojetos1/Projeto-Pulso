@@ -1,0 +1,8 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta charset="utf-8"></head><body>
+<table>
+<tr><td>Data</td><td>Série</td><td>Doc/Emp</td><td>Cliente</td><td>Situação da SEFAZ</td><td>Ficha</td><td>Troca</td><td>Valor do Documento</td><td>Dinheiro</td><td>Cartão</td><td>Pix</td></tr>
+<tr><td>Vendedor: 1 - EXEMPLO</td></tr>
+<tr><td>02/01/26</td><td>3</td><td>1 | 1</td><td>CONSUMIDOR FINAL</td><td>Autorizada</td><td></td><td>-</td><td>100,00</td><td>100,00</td><td>-</td><td>-</td></tr>
+<tr><td>02/01/26</td><td>3</td><td>2 | 1</td><td>CONSUMIDOR FINAL</td><td>Autorizada</td><td></td><td>30,00</td><td>250,00</td><td>-</td><td>250,00</td><td>-</td></tr>
+<tr><td>03/02/26</td><td>3</td><td>3 | 1</td><td>CONSUMIDOR FINAL</td><td>Autorizada</td><td></td><td>-</td><td>400,00</td><td>-</td><td>400,00</td><td>-</td></tr>
+</table></body></html>

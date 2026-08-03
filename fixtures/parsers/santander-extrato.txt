@@ -1,0 +1,16 @@
+Conta Corrente > Extrato
+Internet Banking Empresarial
+Empresa Exemplo LtdAgência: 3476 Conta: 987654321
+Período:01/06/2026 a 30/06/2026Data/Hora:08/07/2026 às 09:00h
+DataHistóricoDocumentoValorSaldo
+01/06/2026Pix Recebido 111111111111111100,001.100,00
+01/06/2026Pagamento Cartao De Debito G
+ETNET-VISA
+910332200,001.300,00
+01/06/2026Tarifa Pix Recebido Qr Checkou
+T
+000000-5,001.295,00
+A - Saldo de Conta Corrente1.295,00
+B - Saldo Bloqueado0,00
+C - Saldo Disponível Conta Corrente (A - B)1.295,00
+D - Saldo Disponível Total (C)1.295,00
