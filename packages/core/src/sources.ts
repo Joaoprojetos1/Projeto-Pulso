@@ -65,32 +65,43 @@ export const SOURCES: DataSource[] = [
   },
   {
     id: 'bank_statement',
-    label: 'Extrato bancário (arquivo OFX ou CSV)',
-    description: 'O que entrou e saiu da conta, com a data em que o dinheiro se moveu e o saldo.',
+    // Provado com arquivos reais: parsers de OFX e de PDF (Inter, Santander).
+    label: 'Extrato bancário (arquivo OFX, CSV ou PDF)',
+    description:
+      'O que entrou e saiu da conta, com a data em que o dinheiro se moveu e o saldo. ' +
+      'OFX é a porta robusta; o PDF funciona, mas é frágil (ver docs/COBERTURA-REAL.md). ' +
+      'NÃO traz a data da venda/compra (competência) nem o vencimento: só a liquidação.',
     reach: 'broad',
-    implemented: false,
+    implemented: true,
     coverage: {
-      'balance.observed': 'direct',
+      'balance.observed': 'direct', // saldo corrido, alta confiança
       'entry.amount': 'direct',
-      'entry.settledOn': 'direct',
-      'entry.kind': 'inferred',
-      'entry.counterparty': 'inferred',
-      'entry.category': 'inferred',
+      'entry.settledOn': 'direct', // a data do movimento é o que o banco sabe
+      'entry.kind': 'inferred', // do sinal + descrição
+      'entry.counterparty': 'inferred', // Inter nomeia; varejo de balcão (Santander) não
+      'entry.category': 'inferred', // regras determinísticas sobre a descrição
     },
   },
   {
     id: 'erp_export',
-    label: 'Relatório do sistema de gestão (ERP / gestão da clínica / PDV)',
-    description: 'O sistema onde o negócio registra vendas, contas e clientes — a fonte mais completa.',
+    // Provado com arquivos reais: relatórios do Linx Microvix (faturamento, movimento,
+    // giro, inventário) exportados como HTML.
+    label: 'Relatório do sistema de gestão / ERP / PDV (ex.: Linx Microvix)',
+    description:
+      'O sistema onde o negócio registra vendas, estoque e (em geral) contas — a fonte ' +
+      'mais completa. O DIFERENCIAL sobre o extrato é a data de EMISSÃO (competência) e o ' +
+      'estoque/CMV. Ressalva do que foi exportado na prática: os relatórios de VENDA não ' +
+      'nomeiam o cliente (varejo de balcão = "consumidor final") e não trazem as CONTAS A ' +
+      'PAGAR — estas viriam de outro relatório do mesmo sistema.',
     reach: 'per_client',
-    implemented: false,
+    implemented: true,
     coverage: {
       'entry.kind': 'direct',
       'entry.amount': 'direct',
-      'entry.issuedOn': 'direct',
+      'entry.issuedOn': 'direct', // competência — o que o extrato não tem
       'entry.dueOn': 'direct',
-      'entry.settledOn': 'direct',
-      'entry.counterparty': 'direct',
+      'entry.settledOn': 'inferred', // a venda dá a forma de pagamento, não a data exata do recebimento
+      'entry.counterparty': 'inferred', // varejo de balcão não identifica o cliente
       'entry.category': 'direct',
       'entry.costType': 'inferred',
     },
