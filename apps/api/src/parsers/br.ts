@@ -90,6 +90,20 @@ export function stripTrailingMoney(text: string, n: number): string {
   return out.trim();
 }
 
+/**
+ * Número decimal BR (quantidade, não dinheiro): "3,00", "-1,00", "1.234,5" → number.
+ * Para CONTAGENS e quantidades onde o resultado não é centavos. Sem float traiçoeiro
+ * no dinheiro: aqui é grandeza física (unidades), a precisão de ponto flutuante basta.
+ */
+export function brDecimal(input: string, at: { line?: number; column?: string } = {}): number {
+  const s = String(input).replace(NBSP, ' ').trim();
+  if (s === '' || s === '-') return 0;
+  const cleaned = s.replace(/\./g, '').replace(',', '.');
+  const n = Number(cleaned);
+  if (!Number.isFinite(n)) throw new ParseError(`número inválido: "${input}"`, at);
+  return n;
+}
+
 /** "DD/MM/YYYY" ou "DD/MM/YY" → "YYYY-MM-DD". YY assume século 2000. */
 export function brDateToIso(input: string, at: { line?: number; column?: string } = {}): string {
   const m = String(input)
