@@ -2,11 +2,14 @@
  * Alimentar o Pulso — o "hub" de entrada de dados.
  *
  * Reúne as formas de abastecer o motor: cada fonte (extrato, maquininha, DRE)
- * preenche uma "premissa" do cálculo. Por ora só a entrada MANUAL está ligada
- * (o dono informa caixa + custo fixo em /configurar); os leitores de arquivo
- * ficam "Em breve" até o tradutor de cada formato ser ensinado ao Pulso — e a
- * escolha do arquivo no aparelho exige um app novo (módulo nativo de arquivos),
- * então NÃO ativar as fontes de arquivo por atualização automática.
+ * preenche uma "premissa" do cálculo. Ligados: EXTRATO bancário (sobe o arquivo →
+ * /me/import lê no servidor → motor gira) e a entrada MANUAL (/configurar).
+ * Maquininha e DRE seguem "Em breve".
+ *
+ * ⚠️ NÃO PUBLICAR POR OTA: o seletor de arquivo usa módulo NATIVO
+ * (expo-document-picker / expo-file-system). Só funciona em APK NOVO — mandar
+ * este JS por atualização automática ao APK atual quebraria o app. Vai junto do
+ * próximo APK (o do push/Firebase).
  *
  * Regra de ouro: quem lê o arquivo é o CÓDIGO, nunca a IA. O app é burro: aqui
  * ele só apresenta os caminhos e navega.
@@ -14,10 +17,14 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { router, type Href } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { escolherExtrato } from '@/lib/file-upload';
+import { importFile } from '@/lib/api';
+import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, space } from '@/theme';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -37,8 +44,8 @@ const FONTES: Fonte[] = [
     icone: 'document-text-outline',
     titulo: 'Extrato bancário',
     descricao:
-      'Entradas e saídas da sua conta. Traz o saldo de hoje e o histórico, e já faz o motor girar.',
-    disponivel: false,
+      'Entradas e saídas da sua conta (PDF do Inter/Santander ou OFX). Traz o saldo e o histórico, e já faz o motor girar.',
+    disponivel: true,
   },
   {
     chave: 'maquininha',
@@ -68,6 +75,43 @@ const FONTES: Fonte[] = [
 ];
 
 export default function Alimentar() {
+  const { token, carregar } = usePulso();
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function subirExtrato() {
+    if (!token) {
+      setErro('Entre na sua conta para enviar um arquivo.');
+      return;
+    }
+    setErro(null);
+    let arquivo;
+    try {
+      arquivo = await escolherExtrato();
+    } catch {
+      setErro('Não consegui abrir seus arquivos. Tente de novo.');
+      return;
+    }
+    if (!arquivo) return; // o dono cancelou a escolha
+
+    setOcupado(true);
+    try {
+      await importFile(token, arquivo.nome, arquivo.base64);
+      await carregar();
+      router.replace('/(tabs)');
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não consegui importar o arquivo.');
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  function aoTocar(f: Fonte) {
+    if (ocupado) return;
+    if (f.chave === 'extrato') return subirExtrato();
+    if (f.rota) router.push(f.rota);
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.cabecalho}>
@@ -87,10 +131,21 @@ export default function Alimentar() {
           </Text>
         </Animated.View>
 
+        {erro && (
+          <View style={styles.erroBox}>
+            <Ionicons name="alert-circle-outline" size={18} color={colors.critico} />
+            <Text style={styles.erroTexto}>{erro}</Text>
+          </View>
+        )}
+
         <View style={styles.lista}>
           {FONTES.map((f, i) => (
             <Animated.View key={f.chave} entering={FadeInDown.duration(240).delay(60 + i * 40)}>
-              <FonteCard fonte={f} />
+              <FonteCard
+                fonte={f}
+                ocupado={ocupado && f.chave === 'extrato'}
+                onPress={() => aoTocar(f)}
+              />
             </Animated.View>
           ))}
         </View>
@@ -98,8 +153,8 @@ export default function Alimentar() {
         <View style={styles.nota}>
           <Ionicons name="shield-checkmark-outline" size={18} color={colors.okEscuro} />
           <Text style={styles.notaTexto}>
-            Os leitores de arquivo entram em breve. Cada formato é preparado com cuidado, porque
-            o Pulso nunca inventa um número: tudo que ele mostra vem do seu arquivo.
+            Quem lê o seu arquivo é o código do Pulso, nunca a IA — e o Pulso nunca inventa um
+            número: tudo que ele mostra vem do seu arquivo.
           </Text>
         </View>
       </ScrollView>
@@ -107,12 +162,20 @@ export default function Alimentar() {
   );
 }
 
-function FonteCard({ fonte }: { fonte: Fonte }) {
-  const ativo = fonte.disponivel && fonte.rota != null;
+function FonteCard({
+  fonte,
+  ocupado,
+  onPress,
+}: {
+  fonte: Fonte;
+  ocupado: boolean;
+  onPress: () => void;
+}) {
+  const ativo = fonte.disponivel;
   return (
     <Pressable
-      disabled={!ativo}
-      onPress={() => fonte.rota && router.push(fonte.rota)}
+      disabled={!ativo || ocupado}
+      onPress={onPress}
       style={({ pressed }) => [styles.card, !ativo && styles.cardOff, pressed && ativo && styles.pressionado]}
     >
       <View style={[styles.icone, ativo && styles.iconeAtivo]}>
@@ -129,7 +192,11 @@ function FonteCard({ fonte }: { fonte: Fonte }) {
         </View>
       </View>
 
-      {ativo && <Text style={styles.seta}>›</Text>}
+      {ocupado ? (
+        <ActivityIndicator color={colors.okEscuro} />
+      ) : (
+        ativo && <Text style={styles.seta}>›</Text>
+      )}
     </Pressable>
   );
 }
@@ -204,4 +271,14 @@ const styles = StyleSheet.create({
     marginTop: space.section,
   },
   notaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.tinta },
+  erroBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    backgroundColor: '#FDEDEA',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: space.section,
+  },
+  erroTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.critico },
 });

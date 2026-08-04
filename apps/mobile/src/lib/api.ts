@@ -356,6 +356,44 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Import de arquivo: extrato → motor --------------- */
+
+export interface ImportResult {
+  /** o mesmo arquivo já tinha sido importado antes. */
+  alreadyImported?: boolean;
+  /** de onde veio (inter_pdf / santander_pdf / ofx). */
+  source?: string;
+  rowsImported?: number;
+  balancesImported?: number;
+  warnings?: number;
+}
+
+/**
+ * Manda o arquivo (base64) para o servidor LER e converter. O app não interpreta
+ * nada do conteúdo; o servidor detecta o formato, roda o parser e recalcula o
+ * painel. Devolve um resumo do que entrou. Mensagem clara quando o formato não
+ * é reconhecido (422).
+ */
+export async function importFile(
+  token: string,
+  filename: string,
+  contentBase64: string,
+): Promise<ImportResult> {
+  const res = await fetchWithWake(`${apiBase()}/me/import`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ filename, contentBase64 }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422 || res.status === 413) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? 'Não consegui ler esse arquivo.');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao importar o arquivo`);
+  const body = (await res.json()) as { import?: ImportResult };
+  return body.import ?? {};
+}
+
 /* --------------- Números do mês (indicadores de segmento) --------------- */
 
 export type OpsUnit = 'cents' | 'count' | 'hours';
