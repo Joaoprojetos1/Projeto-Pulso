@@ -15,6 +15,7 @@ import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
 import { registerData } from './routes/data';
 import { registerDevices } from './routes/devices';
+import { registerImport } from './routes/import';
 import { registerInterest } from './routes/interest';
 import { registerPlanned } from './routes/planned';
 import { registerSegments } from './routes/segments';
@@ -120,6 +121,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerCompanies(app, sql);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
+  registerImport(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSegments(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSubscription(app, sql);
   registerSimulate(app, sql);
