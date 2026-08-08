@@ -30,6 +30,23 @@ export async function escolherExtrato(): Promise<ArquivoEscolhido | null> {
   return { nome: asset.name ?? 'extrato', base64, tamanhoBytes: asset.size ?? 0 };
 }
 
+/** Abre o seletor aceitando VÁRIOS arquivos (aba Dados). Devolve todos em base64. */
+export async function escolherArquivos(): Promise<ArquivoEscolhido[]> {
+  const res = await DocumentPicker.getDocumentAsync({
+    // qualquer tipo: extrato, planilha, PDF, foto de documento
+    type: '*/*',
+    copyToCacheDirectory: true,
+    multiple: true,
+  });
+  if (res.canceled || res.assets.length === 0) return [];
+  const out: ArquivoEscolhido[] = [];
+  for (const asset of res.assets) {
+    const base64 = await lerBase64(asset.uri);
+    out.push({ nome: asset.name ?? 'arquivo', base64, tamanhoBytes: asset.size ?? 0 });
+  }
+  return out;
+}
+
 async function lerBase64(uri: string): Promise<string> {
   if (Platform.OS === 'web') {
     const blob = await (await fetch(uri)).blob();

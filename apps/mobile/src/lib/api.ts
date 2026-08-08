@@ -468,9 +468,25 @@ export async function saveMyCompanySystems(
 
 /* --------------- Import de arquivo: extrato → motor --------------- */
 
+/** Tipos de documento que a aba Dados aceita (classificação do dono). */
+export type DocType =
+  | 'bank_statement'
+  | 'inventory'
+  | 'management'
+  | 'services'
+  | 'card_acquirer'
+  | 'accounting'
+  | 'other';
+
+export type ImportStatus = 'processed' | 'received' | 'error';
+
 export interface ImportResult {
   /** o mesmo arquivo já tinha sido importado antes. */
   alreadyImported?: boolean;
+  /** tipo classificado pelo dono. */
+  docType?: DocType;
+  /** situação do processamento. */
+  status?: ImportStatus;
   /** de onde veio (inter_pdf / santander_pdf / ofx). */
   source?: string;
   rowsImported?: number;
@@ -478,21 +494,34 @@ export interface ImportResult {
   warnings?: number;
 }
 
+/** Um arquivo já enviado, para a lista de transparência da aba Dados. */
+export interface ImportItem {
+  id: string;
+  docType: string;
+  filename: string | null;
+  status: ImportStatus;
+  periodStart: string | null;
+  periodEnd: string | null;
+  rowCount: number;
+  importedAt: string;
+}
+
 /**
  * Manda o arquivo (base64) para o servidor LER e converter. O app não interpreta
  * nada do conteúdo; o servidor detecta o formato, roda o parser e recalcula o
- * painel. Devolve um resumo do que entrou. Mensagem clara quando o formato não
- * é reconhecido (422).
+ * painel. `docType` classifica o arquivo (o extrato bancário é lido; os demais
+ * ficam "recebidos" até o leitor existir). Mensagem clara quando não dá pra ler.
  */
 export async function importFile(
   token: string,
   filename: string,
   contentBase64: string,
+  docType: DocType = 'bank_statement',
 ): Promise<ImportResult> {
   const res = await fetchWithWake(`${apiBase()}/me/import`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-    body: JSON.stringify({ filename, contentBase64 }),
+    body: JSON.stringify({ filename, contentBase64, docType }),
   });
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (res.status === 422 || res.status === 413) {
@@ -502,6 +531,25 @@ export async function importFile(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao importar o arquivo`);
   const body = (await res.json()) as { import?: ImportResult };
   return body.import ?? {};
+}
+
+/** Lista os arquivos já enviados (transparência do insumo). */
+export async function fetchMyImports(token: string): Promise<ImportItem[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/imports`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos arquivos`);
+  return ((await res.json()) as { imports: ImportItem[] }).imports;
+}
+
+/** Remove um arquivo enviado por engano. O servidor apaga e recalcula o painel. */
+export async function deleteMyImport(token: string, id: string): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/imports/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 404) throw new Error('Arquivo não encontrado.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao remover o arquivo`);
 }
 
 /* --------------- Números do mês (indicadores de segmento) --------------- */

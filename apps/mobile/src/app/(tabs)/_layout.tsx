@@ -41,6 +41,15 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="pulse" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="relatorios"
+        options={{
+          title: 'Relatórios',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart-outline" size={size} color={color} />
+          ),
+        }}
+      />
       {/* Contas (cadastro manual a pagar/receber): removida da barra por decisão
           de produto — o dono não digita; os dados a pagar/receber virão prontos do
           sistema da clínica. href null só ESCONDE a aba: a tela e o motor de
@@ -62,6 +71,15 @@ export default function TabsLayout() {
           title: 'IA Pulso',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="dados"
+        options={{
+          title: 'Dados',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="folder-open-outline" size={size} color={color} />
           ),
         }}
       />
