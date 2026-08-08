@@ -264,10 +264,26 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
       ]
     : [];
 
+  // MOTOR LÊ O CADASTRO (item 3.2): os sistemas declarados entram como contexto.
+  // Quando o dono DECLARA não ter um sistema (formato 'none'), os indicadores que
+  // dependem daquele dado nascem "não calculáveis POR DECLARAÇÃO", com o motivo —
+  // em vez de ficarem esperando um dado que não virá.
+  const systemRows = await sql`
+    SELECT purpose, export_format FROM company_systems WHERE company_id = ${company.id}`;
+  const systems = systemRows.map((r) => ({
+    purpose: r.purpose as string,
+    exportFormat: (r.export_format as string | null) ?? null,
+  }));
+  // 'none' = declarou explicitamente que NÃO tem (linha ausente = não informou).
+  const declarouNao = (purpose: string): boolean =>
+    systems.some((s) => s.purpose === purpose && s.exportFormat === 'none');
+  const semEstoque = declarouNao('inventory');
+  const ESTOQUE = /estoque|invent|cmv|insumo/i; // campos que dependem de controle de estoque
+
   // Indicadores do SEGMENTO da empresa, já rotulados (home focada no segmento —
-  // item 3.5). Os valores vêm do payload; os rótulos, do pacote do segmento no
-  // core. `available=false` = ainda sem os números do mês (com o motivo).
+  // item 3.5). Os valores vêm do payload; os rótulos, do pacote do segmento no core.
   const seg = getSegment(company.niche);
+  const reqByKey = new Map((seg?.requirements ?? []).map((r) => [r.key, r.required]));
   const payloadInd = (snapshot.payload ?? {}) as Record<
     string,
     { value?: unknown; unit?: string; insufficientReason?: string } | undefined
@@ -276,6 +292,9 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     ? Object.entries(seg.labels).map(([key, meta]) => {
         const ind = payloadInd[key];
         const value = typeof ind?.value === 'number' ? ind.value : null;
+        const required = reqByKey.get(key) ?? [];
+        const dependeEstoque = required.some((slug) => ESTOQUE.test(slug));
+        const declaredUnavailable = value == null && semEstoque && dependeEstoque;
         return {
           key,
           label: meta.label,
@@ -283,7 +302,10 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
           value,
           unit: ind?.unit ?? null,
           available: value != null,
-          reason: ind?.insufficientReason ?? null,
+          declaredUnavailable,
+          reason: declaredUnavailable
+            ? 'Você declarou não ter controle de estoque, então este indicador não é calculável.'
+            : (ind?.insufficientReason ?? null),
         };
       })
     : [];
@@ -292,6 +314,8 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     company: toCompanyJson(company),
     segment: seg ? { id: seg.id, label: seg.label } : null,
     segmentIndicators,
+    // contexto do cadastro que o motor leva em conta (transparência)
+    cadastro: { systems, semControleEstoque: semEstoque },
     snapshot: {
       asOf: snapshot.as_of,
       coreVersion: snapshot.core_version,

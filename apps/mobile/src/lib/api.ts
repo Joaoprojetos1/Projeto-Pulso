@@ -89,7 +89,15 @@ export interface SegmentIndicatorJson {
   value: number | null;
   unit: string | null;
   available: boolean;
+  /** true = não calculável porque o dono DECLAROU não ter o dado (não é "esperando"). */
+  declaredUnavailable?: boolean;
   reason: string | null;
+}
+
+/** Contexto do cadastro que o motor leva em conta (transparência). */
+export interface CadastroContext {
+  systems: Array<{ purpose: string; exportFormat: string | null }>;
+  semControleEstoque: boolean;
 }
 
 export interface DashboardJson {
@@ -98,6 +106,8 @@ export interface DashboardJson {
   segment?: { id: string; label: string } | null;
   /** Indicadores do segmento, rotulados (a home mostra estes). */
   segmentIndicators?: SegmentIndicatorJson[];
+  /** Contexto do cadastro que o motor considera (sistemas declarados etc.). */
+  cadastro?: CadastroContext;
   snapshot: {
     asOf: string;
     coreVersion: string;
@@ -305,6 +315,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
     company: { id: string; name: string; niche: string };
     segment?: { id: string; label: string } | null;
     segmentIndicators?: SegmentIndicatorJson[];
+    cadastro?: CadastroContext;
     snapshot: DashboardJson['snapshot'] | null;
     comparativos?: Comparativos;
     diagnosis?: DiagnosisJson | null;
@@ -317,6 +328,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
         company: body.company,
         segment: body.segment ?? null,
         segmentIndicators: body.segmentIndicators ?? [],
+        cadastro: body.cadastro,
         snapshot: body.snapshot,
         comparativos: body.comparativos,
         diagnosis: body.diagnosis ?? null,

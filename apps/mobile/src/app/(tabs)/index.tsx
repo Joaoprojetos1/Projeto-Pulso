@@ -351,7 +351,7 @@ export default function Dashboard() {
             <Text style={styles.segmentoTitulo}>
               SEU SEGMENTO{dashboard.segment ? ` · ${dashboard.segment.label}` : ''}
             </Text>
-            {dashboard.segmentIndicators!.every((s) => !s.available) ? (
+            {dashboard.segmentIndicators!.every((s) => !s.available && !s.declaredUnavailable) ? (
               <Pressable
                 onPress={() => router.push('/numeros-do-mes' as Href)}
                 style={({ pressed }) => [styles.segPrompt, pressed && styles.pressionado]}
@@ -368,7 +368,14 @@ export default function Dashboard() {
                     <Text style={[styles.segCardValor, !s.available && styles.chipTextoVazio]}>
                       {valorSegmento(s.value, s.unit)}
                     </Text>
-                    <Text style={styles.segCardHint} numberOfLines={2}>{s.hint}</Text>
+                    {/* motor lê o cadastro: quando o dono declarou não ter o dado, o
+                        card diz o MOTIVO (declaração), não fica "esperando" */}
+                    <Text
+                      style={[styles.segCardHint, s.declaredUnavailable && styles.segCardDeclarado]}
+                      numberOfLines={3}
+                    >
+                      {s.declaredUnavailable && s.reason ? s.reason : s.hint}
+                    </Text>
                   </View>
                 ))}
               </ScrollView>
@@ -867,6 +874,7 @@ const styles = StyleSheet.create({
   segCardLabel: { fontFamily: fonts.corpoForte, fontSize: 12, color: colors.tinta },
   segCardValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },
   segCardHint: { fontFamily: fonts.corpo, fontSize: 11, lineHeight: 15, color: colors.cinza },
+  segCardDeclarado: { color: colors.alerta },
   segPrompt: {
     marginHorizontal: 16,
     backgroundColor: colors.branco,
