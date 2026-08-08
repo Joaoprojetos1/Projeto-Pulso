@@ -356,6 +356,116 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Cadastro da empresa: CNPJ, segmento, sistemas --------------- */
+
+export interface CnpjSocio {
+  nome: string;
+  qualificacao: string | null;
+}
+export interface CnpjEndereco {
+  logradouro: string | null;
+  numero: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+}
+
+/** Cadastro completo da empresa (o que o CNPJ trouxe + o que o dono confirmou). */
+export interface CompanyJson {
+  id: string;
+  name: string;
+  cnpj: string | null;
+  niche: string;
+  declaredFixedCostCents: number | null;
+  razaoSocial: string | null;
+  nomeFantasia: string | null;
+  situacaoCadastral: string | null;
+  cnaePrincipal: string | null;
+  cnaeDescricao: string | null;
+  endereco: CnpjEndereco | null;
+  quadroSocietario: CnpjSocio[] | null;
+  cnpjConsultadoEm: string | null;
+}
+
+export interface CnpjLookupResult {
+  company: CompanyJson;
+  suggestedNiche: string | null;
+  source: 'brasilapi' | 'receitaws' | 'cache';
+}
+
+/** Mensagem de erro do servidor no CAMPO certo (CNPJ inválido / não encontrado). */
+export class CampoError extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = 'CampoError';
+  }
+}
+
+/** Consulta o CNPJ na base pública e grava no cadastro. Devolve o segmento sugerido. */
+export async function lookupMyCnpj(token: string, cnpj: string): Promise<CnpjLookupResult> {
+  const res = await fetchWithWake(`${apiBase()}/me/company/cnpj`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ cnpj }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422 || res.status === 404) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new CampoError(body.error ?? 'Não consegui consultar esse CNPJ.');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao consultar CNPJ`);
+  return (await res.json()) as CnpjLookupResult;
+}
+
+/** Confirma/corrige o segmento (e opcionalmente o nome de exibição). */
+export async function patchMyCompany(
+  token: string,
+  patch: { niche?: string; name?: string },
+): Promise<{ company: CompanyJson }> {
+  const res = await fetchWithWake(`${apiBase()}/me/company`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(patch),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new CampoError(body.error ?? 'Segmento não suportado.');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar o segmento`);
+  return (await res.json()) as { company: CompanyJson };
+}
+
+export type SystemPurpose = 'payables_receivables' | 'inventory' | 'services' | 'bank';
+export type ExportFormat = 'pdf' | 'excel_csv' | 'photo' | 'none';
+export interface CompanySystem {
+  purpose: SystemPurpose;
+  systemName: string | null;
+  exportFormat: ExportFormat | null;
+}
+
+export async function fetchMyCompanySystems(token: string): Promise<CompanySystem[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/company/systems`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos sistemas`);
+  return ((await res.json()) as { systems: CompanySystem[] }).systems;
+}
+
+export async function saveMyCompanySystems(
+  token: string,
+  systems: CompanySystem[],
+): Promise<CompanySystem[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/company/systems`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ systems }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar os sistemas`);
+  return ((await res.json()) as { systems: CompanySystem[] }).systems;
+}
+
 /* --------------- Import de arquivo: extrato → motor --------------- */
 
 export interface ImportResult {
