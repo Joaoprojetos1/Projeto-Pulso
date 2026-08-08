@@ -92,6 +92,11 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
       const ok = permitidas.has(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin);
       cb(null, ok); // origem desconhecida: não reflete (navegador bloqueia)
     },
+    // O app web (/app no Render) usa PATCH/PUT/DELETE (cadastro, sistemas,
+    // remover arquivo). Sem declarar, o preflight só libera GET/HEAD/POST e o
+    // navegador bloqueia. O app NATIVO não manda Origin, então nunca sofreu isso.
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['content-type', 'authorization'],
   });
 
   // headers de segurança em toda resposta (API JSON; nunca é enquadrada nem sniffed)
