@@ -9,6 +9,8 @@
  * Extraído de routes/chat.ts sem mudar comportamento.
  */
 
+import type { ClaimPermission } from '@pulso/core';
+
 import {
   askPulso,
   CHAT_FALLBACK_VERSION,
@@ -123,7 +125,11 @@ export async function converse(deps: ConversationDeps, input: ConverseInput): Pr
     facts?: unknown;
     drivers?: unknown;
     text?: { title?: string | null; body?: string | null } | null;
+    permissions?: ClaimPermission[];
   } | null;
+  // requisitos de juízo gravados no snapshot: a conversa não pode adjetivar o
+  // que a cobertura não autoriza (mesmo fiscal dos alertas/diagnóstico).
+  const permissions = diagCurrent?.permissions ?? [];
   const [prevSnap] = await sql`
     SELECT as_of::text AS as_of, diagnosis
     FROM indicator_snapshots
@@ -171,6 +177,7 @@ export async function converse(deps: ConversationDeps, input: ConverseInput): Pr
             text: diagPrevious.text ?? null,
           }
         : null,
+      permissions,
     },
     history,
     (u) => aiUsage.push(u),

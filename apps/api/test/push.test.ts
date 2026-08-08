@@ -237,7 +237,12 @@ describe('entrega do aviso no celular', () => {
       payload: { asOf: '2026-07-15' },
     });
     expect(res.statusCode).toBe(201);
-    expect(res.json().alerts[0].ruleKey).toBe('all_clear');
+    // sem dado, não há alerta sério (nem cobertura para afirmar "tudo bem"):
+    // o que importa aqui é que NENHUM push é disparado.
+    const serios = (res.json().alerts as Array<{ severity: string }>).filter(
+      (a) => a.severity === 'warn' || a.severity === 'critical',
+    );
+    expect(serios).toHaveLength(0);
     expect(push.enviadas).toHaveLength(0);
   });
 

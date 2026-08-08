@@ -14,5 +14,6 @@ export * from './simulate';
 export * from './requirements';
 export * from './sources';
 export * from './coverage';
+export * from './claims';
 export * from './segments';
 export * from './segments/questionnaire';

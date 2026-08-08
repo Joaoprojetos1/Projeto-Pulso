@@ -1,4 +1,15 @@
-import { addDays, computeAll, CORE_VERSION, diagnose, evaluate, projectCash, segmentRules } from '@pulso/core';
+import {
+  addDays,
+  allowedClaims,
+  claimEvidenceFromSnapshot,
+  computeAll,
+  CORE_VERSION,
+  diagnose,
+  evaluate,
+  missingInfoRecommendations,
+  projectCash,
+  segmentRules,
+} from '@pulso/core';
 import type { CashProjection, CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
@@ -229,6 +240,14 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     WHERE snapshot_id = ${snapshot.id}
     ORDER BY CASE severity::text WHEN 'critical' THEN 0 WHEN 'warn' THEN 1 ELSE 2 END, created_at`;
 
+  // Recomendações de informação faltante em aberto (item 4): o que ainda não dá
+  // para avaliar e o que fazer. O caixa (prioridade alta) vem primeiro.
+  const recRows = await sql`
+    SELECT claim_type, priority, title, why, action, first_recommended_on::text AS first_recommended_on
+    FROM missing_info_recommendations
+    WHERE company_id = ${company.id} AND resolved_on IS NULL
+    ORDER BY CASE priority WHEN 'alta' THEN 0 WHEN 'media' THEN 1 ELSE 2 END, first_recommended_on`;
+
   // Curva DIÁRIA da projeção (item 14): o mesmo motor, pedindo todos os dias.
   // Fica FORA do payload (não vai para o prompt do chat, não infla o token);
   // é recalculada aqui, fresca, a partir dos mesmos dados do snapshot.
@@ -262,6 +281,15 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     weeklySummary: snapshot.weekly_summary ?? null,
     // curva diária da projeção, para o gráfico interativo (scrubbing) do app
     projectionCurve,
+    // o que ainda não dá para avaliar e o que fazer (informação faltante)
+    recommendations: recRows.map((r) => ({
+      claimType: r.claim_type,
+      priority: r.priority,
+      title: r.title,
+      why: r.why,
+      action: r.action,
+      firstRecommendedOn: r.first_recommended_on,
+    })),
     alerts: alertRows.map((a) => ({
       // id + opened/acted para o app marcar lido/agido a partir do próprio painel
       id: a.id,
@@ -299,8 +327,22 @@ export async function computeAndStore(
 
   const snap = await loadCompanySnapshot(sql, company, asOf);
       const indicators = computeAll(snap);
-      // as regras do SEGMENTO da empresa entram no mesmo julgamento (e no all_clear)
-      const alerts = evaluate(indicators, segmentRules(company.niche));
+
+      // REQUISITOS DE JUÍZO (determinístico): o que a cobertura de dados desta
+      // empresa AUTORIZA afirmar. Não muda cálculo — decide o que o texto pode
+      // concluir. É o que impede o "está bom" só com o saldo.
+      const evidence = claimEvidenceFromSnapshot(snap);
+      const permissions = allowedClaims(evidence);
+      const cashHealthAllowed = permissions.find((p) => p.type === 'cash_health')?.allowed ?? true;
+
+      // as regras do SEGMENTO da empresa entram no mesmo julgamento (e no all_clear).
+      // "Tudo sob controle" (all_clear) É um juízo de saúde do caixa: se a
+      // cobertura não o autoriza, ele NÃO é emitido (senão volta o bug — o
+      // produto dizendo "tudo bem" sem conhecer as saídas). No lugar, ficam as
+      // recomendações de informação faltante (gravadas abaixo).
+      const alerts = evaluate(indicators, segmentRules(company.niche)).filter(
+        (a) => !(a.ruleKey === 'all_clear' && !cashHealthAllowed),
+      );
 
       // diagnóstico do momento: o core julga a partir dos indicadores + o
       // histórico dos snapshots anteriores (resumido pela API).
@@ -308,13 +350,13 @@ export async function computeAndStore(
       const diag = diagnose(indicators, history);
 
       // a voz do Pulso: a IA (ou o template) redige a partir dos facts —
-      // e de NADA além dos facts
+      // e de NADA além dos facts; e só afirma o que as permissões autorizam.
       const profile = { name: company.name, niche: company.niche };
       const aiUsage: AiCallUsage[] = [];
       const written = await Promise.all(
         alerts.map(async (a) => ({
           alert: a,
-          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u), log),
+          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u), log, permissions),
         })),
       );
 
@@ -322,8 +364,10 @@ export async function computeAndStore(
       // NÃO medimos esta chamada em ai_usage por ora: a métrica de metering trata
       // kind='alert_writer' como "um por alerta". Se o custo do diagnóstico
       // precisar entrar, criar um kind='diagnosis' dedicado (enum + migração).
-      const diagText = await writeDiagnosis(alertWriter, diag, profile);
-      const diagnosisStored = { ...diag, text: diagText };
+      const diagText = await writeDiagnosis(alertWriter, diag, profile, undefined, permissions, log);
+      // guardamos as permissões junto do diagnóstico: o chat e o painel leem daqui
+      // (o chat usa para não adjetivar sem cobertura; o painel, para orientar).
+      const diagnosisStored = { ...diag, text: diagText, permissions };
 
       // Resumo da semana: se existe um snapshot de >= 5 dias antes, o writer redige
       // o que mudou (não medido em ai_usage, como o diagnóstico — ver nota acima).
@@ -392,6 +436,30 @@ export async function computeAndStore(
             title: text.title,
             body: text.body,
           });
+        }
+
+        // item 4: recomendações de informação faltante. Uma linha por (empresa,
+        // tipo de afirmação); `first_recommended_on` preserva a PRIMEIRA vez
+        // (histórico consultável). Determinístico — o texto vem do core.
+        const recs = missingInfoRecommendations(evidence);
+        for (const r of recs) {
+          await tx`
+            INSERT INTO missing_info_recommendations
+              (company_id, claim_type, priority, title, why, action, first_recommended_on, last_seen_on, resolved_on)
+            VALUES (${company.id}, ${r.claimType}, ${r.priority}, ${r.title}, ${r.why}, ${r.action}, ${asOf}, ${asOf}, NULL)
+            ON CONFLICT (company_id, claim_type)
+            DO UPDATE SET priority = EXCLUDED.priority, title = EXCLUDED.title, why = EXCLUDED.why,
+                          action = EXCLUDED.action, last_seen_on = ${asOf}, resolved_on = NULL`;
+        }
+        // juízos que agora estão AUTORIZADOS: fecha a recomendação em aberto (o
+        // dado chegou). É o que permite dizer "resolvido em tal data".
+        const autorizados = permissions.filter((p) => p.allowed).map((p) => p.type);
+        if (autorizados.length > 0) {
+          await tx`
+            UPDATE missing_info_recommendations
+            SET resolved_on = ${asOf}
+            WHERE company_id = ${company.id} AND resolved_on IS NULL
+              AND claim_type = ANY(${autorizados})`;
         }
         return s.id as string;
       });

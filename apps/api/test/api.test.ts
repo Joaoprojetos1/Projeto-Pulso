@@ -210,7 +210,7 @@ describe('bordas', () => {
     expect(res.json().error).toMatch(/não encontrada/);
   });
 
-  it('empresa sem dados: snapshot funciona e diz all_clear (sem chutar número)', async () => {
+  it('empresa sem dados: NÃO diz "tudo bem" (a falha da revisão) e recomenda o que enviar', async () => {
     const created = await app.inject({
       method: 'POST',
       url: '/companies',
@@ -225,7 +225,20 @@ describe('bordas', () => {
       payload: { asOf: '2026-07-15' },
     });
     expect(res.statusCode).toBe(201);
-    expect(res.json().alerts[0].ruleKey).toBe('all_clear');
+    // O BUG apontado pelo especialista: sem conhecer as saídas, o produto NÃO
+    // pode afirmar "tudo sob controle". O all_clear é suprimido.
+    expect(
+      res.json().alerts.find((a: { ruleKey: string }) => a.ruleKey === 'all_clear'),
+    ).toBeUndefined();
+
+    const dash = await app.inject({ method: 'GET', url: `/companies/${companyId}/dashboard`, headers: bearer(ADMIN) });
+    // no lugar do falso "tudo bem": a recomendação de informação faltante, com ação
+    const recs = dash.json().recommendations as Array<{ claimType: string; action: string }>;
+    const caixa = recs.find((r) => r.claimType === 'cash_health');
+    expect(caixa).toBeDefined();
+    expect(caixa!.action.length).toBeGreaterThan(0);
+    // e o diagnóstico não adjetiva: reporta a limitação, não "saudável"
+    expect(dash.json().diagnosis.text.modelVersion).toBe('diagnosis-limitation-v1');
   });
 
   it('chat sem modelo de IA: responde o aviso honesto (nunca finge)', async () => {

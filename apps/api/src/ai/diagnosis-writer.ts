@@ -10,13 +10,16 @@
  * Reaproveita o AlertWriterModel (mesmo structured output { title, body }).
  */
 
-import type { Diagnosis, DiagnosisStage } from '@pulso/core';
+import { getClaim, type ClaimPermission, type Diagnosis, type DiagnosisStage } from '@pulso/core';
 
 import { checkGroundingDeep } from './grounding';
+import { checkJudgment, renderClaimGuidance } from './judgment';
 import type { AiCallUsage, UsageSink } from './usage';
 import type { AlertPrompt, AlertWriterModel, CompanyProfile } from './writer';
 
 export const DIAGNOSIS_TEMPLATE_VERSION = 'diagnosis-template-v1';
+/** Texto de limitação: quando os dados não autorizam ler a saúde do caixa. */
+export const DIAGNOSIS_LIMITATION_VERSION = 'diagnosis-limitation-v1';
 
 export interface DiagnosisText {
   title: string;
@@ -53,6 +56,22 @@ export function diagnosisTemplate(diag: Diagnosis): DiagnosisText {
   return { ...TEMPLATE[diag.stage], modelVersion: DIAGNOSIS_TEMPLATE_VERSION };
 }
 
+/**
+ * A causa do bug relatado: o core computa um estágio ("saudável") mesmo quando
+ * os dados não bastam, e o texto adjetiva. Quando o juízo de saúde do caixa NÃO
+ * está autorizado, NÃO adjetivamos o estágio — reportamos a limitação e o que
+ * fazer, de forma determinística. É item 2 (nunca adjetivar sem autorização)
+ * levado ao próprio "momento" da empresa.
+ */
+export function diagnosisLimitation(perm: ClaimPermission): DiagnosisText {
+  const acao = getClaim('cash_health').action;
+  return {
+    title: 'Ainda não dá para ler o seu caixa',
+    body: `${perm.reason} ${acao}`,
+    modelVersion: DIAGNOSIS_LIMITATION_VERSION,
+  };
+}
+
 const SYSTEM_PROMPT = `Você é a voz do Pulso, o assistente financeiro de pequenas empresas brasileiras. Você redige o MOMENTO financeiro para o DONO do negócio — não para um CFO.
 
 Você recebe um diagnóstico JÁ DECIDIDO por regras de código: o "estagio" e os fatos que o sustentam ("porque"). Seu único trabalho é redigir.
@@ -68,9 +87,14 @@ Estágios, do melhor ao pior: saudavel, atencao, pressao, critico, uti.
 
 Responda com o JSON { "title": ..., "body": ... }.`;
 
-export function buildDiagnosisPrompt(diag: Diagnosis, profile: CompanyProfile): AlertPrompt {
+export function buildDiagnosisPrompt(
+  diag: Diagnosis,
+  profile: CompanyProfile,
+  permissions: ClaimPermission[] = [],
+): AlertPrompt {
+  const guidance = renderClaimGuidance(permissions);
   return {
-    system: SYSTEM_PROMPT,
+    system: guidance ? `${SYSTEM_PROMPT}\n\n${guidance}` : SYSTEM_PROMPT,
     user: JSON.stringify({
       estagio: diag.stage,
       porque: diag.drivers.map((d) => ({ premissa: d.premissa, fatos: d.facts })),
@@ -85,16 +109,27 @@ function groundingContext(diag: Diagnosis): unknown {
   return { facts: diag.facts, drivers: diag.drivers.map((d) => d.facts) };
 }
 
+export interface DiagnosisWriterLog {
+  warn: (obj: unknown, msg?: string) => void;
+}
+
 export async function writeDiagnosis(
   model: AlertWriterModel | null,
   diag: Diagnosis,
   profile: CompanyProfile,
   onUsage?: UsageSink,
+  permissions: ClaimPermission[] = [],
+  log?: DiagnosisWriterLog,
 ): Promise<DiagnosisText> {
+  // O "momento" da empresa É um juízo de saúde do caixa. Se a cobertura não o
+  // autoriza, nem a IA nem o template confiante entram: reportamos a limitação.
+  const saude = permissions.find((p) => p.type === 'cash_health');
+  if (saude && !saude.allowed) return diagnosisLimitation(saude);
+
   const fallback = diagnosisTemplate(diag);
   if (!model) return fallback;
 
-  const prompt = buildDiagnosisPrompt(diag, profile);
+  const prompt = buildDiagnosisPrompt(diag, profile, permissions);
   const ctx = groundingContext(diag);
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -106,9 +141,19 @@ export async function writeDiagnosis(
     }
     if (out.usage) onUsage?.(out.usage);
 
-    const grounded = checkGroundingDeep(`${out.title}\n${out.body}`, ctx);
-    if (grounded.ok) {
+    const texto = `${out.title}\n${out.body}`;
+    const grounded = checkGroundingDeep(texto, ctx);
+    // rede de segurança: mesmo com a saúde autorizada, não deixa a IA comparar
+    // períodos ou adjetivar a operação sem cobertura (outros claims).
+    const judged = checkJudgment(texto, permissions);
+    if (grounded.ok && judged.ok) {
       return { title: out.title, body: out.body, modelVersion: out.modelVersion, usage: out.usage };
+    }
+    if (!judged.ok) {
+      log?.warn(
+        { stage: diag.stage, claims: judged.offending.map((o) => o.claim) },
+        'diagnóstico da IA reprovado pelo fiscal de juízo; usando texto padrão',
+      );
     }
   }
 

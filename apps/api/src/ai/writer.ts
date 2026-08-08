@@ -17,9 +17,10 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import type { AlertFact } from '@pulso/core';
+import type { AlertFact, ClaimPermission } from '@pulso/core';
 
 import { checkGrounding } from './grounding';
+import { checkJudgment, renderClaimGuidance } from './judgment';
 import { ALERT_MODEL } from './models';
 import { TEMPLATE_VERSION, templateFor, type AlertText } from './templates';
 import type { AiCallUsage, UsageSink } from './usage';
@@ -98,9 +99,14 @@ Responda com o JSON { "title": ..., "body": ... }.`;
  * perfil — nada mais entra. Isso é testado: se alguém tentar passar dado
  * bruto por aqui, o teste quebra.
  */
-export function buildPrompt(alert: AlertFact, profile: CompanyProfile): AlertPrompt {
+export function buildPrompt(
+  alert: AlertFact,
+  profile: CompanyProfile,
+  permissions: ClaimPermission[] = [],
+): AlertPrompt {
+  const guidance = renderClaimGuidance(permissions);
   return {
-    system: SYSTEM_PROMPT,
+    system: guidance ? `${SYSTEM_PROMPT}\n\n${guidance}` : SYSTEM_PROMPT,
     user: JSON.stringify({
       ruleKey: alert.ruleKey,
       severity: alert.severity,
@@ -134,11 +140,12 @@ export async function writeAlert(
   profile: CompanyProfile,
   onUsage?: UsageSink,
   log?: WriterLog,
+  permissions: ClaimPermission[] = [],
 ): Promise<WrittenAlert> {
   const fallback: WrittenAlert = { ...templateFor(alert), modelVersion: TEMPLATE_VERSION };
   if (!model) return fallback;
 
-  const prompt = buildPrompt(alert, profile);
+  const prompt = buildPrompt(alert, profile, permissions);
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let out: WrittenAlert;
@@ -151,16 +158,26 @@ export async function writeAlert(
       return fallback;
     }
 
-    // a chamada aconteceu e gastou tokens: registra ANTES do veredito do fiscal
+    // a chamada aconteceu e gastou tokens: registra ANTES do veredito dos fiscais
     if (out.usage) onUsage?.(out.usage);
 
-    const grounded = checkGrounding(`${out.title}\n${out.body}`, alert.facts);
-    if (grounded.ok && bodyWithinLimit(out.body)) return out;
-    // reprovou no fiscal: uma segunda chance, depois template
+    const texto = `${out.title}\n${out.body}`;
+    const grounded = checkGrounding(texto, alert.facts);
+    // fiscal de JUÍZO: adjetivou algo que a cobertura não autoriza? reprova.
+    const judged = checkJudgment(texto, permissions);
+    if (grounded.ok && bodyWithinLimit(out.body) && judged.ok) return out;
+    if (!judged.ok) {
+      // log estruturado da reprovação de juízo, para medir a frequência (item 3)
+      log?.warn(
+        { ruleKey: alert.ruleKey, claims: judged.offending.map((o) => o.claim) },
+        'texto da IA reprovado pelo fiscal de juízo (afirmação sem cobertura); usando texto padrão',
+      );
+    }
+    // reprovou num dos fiscais: uma segunda chance, depois template
   }
 
   // esgotou as tentativas com o fiscal reprovando: cai no texto padrão (seguro)
-  log?.warn({ ruleKey: alert.ruleKey }, 'texto da IA reprovado pelo fiscal (grounding); usando texto padrão');
+  log?.warn({ ruleKey: alert.ruleKey }, 'texto da IA reprovado pelo fiscal; usando texto padrão');
   return fallback;
 }
 

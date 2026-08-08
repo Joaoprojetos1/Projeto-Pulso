@@ -13,8 +13,10 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import type { ClaimPermission } from '@pulso/core';
 
 import { checkGroundingDeep } from './grounding';
+import { checkJudgment, renderClaimGuidance } from './judgment';
 import { CHAT_MODEL } from './models';
 import type { AiCallUsage, UsageSink } from './usage';
 import type { CompanyProfile } from './writer';
@@ -54,6 +56,12 @@ export interface ChatContext {
   /** (c) diagnóstico atual e anterior, para dizer "melhorou desde o mês passado". */
   diagnosisCurrent?: ChatDiagnosisSummary | null;
   diagnosisPrevious?: ChatDiagnosisSummary | null;
+  /**
+   * O que a cobertura de dados AUTORIZA afirmar. Entra no prompt (a IA sabe o
+   * que não pode adjetivar) e no fiscal de juízo (reprova a resposta que
+   * adjetivar sem cobertura). Vazio = sem restrição.
+   */
+  permissions?: ClaimPermission[];
 }
 
 /** Configuração da memória (com padrões; sobrescrevível por ambiente/teste). */
@@ -124,7 +132,10 @@ export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[], opts: ChatB
     diagnosticoAtual: ctx.diagnosisCurrent ?? null,
     diagnosticoAnterior: ctx.diagnosisPrevious ?? null,
   });
-  const system = `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}`;
+  const guidance = renderClaimGuidance(ctx.permissions ?? []);
+  const system =
+    `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}` +
+    (guidance ? `\n\n${guidance}` : '');
 
   // últimas N mensagens, começando num turno do usuário
   let kept = sanitizeTurns(turns, historyN);
@@ -184,7 +195,9 @@ export async function askPulso(
       diagnosisPrevious: ctx.diagnosisPrevious ?? null,
       asOf: ctx.asOf,
     });
-    if (grounded.ok) return out;
+    // fiscal de juízo: a resposta não pode adjetivar o que a cobertura não autoriza
+    const judged = checkJudgment(out.text, ctx.permissions ?? []);
+    if (grounded.ok && judged.ok) return out;
   }
 
   return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
