@@ -20,6 +20,7 @@ import { registerFixedCost } from './routes/fixed-cost';
 import { registerImport } from './routes/import';
 import { registerInterest } from './routes/interest';
 import { registerPlanned } from './routes/planned';
+import { registerReports } from './routes/reports';
 import { registerSegments } from './routes/segments';
 import { registerSimulate } from './routes/simulate';
 import { registerSnapshots } from './routes/snapshots';
@@ -136,6 +137,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerSegments(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSubscription(app, sql);
   registerSimulate(app, sql);
+  registerReports(app, sql);
   registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
   registerAvatar(app, sql);

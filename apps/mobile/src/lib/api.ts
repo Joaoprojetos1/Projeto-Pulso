@@ -387,6 +387,52 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Relatórios: série no tempo + histórico de recomendações --------------- */
+
+export interface HistoryPointJson {
+  asOf: string;
+  value: number;
+}
+export interface HistoryIndicatorJson {
+  key: string;
+  label: string;
+  unit: string | null;
+  points: HistoryPointJson[];
+}
+export interface HistoryJson {
+  snapshots: number;
+  indicators: HistoryIndicatorJson[];
+  stages: { asOf: string; stage: string }[];
+}
+
+/** Série de cada indicador ao longo do tempo (para os gráficos da aba Relatórios). */
+export async function fetchMyHistory(token: string): Promise<HistoryJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/history`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no histórico`);
+  return (await res.json()) as HistoryJson;
+}
+
+export interface RecommendationJson {
+  claimType: string;
+  priority: 'alta' | 'media' | 'baixa';
+  title: string;
+  why: string;
+  action: string;
+  firstRecommendedOn: string;
+  lastSeenOn: string;
+  resolvedOn: string | null;
+  status: 'aberta' | 'resolvida';
+}
+
+/** Histórico das recomendações de melhoria (com data e situação). */
+export async function fetchMyRecommendations(token: string): Promise<RecommendationJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/recommendations`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nas recomendações`);
+  return ((await res.json()) as { recommendations: RecommendationJson[] }).recommendations;
+}
+
 /* --------------- Custo fixo por confirmação (inferido do histórico) --------------- */
 
 export interface FixedCostSuggestionJson {

@@ -291,24 +291,8 @@ export default function Conta() {
           />
         </View>
 
-        {/* grupo: contador + ajuda */}
+        {/* grupo: ajuda (os relatórios agora vivem na aba Relatórios — item 2.9/2.10) */}
         <View style={styles.grupo}>
-          {relatorioData && (
-            <Linha
-              icon="download-outline"
-              label="Baixar relatório do mês"
-              sub="Documento com marca, indicadores e a leitura do Pulso — para salvar ou apresentar"
-              onPress={() => relatorioRef.current?.gerar()}
-            />
-          )}
-          {resumoContador && (
-            <Linha
-              icon="document-text-outline"
-              label="Resumo para o contador"
-              sub="Gera uma imagem limpa do seu caixa para enviar ou salvar"
-              onPress={() => contadorRef.current?.gerar()}
-            />
-          )}
           <Linha
             icon="chatbubble-ellipses-outline"
             label="Ajuda e feedback"
@@ -327,11 +311,6 @@ export default function Conta() {
         </Pressable>
 
         <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
-
-        {/* cartão do resumo (fora da tela) — capturado ao tocar em "Resumo para o contador" */}
-        {resumoContador && <EnviarContadorCard ref={contadorRef} resumo={resumoContador} />}
-        {/* relatório do mês (fora da tela) — capturado ao tocar em "Baixar relatório do mês" */}
-        {relatorioData && <RelatorioMensalCard ref={relatorioRef} data={relatorioData} />}
       </ScrollView>
     </SafeAreaView>
   );
