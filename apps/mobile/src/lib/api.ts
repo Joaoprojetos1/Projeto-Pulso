@@ -81,8 +81,23 @@ export interface WeeklySummaryJson {
   comparedTo: string;
 }
 
+/** Um indicador do SEGMENTO da empresa, já rotulado pelo servidor. */
+export interface SegmentIndicatorJson {
+  key: string;
+  label: string;
+  hint: string;
+  value: number | null;
+  unit: string | null;
+  available: boolean;
+  reason: string | null;
+}
+
 export interface DashboardJson {
   company: { id: string; name: string; niche: string };
+  /** Segmento da empresa (null = só núcleo universal). */
+  segment?: { id: string; label: string } | null;
+  /** Indicadores do segmento, rotulados (a home mostra estes). */
+  segmentIndicators?: SegmentIndicatorJson[];
   snapshot: {
     asOf: string;
     coreVersion: string;
@@ -288,6 +303,8 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
   const body = (await res.json()) as {
     role?: UserRole;
     company: { id: string; name: string; niche: string };
+    segment?: { id: string; label: string } | null;
+    segmentIndicators?: SegmentIndicatorJson[];
     snapshot: DashboardJson['snapshot'] | null;
     comparativos?: Comparativos;
     diagnosis?: DiagnosisJson | null;
@@ -298,6 +315,8 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
   const dashboard: DashboardJson | null = body.snapshot
     ? {
         company: body.company,
+        segment: body.segment ?? null,
+        segmentIndicators: body.segmentIndicators ?? [],
         snapshot: body.snapshot,
         comparativos: body.comparativos,
         diagnosis: body.diagnosis ?? null,

@@ -70,6 +70,25 @@ function tendencia(
   return { seta: subiu ? '↑' : '↓', pct, bom: menorEhMelhor ? !subiu : subiu };
 }
 
+/** Formata o valor de um indicador de segmento conforme a unidade que vem pronta. */
+function valorSegmento(value: number | null, unit: string | null): string {
+  if (value == null) return '—';
+  switch (unit) {
+    case 'ratio':
+      return pct(value);
+    case 'cents':
+      return brl(value);
+    case 'days':
+      return dias(value);
+    case 'times':
+      return `${(Math.round(value * 10) / 10).toString().replace('.', ',')}x`;
+    case 'count':
+      return String(Math.round(value));
+    default:
+      return String(value);
+  }
+}
+
 /** Estado de expansão do card "Primeiros passos" — persiste na sessão (não no disco). */
 let primeirosPassosAbertoSessao = false;
 
@@ -325,6 +344,37 @@ export default function Dashboard() {
             </Pressable>
           ))}
         </View>
+
+        {/* ===== SEU SEGMENTO — os indicadores do ramo (home focada no segmento) ===== */}
+        {(dashboard.segmentIndicators?.length ?? 0) > 0 && (
+          <View style={styles.segmento}>
+            <Text style={styles.segmentoTitulo}>
+              SEU SEGMENTO{dashboard.segment ? ` · ${dashboard.segment.label}` : ''}
+            </Text>
+            {dashboard.segmentIndicators!.every((s) => !s.available) ? (
+              <Pressable
+                onPress={() => router.push('/numeros-do-mes' as Href)}
+                style={({ pressed }) => [styles.segPrompt, pressed && styles.pressionado]}
+              >
+                <Text style={styles.segPromptTexto}>
+                  Informe os números do seu segmento para ver estes indicadores →
+                </Text>
+              </Pressable>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
+                {dashboard.segmentIndicators!.map((s) => (
+                  <View key={s.key} style={[styles.segCard, !s.available && styles.segCardVazio]}>
+                    <Text style={styles.segCardLabel} numberOfLines={1}>{s.label}</Text>
+                    <Text style={[styles.segCardValor, !s.available && styles.chipTextoVazio]}>
+                      {valorSegmento(s.value, s.unit)}
+                    </Text>
+                    <Text style={styles.segCardHint} numberOfLines={2}>{s.hint}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
 
         {fonte !== 'demo' && (
           <Pressable
@@ -791,6 +841,41 @@ const styles = StyleSheet.create({
   },
   chipTend: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.2, marginTop: 3 },
   chipTextoVazio: { color: colors.cinza, opacity: 0.55 },
+
+  // ---- Seu segmento (home focada no segmento) ----
+  segmento: { marginTop: space.section },
+  segmentoTitulo: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: colors.cinza,
+    paddingHorizontal: 18,
+    marginBottom: space.tight,
+  },
+  segCard: {
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginRight: space.tight,
+    minWidth: 158,
+    gap: 3,
+  },
+  segCardVazio: { backgroundColor: colors.papel },
+  segCardLabel: { fontFamily: fonts.corpoForte, fontSize: 12, color: colors.tinta },
+  segCardValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },
+  segCardHint: { fontFamily: fonts.corpo, fontSize: 11, lineHeight: 15, color: colors.cinza },
+  segPrompt: {
+    marginHorizontal: 16,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.vivo,
+    borderRadius: 12,
+    padding: 14,
+  },
+  segPromptTexto: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.mata, lineHeight: 20 },
 
   explica: {
     marginHorizontal: 16,

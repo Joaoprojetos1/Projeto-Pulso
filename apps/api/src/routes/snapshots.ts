@@ -6,6 +6,7 @@ import {
   CORE_VERSION,
   diagnose,
   evaluate,
+  getSegment,
   missingInfoRecommendations,
   projectCash,
   segmentRules,
@@ -263,8 +264,34 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
       ]
     : [];
 
+  // Indicadores do SEGMENTO da empresa, já rotulados (home focada no segmento —
+  // item 3.5). Os valores vêm do payload; os rótulos, do pacote do segmento no
+  // core. `available=false` = ainda sem os números do mês (com o motivo).
+  const seg = getSegment(company.niche);
+  const payloadInd = (snapshot.payload ?? {}) as Record<
+    string,
+    { value?: unknown; unit?: string; insufficientReason?: string } | undefined
+  >;
+  const segmentIndicators = seg
+    ? Object.entries(seg.labels).map(([key, meta]) => {
+        const ind = payloadInd[key];
+        const value = typeof ind?.value === 'number' ? ind.value : null;
+        return {
+          key,
+          label: meta.label,
+          hint: meta.hint,
+          value,
+          unit: ind?.unit ?? null,
+          available: value != null,
+          reason: ind?.insufficientReason ?? null,
+        };
+      })
+    : [];
+
   return {
     company: toCompanyJson(company),
+    segment: seg ? { id: seg.id, label: seg.label } : null,
+    segmentIndicators,
     snapshot: {
       asOf: snapshot.as_of,
       coreVersion: snapshot.core_version,
