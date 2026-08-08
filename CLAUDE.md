@@ -153,3 +153,24 @@ geométrica fina) · Figtree (corpo) · IBM Plex Mono (rótulos, datas). Número
 Fala com o dono do negócio, não com um CFO. "Você está recebendo 46 dias
 depois de vender" — nunca "seu DSO está em 46". Sem jargão, sem
 condescendência, com data e número concretos.
+
+## Pontos de extensão previstos (declarados, não implementados)
+
+Dois contratos existem no código sem implementação, de propósito, para o produto
+crescer sem reescrever o núcleo. Quando forem implementados, NADA do resto muda.
+
+- **Referência de mercado por segmento** — `packages/core/src/market-reference.ts`.
+  Interface `MarketReference.benchmarkFor(segment, indicatorKey)` devolve um valor
+  típico de mercado; `compareToMarket` diz se a empresa está acima/abaixo. Habilita
+  "a margem média do varejo de roupa é X%, a sua está acima". Padrão =
+  `NO_MARKET_REFERENCE` (nunca compara). É APRESENTAÇÃO: o core segue calculando o
+  indicador da empresa; a referência só acrescenta o "em relação ao mercado". Uma
+  fonte real (pesquisa própria, base setorial) implementa a interface.
+
+- **Provedor de geração de texto** — `apps/api/src/ai/provider.ts`. Interface
+  `TextProvider.generate(request)` abstrai "dado um prompt, devolva texto". Hoje a
+  voz usa a Anthropic; outro provedor (OpenAI, Gemini, ou um roteador que combina
+  provedores) só precisa satisfazer o contrato — sem reescrever writer/diagnóstico/
+  chat. REGRA QUE NÃO MUDA: os fiscais (grounding de números + fiscal de juízo)
+  ficam POR FORA do provedor; trocar de IA não afrouxa as travas. O texto de
+  qualquer provedor passa pelas mesmas verificações.
