@@ -13,6 +13,7 @@ import { registerAuth } from './routes/auth';
 import { registerAvatar } from './routes/avatar';
 import { registerChat } from './routes/chat';
 import { registerCompanies } from './routes/companies';
+import { registerCompany } from './routes/company';
 import { registerData } from './routes/data';
 import { registerDevices } from './routes/devices';
 import { registerImport } from './routes/import';
@@ -33,6 +34,8 @@ export interface AppOptions {
   pushSender?: PushSender | null;
   /** Envio de e-mail (recuperação de senha). Sem opção, resolve pelo ambiente (log em dev). */
   mailer?: Mailer;
+  /** Consulta de CNPJ: injeta um fetcher nos testes; produção usa o fetch global. */
+  cnpjLookup?: import('./services/cnpj').LookupDeps;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -119,6 +122,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerInterest(app, sql);
   registerPlanned(app, sql);
   registerCompanies(app, sql);
+  registerCompany(app, sql, opts.cnpjLookup);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerImport(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
