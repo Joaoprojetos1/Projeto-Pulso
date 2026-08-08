@@ -9,6 +9,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
+import { router, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -179,6 +180,20 @@ export default function Dados() {
         {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
         {erro ? <Text style={styles.erro}>{erro}</Text> : null}
 
+        {/* fim da digitação: o custo fixo vem por confirmação do que o motor
+            identificou nos arquivos, não digitado em branco */}
+        <Pressable
+          style={({ pressed }) => [styles.custoFixo, pressed && styles.pressionado]}
+          onPress={() => router.push('/custo-fixo' as Href)}
+        >
+          <Ionicons name="repeat-outline" size={20} color={colors.mata} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.custoFixoTitulo}>Custos fixos</Text>
+            <Text style={styles.custoFixoDesc}>Revise os gastos que se repetem todo mês (o Pulso identifica dos seus arquivos).</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.cinza} />
+        </Pressable>
+
         <Text style={styles.rotuloLista}>Arquivos enviados</Text>
         {carregando ? (
           <ActivityIndicator color={colors.vivo} style={{ marginTop: 16 }} />
@@ -252,6 +267,21 @@ const styles = StyleSheet.create({
   aviso: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.mata, marginTop: 10 },
   erro: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.critico, marginTop: 8 },
 
+  custoFixo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.vivo,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 18,
+  },
+  custoFixoTitulo: { fontFamily: fonts.corpoMedio, fontSize: 15, color: colors.tinta },
+  custoFixoDesc: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, lineHeight: 18 },
   rotuloLista: { fontFamily: fonts.corpoMedio, fontSize: 15, color: colors.tinta, marginTop: 22 },
   vazio: { alignItems: 'center', gap: 8, paddingVertical: 24 },
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.cinza, textAlign: 'center', maxWidth: 260, lineHeight: 20 },

@@ -228,14 +228,15 @@ export default function Conta() {
           </View>
         </View>
 
-        {/* grupo: dados e assinatura */}
+        {/* grupo: dados e assinatura (Conta enxuta — item 2.10: o "Meus números"
+            saiu; caixa vem dos arquivos, custo fixo vem por confirmação) */}
         <View style={styles.grupo}>
           {!demo && (
             <Linha
-              icon="cash-outline"
-              label="Meus números"
-              sub="Atualize seu caixa e custo fixo"
-              onPress={() => router.push('/configurar' as Href)}
+              icon="business-outline"
+              label="Dados cadastrais da empresa"
+              sub="CNPJ, segmento e sistemas que você usa"
+              onPress={() => router.push('/onboarding' as Href)}
             />
           )}
           <Linha
@@ -259,24 +260,9 @@ export default function Conta() {
           </Pressable>
         )}
 
-        {/* grupo: gestão do mês (segmento) — números do mês + diagnóstico */}
-        {!demo && (
-          <View style={styles.grupo}>
-            <Linha
-              icon="stats-chart-outline"
-              label="Números do mês"
-              sub="Informe os números do seu ramo e veja os indicadores do segmento"
-              onPress={() => router.push('/numeros-do-mes' as Href)}
-            />
-            <Linha
-              icon="clipboard-outline"
-              label="Diagnóstico de gestão"
-              sub="15 perguntas rápidas sobre a sua gestão"
-              onPress={() => router.push('/questionario' as Href)}
-              ultimo
-            />
-          </View>
-        )}
+        {/* Números do mês e Diagnóstico de gestão SAÍRAM daqui (item 2.4/2.10):
+            o diagnóstico roda no onboarding e vive na aba Relatórios; os números
+            do mês entram pela aba Dados. A Conta ficou enxuta. */}
 
         {/* grupo: avisos, segurança, privacidade */}
         <View style={styles.grupo}>

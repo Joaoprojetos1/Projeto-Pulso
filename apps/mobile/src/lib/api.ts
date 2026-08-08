@@ -356,6 +356,51 @@ export async function saveMySetup(
   if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar seus números`);
 }
 
+/* --------------- Custo fixo por confirmação (inferido do histórico) --------------- */
+
+export interface FixedCostSuggestionJson {
+  label: string;
+  monthlyCents: number;
+  occurrences: number;
+  category: string | null;
+  months: string[];
+}
+export interface FixedCostItemJson {
+  id: string;
+  label: string;
+  amountCents: number;
+  category: string | null;
+  source: 'inferred' | 'manual';
+}
+export interface FixedCostJson {
+  suggestions: FixedCostSuggestionJson[];
+  items: FixedCostItemJson[];
+  declaredFixedCostCents: number | null;
+}
+
+/** O que o motor identificou como custo fixo recorrente + o que já foi confirmado. */
+export async function fetchMyFixedCost(token: string): Promise<FixedCostJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/fixed-cost`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no custo fixo`);
+  return (await res.json()) as FixedCostJson;
+}
+
+/** Confirma a lista final de custos fixos. O servidor soma e recalcula o painel. */
+export async function saveMyFixedCost(
+  token: string,
+  items: Array<{ label: string; amountCents: number; category?: string | null; source?: 'inferred' | 'manual' }>,
+): Promise<{ items: FixedCostItemJson[]; declaredFixedCostCents: number }> {
+  const res = await fetchWithWake(`${apiBase()}/me/fixed-cost`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ items }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao salvar o custo fixo`);
+  return (await res.json()) as { items: FixedCostItemJson[]; declaredFixedCostCents: number };
+}
+
 /* --------------- Cadastro da empresa: CNPJ, segmento, sistemas --------------- */
 
 export interface CnpjSocio {

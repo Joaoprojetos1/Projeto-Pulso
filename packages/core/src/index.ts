@@ -15,5 +15,6 @@ export * from './requirements';
 export * from './sources';
 export * from './coverage';
 export * from './claims';
+export * from './fixed-cost';
 export * from './segments';
 export * from './segments/questionnaire';
