@@ -40,12 +40,13 @@ interface Fonte {
 
 const FONTES: Fonte[] = [
   {
-    chave: 'extrato',
+    chave: 'arquivos',
     icone: 'document-text-outline',
-    titulo: 'Extrato bancário',
+    titulo: 'Enviar arquivos',
     descricao:
-      'Entradas e saídas da sua conta (PDF do Inter/Santander ou OFX). Traz o saldo e o histórico, e já faz o motor girar.',
+      'Vários de uma vez, de meses diferentes: extrato bancário, relatórios, documentos contábeis. Você classifica cada um; o Pulso lê o que sabe ler e recalcula.',
     disponivel: true,
+    rota: '/enviar' as Href,
   },
   {
     chave: 'maquininha',
@@ -108,7 +109,6 @@ export default function Alimentar() {
 
   function aoTocar(f: Fonte) {
     if (ocupado) return;
-    if (f.chave === 'extrato') return subirExtrato();
     if (f.rota) router.push(f.rota);
   }
 

@@ -12,7 +12,7 @@
  */
 
 import { router, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -150,22 +150,32 @@ export default function Onboarding() {
     bank: { purpose: 'bank', systemName: null, exportFormat: null },
   });
   const [salvando, setSalvando] = useState(false);
+  // último CNPJ (dígitos) já consultado, para a consulta AUTOMÁTICA não repetir.
+  const consultadoRef = useRef<string>('');
 
-  async function consultarCnpj() {
-    if (!token) return;
-    if (!cnpjValido(cnpj)) {
+  async function consultarCnpj(valor?: string) {
+    const alvo = valor ?? cnpj;
+    const digs = soDigitos(alvo);
+    if (!token) {
+      setCnpjErro('Sua sessão expirou. Saia e entre de novo.');
+      return;
+    }
+    if (!cnpjValido(alvo)) {
       setCnpjErro('CNPJ incompleto ou inválido. Confira os números.');
       return;
     }
+    if (consultando || consultadoRef.current === digs) return; // já em curso / já consultado
+    consultadoRef.current = digs;
     setCnpjErro('');
     setConsultando(true);
     try {
-      const r = await lookupMyCnpj(token, cnpj);
+      const r = await lookupMyCnpj(token, alvo);
       setDados(r);
       setSegmento(r.suggestedNiche ?? null);
       setPasso(2);
     } catch (e) {
-      // o erro do servidor aparece NO CAMPO (CNPJ não encontrado / inválido)
+      // erro visível NO CAMPO (não encontrado / inválido / falha) + permite tentar de novo
+      consultadoRef.current = '';
       setCnpjErro(e instanceof CampoError ? e.message : 'Não consegui consultar agora. Tente de novo.');
     } finally {
       setConsultando(false);
@@ -230,8 +240,12 @@ export default function Onboarding() {
                 style={[styles.input, cnpjErro ? styles.inputErro : null]}
                 value={cnpj}
                 onChangeText={(t) => {
-                  setCnpj(mascaraCnpj(t));
+                  const m = mascaraCnpj(t);
+                  setCnpj(m);
                   if (cnpjErro) setCnpjErro('');
+                  // CONSULTA AUTOMÁTICA: ao completar 14 dígitos válidos, já busca
+                  // (o dono não precisa achar nem tocar o botão).
+                  if (soDigitos(m).length === 14 && cnpjValido(m)) void consultarCnpj(m);
                 }}
                 onBlur={() => {
                   if (cnpj.length > 0 && !cnpjValido(cnpj)) {
@@ -252,7 +266,7 @@ export default function Onboarding() {
                   (consultando || soDigitos(cnpj).length !== 14) && styles.botaoOff,
                   pressed && styles.pressionado,
                 ]}
-                onPress={consultarCnpj}
+                onPress={() => consultarCnpj()}
                 disabled={consultando || soDigitos(cnpj).length !== 14}
               >
                 <Text style={styles.botaoTexto}>{consultando ? 'Consultando…' : 'Consultar CNPJ'}</Text>
@@ -407,7 +421,7 @@ export default function Onboarding() {
 
               <Pressable
                 style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
-                onPress={() => router.replace('/alimentar' as Href)}
+                onPress={() => router.replace('/enviar' as Href)}
               >
                 <Text style={styles.botaoTexto}>Enviar meus dados</Text>
               </Pressable>
