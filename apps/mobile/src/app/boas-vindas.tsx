@@ -60,6 +60,12 @@ function telefoneValido(txt: string): boolean {
   const d = txt.replace(/\D/g, '');
   return d.length >= 10 && d.length <= 11;
 }
+function emailValido(txt: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(txt.trim());
+}
+
+/** Erros de preenchimento por campo (aparecem no blur e no submit). */
+type ErrosCampo = { negocio?: string; telefone?: string; email?: string; senha?: string };
 
 export default function Login() {
   const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando } = usePulso();
@@ -69,6 +75,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [errosCampo, setErrosCampo] = useState<ErrosCampo>({});
   const [msg, setMsg] = useState(0);
   // fluxo de recuperação de senha (estado local — não é sessão)
   const [codigo, setCodigo] = useState('');
@@ -148,8 +155,37 @@ export default function Login() {
     senha.length > 0 &&
     (modo === 'entrar' || (negocio.trim().length > 0 && telefoneValido(telefone)));
 
+  /** Valida um campo NO BLUR e mostra/limpa o erro dele (nunca em silêncio). */
+  function validarCampo(campo: keyof ErrosCampo) {
+    const cad = modo === 'cadastrar';
+    setErrosCampo((e) => {
+      const n = { ...e };
+      if (campo === 'negocio') n.negocio = cad && negocio.trim().length === 0 ? 'Informe o nome do seu negócio.' : undefined;
+      if (campo === 'telefone') n.telefone = cad && telefone.length > 0 && !telefoneValido(telefone) ? 'WhatsApp incompleto — use DDD e número.' : undefined;
+      if (campo === 'email') n.email = email.length > 0 && !emailValido(email) ? 'E-mail inválido. Confira o endereço.' : undefined;
+      if (campo === 'senha') n.senha = cad && senha.length > 0 && senha.length < 8 ? 'A senha precisa ter ao menos 8 caracteres.' : undefined;
+      return n;
+    });
+  }
+
   async function enviar() {
-    if (!podeEnviar) return;
+    if (carregando) return;
+    const cad = modo === 'cadastrar';
+    // valida TUDO e aponta o erro NO CAMPO culpado (nunca botão sem efeito em silêncio)
+    const errs: ErrosCampo = {};
+    if (cad) {
+      if (negocio.trim().length === 0) errs.negocio = 'Informe o nome do seu negócio.';
+      if (!telefoneValido(telefone)) errs.telefone = 'WhatsApp incompleto — use DDD e número.';
+    }
+    if (!emailValido(email)) errs.email = 'E-mail inválido. Confira o endereço.';
+    if (cad && senha.length < 8) errs.senha = 'A senha precisa ter ao menos 8 caracteres.';
+    else if (senha.length === 0) errs.senha = 'Digite sua senha.';
+    if (errs.negocio || errs.telefone || errs.email || errs.senha) {
+      setErrosCampo(errs);
+      return;
+    }
+    setErrosCampo({});
+
     if (modo === 'entrar') {
       // login de conta existente cai DIRETO no painel
       const ok = await entrar(email.trim(), senha);
@@ -258,33 +294,38 @@ export default function Login() {
                 <>
                   <Text style={styles.label}>NOME DO SEU NEGÓCIO</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, errosCampo.negocio ? styles.inputErro : null]}
                     value={negocio}
-                    onChangeText={setNegocio}
+                    onChangeText={(v) => { setNegocio(v); if (errosCampo.negocio) setErrosCampo((e) => ({ ...e, negocio: undefined })); }}
+                    onBlur={() => validarCampo('negocio')}
                     placeholder="Ex.: Loja Aurora"
                     placeholderTextColor={colors.cinza}
                   />
+                  {errosCampo.negocio ? <Text style={styles.erroCampo}>{errosCampo.negocio}</Text> : null}
 
                   <Text style={styles.label}>WHATSAPP</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, errosCampo.telefone ? styles.inputErro : null]}
                     value={telefone}
-                    onChangeText={(t) => setTelefone(mascaraTelefone(t))}
+                    onChangeText={(t) => { setTelefone(mascaraTelefone(t)); if (errosCampo.telefone) setErrosCampo((e) => ({ ...e, telefone: undefined })); }}
                     onFocus={rolarAteCampo}
+                    onBlur={() => validarCampo('telefone')}
                     placeholder="(11) 91234-5678"
                     placeholderTextColor={colors.cinza}
                     keyboardType="phone-pad"
                     maxLength={16}
                     textContentType="telephoneNumber"
                   />
+                  {errosCampo.telefone ? <Text style={styles.erroCampo}>{errosCampo.telefone}</Text> : null}
                 </>
               )}
 
               <Text style={styles.label}>E-MAIL</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errosCampo.email ? styles.inputErro : null]}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(v) => { setEmail(v); if (errosCampo.email) setErrosCampo((e) => ({ ...e, email: undefined })); }}
+                onBlur={() => validarCampo('email')}
                 placeholder="voce@suaempresa.com.br"
                 placeholderTextColor={colors.cinza}
                 autoCapitalize="none"
@@ -293,14 +334,16 @@ export default function Login() {
                 autoComplete="email"
                 textContentType="emailAddress"
               />
+              {errosCampo.email ? <Text style={styles.erroCampo}>{errosCampo.email}</Text> : null}
 
               <Text style={styles.label}>SENHA</Text>
-              <View style={styles.senhaLinha}>
+              <View style={[styles.senhaLinha, errosCampo.senha ? styles.inputErro : null]}>
                 <TextInput
                   style={styles.senhaInput}
                   value={senha}
-                  onChangeText={setSenha}
+                  onChangeText={(v) => { setSenha(v); if (errosCampo.senha) setErrosCampo((e) => ({ ...e, senha: undefined })); }}
                   onFocus={rolarAteCampo}
+                  onBlur={() => validarCampo('senha')}
                   placeholder={cadastrando ? 'Crie uma senha (mín. 8 caracteres)' : '••••••••'}
                   placeholderTextColor={colors.cinza}
                   secureTextEntry={!mostrarSenha}
@@ -321,11 +364,12 @@ export default function Login() {
                   />
                 </Pressable>
               </View>
+              {errosCampo.senha ? <Text style={styles.erroCampo}>{errosCampo.senha}</Text> : null}
 
               <Pressable
                 style={({ pressed }) => [styles.botao, (pressed || !podeEnviar) && styles.pressionado]}
                 onPress={enviar}
-                disabled={carregando || !podeEnviar}
+                disabled={carregando}
               >
                 {carregando ? (
                   <View style={styles.carregandoLinha}>
@@ -513,6 +557,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.corpo,
     fontSize: 16,
     color: colors.tinta,
+  },
+  inputErro: { borderColor: colors.critico },
+  erroCampo: {
+    fontFamily: fonts.corpo,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: colors.critico,
+    marginTop: 5,
   },
   // senha com botão de mostrar/ocultar: a "caixa" fica na linha; o input é só texto
   senhaLinha: {
