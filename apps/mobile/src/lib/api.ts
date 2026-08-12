@@ -133,17 +133,37 @@ function apiBase(): string {
 
 /**
  * Busca com um toque de paciência. Servidor gratuito (Render) hiberna quando
- * ninguém usa; a primeira visita pode levar ~30-50s pra acordar. Então tenta
- * rápido (8s, caso comum já acordado) e, se falhar, tenta de novo dando 60s.
+ * ninguém usa; a primeira visita pode levar ~30-50s pra acordar. Enquanto acorda,
+ * ele NÃO só demora: às vezes devolve um 502/503/504 na cara (o "erro na primeira
+ * vez", que aparece no upload por ser o 1º POST pesado da sessão). Então:
+ *  - retenta em timeout/rede E em 502/503/504 transitório;
+ *  - GET sempre retenta 5xx (idempotente); escrita só quando o chamador permite
+ *    (`retryOn5xx`), para não reenviar por engano algo não-idempotente;
+ *  - quando há arquivo no corpo, o 1º toque tem folga maior (não abortar à toa
+ *    um envio lento).
  */
-async function fetchWithWake(url: string, init?: RequestInit): Promise<Response> {
-  const timeouts = [8000, 60000];
+async function fetchWithWake(
+  url: string,
+  init?: RequestInit,
+  opts?: { retryOn5xx?: boolean },
+): Promise<Response> {
+  const method = (init?.method ?? 'GET').toUpperCase();
+  const temCorpo = init?.body != null;
+  const retry5xx = opts?.retryOn5xx ?? method === 'GET';
+  const timeouts = temCorpo ? [20000, 60000, 90000] : [8000, 45000, 60000];
   let lastErr: unknown;
-  for (const ms of timeouts) {
+  for (let i = 0; i < timeouts.length; i++) {
+    const ultima = i === timeouts.length - 1;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), ms);
+    const timer = setTimeout(() => controller.abort(), timeouts[i]!);
     try {
-      return await fetch(url, { ...init, signal: controller.signal });
+      const res = await fetch(url, { ...init, signal: controller.signal });
+      // servidor acordando devolve 5xx transitório: trata como "ainda não pronto"
+      if (retry5xx && res.status >= 502 && res.status <= 504 && !ultima) {
+        lastErr = new Error(`HTTP ${res.status}`);
+        continue;
+      }
+      return res;
     } catch (err) {
       lastErr = err;
     } finally {
@@ -651,16 +671,22 @@ export async function importFile(
   contentBase64: string,
   docType: DocType = 'bank_statement',
 ): Promise<ImportResult> {
-  const res = await fetchWithWake(`${apiBase()}/me/import`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-    body: JSON.stringify({ filename, contentBase64, docType }),
-  });
+  // idempotente por file_hash no servidor: seguro retentar em 502/503/504 (Render acordando)
+  const res = await fetchWithWake(
+    `${apiBase()}/me/import`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+      body: JSON.stringify({ filename, contentBase64, docType }),
+    },
+    { retryOn5xx: true },
+  );
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (res.status === 422 || res.status === 413) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(body.error ?? 'Não consegui ler esse arquivo.');
   }
+  if (res.status >= 500) throw new Error('O servidor demorou para responder. Tente enviar de novo.');
   if (!res.ok) throw new Error(`HTTP ${res.status} ao importar o arquivo`);
   const body = (await res.json()) as { import?: ImportResult };
   return body.import ?? {};
