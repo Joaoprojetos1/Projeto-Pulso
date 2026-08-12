@@ -177,4 +177,54 @@ describe('CNPJ — consulta com fallback + cache + rota', () => {
 
     await app.close();
   });
+
+  it('trava do onboarding: conta nova sem CNPJ, PATCH grava o CNPJ do fallback', async () => {
+    const app = buildApp(sql, { cnpjLookup: { fetcher: makeFetcher(true) } });
+    await app.ready();
+
+    const signup = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: {
+        email: 'fallback@cnpj.teste',
+        password: 'senha-forte-123',
+        businessName: 'Sem CNPJ',
+        phone: '(11) 99999-7777',
+      },
+    });
+    expect(signup.statusCode).toBe(201);
+    const token = signup.json().token as string;
+    const auth = { authorization: `Bearer ${token}` };
+
+    // conta nova: o painel já traz a empresa, mas SEM CNPJ (cadastro incompleto)
+    const d0 = await app.inject({ method: 'GET', url: '/me/dashboard', headers: auth });
+    expect(d0.statusCode).toBe(200);
+    expect(d0.json().company.cnpj).toBeNull();
+
+    // fallback: grava o CNPJ digitado direto no PATCH (sem consultar a base pública)
+    const patch = await app.inject({
+      method: 'PATCH',
+      url: '/me/company',
+      headers: auth,
+      payload: { niche: 'varejo', cnpj: '11.444.777/0001-61' },
+    });
+    expect(patch.statusCode).toBe(200);
+    expect(patch.json().company.cnpj).toBe('11444777000161');
+    expect(patch.json().company.niche).toBe('varejo');
+
+    // agora o painel reflete o cadastro completo (CNPJ presente → onboarded)
+    const d1 = await app.inject({ method: 'GET', url: '/me/dashboard', headers: auth });
+    expect(d1.json().company.cnpj).toBe('11444777000161');
+
+    // CNPJ inválido no PATCH: 422 no campo, não grava
+    const badPatch = await app.inject({
+      method: 'PATCH',
+      url: '/me/company',
+      headers: auth,
+      payload: { cnpj: '11.444.777/0001-60' },
+    });
+    expect(badPatch.statusCode).toBe(422);
+
+    await app.close();
+  });
 });

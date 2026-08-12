@@ -134,8 +134,11 @@ function cnpjValido(raw: string): boolean {
 }
 
 export default function Onboarding() {
-  const { token } = usePulso();
+  const { token, carregar, marcarCadastroCompleto } = usePulso();
   const [passo, setPasso] = useState(1);
+  // fallback: quando a consulta pública do CNPJ falha, libera seguir à mão SEM
+  // furar a exigência (só aparece com um CNPJ válido já digitado).
+  const [permitirManual, setPermitirManual] = useState(false);
 
   // dados que atravessam as etapas
   const [cnpj, setCnpj] = useState('');
@@ -172,11 +175,14 @@ export default function Onboarding() {
       const r = await lookupMyCnpj(token, alvo);
       setDados(r);
       setSegmento(r.suggestedNiche ?? null);
+      marcarCadastroCompleto(); // o CNPJ já ficou gravado no servidor
       setPasso(2);
     } catch (e) {
       // erro visível NO CAMPO (não encontrado / inválido / falha) + permite tentar de novo
       consultadoRef.current = '';
       setCnpjErro(e instanceof CampoError ? e.message : 'Não consegui consultar agora. Tente de novo.');
+      // libera o caminho à mão (o CNPJ digitado será gravado ao confirmar o segmento)
+      setPermitirManual(true);
     } finally {
       setConsultando(false);
     }
@@ -186,7 +192,12 @@ export default function Onboarding() {
     if (!token || !segmento) return;
     setSalvando(true);
     try {
-      await patchMyCompany(token, { niche: segmento });
+      // fallback: sem dados do lookup mas com CNPJ válido digitado → grava o CNPJ
+      // junto com o segmento, para o cadastro contar como completo.
+      const patch: { niche: string; cnpj?: string } = { niche: segmento };
+      if (!dados && cnpjValido(cnpj)) patch.cnpj = soDigitos(cnpj);
+      await patchMyCompany(token, patch);
+      if (dados || patch.cnpj) marcarCadastroCompleto();
       setPasso(3);
     } catch {
       // segmento é da lista fixa; falha só por rede — segue mesmo assim
@@ -272,9 +283,17 @@ export default function Onboarding() {
                 <Text style={styles.botaoTexto}>{consultando ? 'Consultando…' : 'Consultar CNPJ'}</Text>
               </Pressable>
 
-              <Pressable onPress={() => setPasso(2)}>
-                <Text style={styles.pular}>Não tenho agora, escolher o segmento à mão</Text>
-              </Pressable>
+              <Text style={styles.ajuda}>
+                O CNPJ é obrigatório: é por ele que o Pulso conhece a sua empresa e os sócios.
+              </Text>
+
+              {/* fallback: só quando a consulta falhou E há um CNPJ válido digitado.
+                  Segue à mão, mas o CNPJ digitado é gravado ao confirmar o segmento. */}
+              {permitirManual && cnpjValido(cnpj) ? (
+                <Pressable onPress={() => { setPermitirManual(false); setPasso(2); }}>
+                  <Text style={styles.pular}>Não consegui buscar agora — informar o segmento à mão</Text>
+                </Pressable>
+              ) : null}
             </View>
           )}
 
@@ -397,9 +416,9 @@ export default function Onboarding() {
               >
                 <Text style={styles.botaoTexto}>{salvando ? 'Salvando…' : 'Salvar e continuar'}</Text>
               </Pressable>
-              <Pressable onPress={() => setPasso(4)}>
-                <Text style={styles.pular}>Pular por enquanto</Text>
-              </Pressable>
+              <Text style={styles.ajuda}>
+                Não sabe algum? Pode deixar em branco e seguir — dá para completar depois.
+              </Text>
             </View>
           )}
 
@@ -421,11 +440,11 @@ export default function Onboarding() {
 
               <Pressable
                 style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
-                onPress={() => router.replace('/enviar' as Href)}
+                onPress={() => { void carregar(); router.replace('/enviar' as Href); }}
               >
                 <Text style={styles.botaoTexto}>Enviar meus dados</Text>
               </Pressable>
-              <Pressable style={({ pressed }) => [styles.botaoLinha, pressed && styles.pressionado]} onPress={() => router.replace('/(tabs)')}>
+              <Pressable style={({ pressed }) => [styles.botaoLinha, pressed && styles.pressionado]} onPress={() => { void carregar(); router.replace('/(tabs)'); }}>
                 <Text style={styles.botaoLinhaTexto}>Ver meu painel</Text>
               </Pressable>
             </View>
@@ -516,6 +535,7 @@ const styles = StyleSheet.create({
   botaoLinha: { borderWidth: 1.5, borderColor: colors.linha, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   botaoLinhaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   pular: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center', paddingVertical: 6, textDecorationLine: 'underline' },
+  ajuda: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.cinza, textAlign: 'center' },
   pressionado: { opacity: 0.85 },
 
   cartaoEmpresa: {

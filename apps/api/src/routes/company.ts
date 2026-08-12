@@ -18,6 +18,7 @@ import { findCompany, toCompanyJson } from '../http';
 import {
   CnpjInvalidoError,
   CnpjNaoEncontradoError,
+  isValidCnpj,
   lookupCnpj,
   normalizeCnpj,
   type LookupDeps,
@@ -82,8 +83,11 @@ export function registerCompany(app: FastifyInstance, sql: Sql, cnpjDeps: Lookup
     },
   );
 
-  // Confirma/corrige o segmento (e opcionalmente o nome de exibição).
-  app.patch<{ Body: { niche?: string; name?: string } }>(
+  // Confirma/corrige o segmento (e opcionalmente o nome de exibição). O `cnpj`
+  // opcional é o FALLBACK do onboarding: quando a consulta pública falha (rede),
+  // ainda gravamos o CNPJ que o dono digitou, para o cadastro contar como completo
+  // (a base pública pode ser reconsultada depois). Não busca dados aqui — só grava.
+  app.patch<{ Body: { niche?: string; name?: string; cnpj?: string } }>(
     '/me/company',
     {
       schema: {
@@ -93,6 +97,7 @@ export function registerCompany(app: FastifyInstance, sql: Sql, cnpjDeps: Lookup
           properties: {
             niche: { type: 'string' },
             name: { type: 'string', minLength: 1, maxLength: 200 },
+            cnpj: { type: 'string', minLength: 11, maxLength: 20 },
           },
         },
       },
@@ -104,11 +109,17 @@ export function registerCompany(app: FastifyInstance, sql: Sql, cnpjDeps: Lookup
       if (req.body.niche != null && !isSegmentId(req.body.niche)) {
         return reply.code(422).send({ error: 'Segmento não suportado.' });
       }
+      if (req.body.cnpj != null && !isValidCnpj(req.body.cnpj)) {
+        return reply.code(422).send({ error: 'CNPJ inválido. Confira os números.' });
+      }
       if (req.body.niche != null) {
         await sql`UPDATE companies SET niche = ${req.body.niche} WHERE id = ${company.id}`;
       }
       if (req.body.name != null) {
         await sql`UPDATE companies SET name = ${req.body.name} WHERE id = ${company.id}`;
+      }
+      if (req.body.cnpj != null) {
+        await sql`UPDATE companies SET cnpj = ${normalizeCnpj(req.body.cnpj)} WHERE id = ${company.id}`;
       }
       const updated = await findCompany(sql, company.id);
       return { company: updated ? toCompanyJson(updated) : null };

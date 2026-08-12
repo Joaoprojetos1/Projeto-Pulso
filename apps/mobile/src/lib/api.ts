@@ -301,6 +301,12 @@ export interface MyDashboard {
   role: UserRole;
   /** null = conta nova, ainda sem dados (mostra o estado de "vazio"). */
   dashboard: DashboardJson | null;
+  /**
+   * Cadastro da empresa concluído? (tem CNPJ). Vem sempre, mesmo com painel
+   * vazio, porque o servidor sempre conhece a empresa. É a trava do onboarding
+   * obrigatório: sem isso, o app não deixa passar para as abas.
+   */
+  onboarded: boolean;
 }
 
 /** Painel do dono logado (usa o token; só vê a própria empresa). */
@@ -312,7 +318,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
   if (!res.ok) throw new Error(`HTTP ${res.status} no painel`);
   const body = (await res.json()) as {
     role?: UserRole;
-    company: { id: string; name: string; niche: string };
+    company: { id: string; name: string; niche: string; cnpj?: string | null };
     segment?: { id: string; label: string } | null;
     segmentIndicators?: SegmentIndicatorJson[];
     cadastro?: CadastroContext;
@@ -342,6 +348,7 @@ export async function fetchMyDashboard(token: string): Promise<MyDashboard> {
     companyName: body.company.name,
     role: body.role ?? 'owner',
     dashboard,
+    onboarded: Boolean(body.company.cnpj),
   };
 }
 
@@ -540,10 +547,14 @@ export async function lookupMyCnpj(token: string, cnpj: string): Promise<CnpjLoo
   return (await res.json()) as CnpjLookupResult;
 }
 
-/** Confirma/corrige o segmento (e opcionalmente o nome de exibição). */
+/**
+ * Confirma/corrige o segmento (e opcionalmente o nome de exibição). O `cnpj` é o
+ * fallback do onboarding: se a consulta pública falhou, ainda gravamos o CNPJ que
+ * o dono digitou para o cadastro contar como completo.
+ */
 export async function patchMyCompany(
   token: string,
-  patch: { niche?: string; name?: string },
+  patch: { niche?: string; name?: string; cnpj?: string },
 ): Promise<{ company: CompanyJson }> {
   const res = await fetchWithWake(`${apiBase()}/me/company`, {
     method: 'PATCH',

@@ -47,6 +47,14 @@ interface PulsoState {
   restaurando: boolean;
   /** O dono já entrou. */
   logado: boolean;
+  /**
+   * Cadastro da empresa concluído (tem CNPJ). null = ainda não sabemos (abertura/
+   * offline). A tranca do onboarding só bloqueia quando é FALSE explícito, para
+   * nunca prender um dono real por dado ainda não carregado.
+   */
+  cadastroCompleto: boolean | null;
+  /** Marca o cadastro como completo na hora (otimista), ao concluir o onboarding. */
+  marcarCadastroCompleto: () => void;
   /** O dashboard na tela veio do cache local (offline); o refresh ainda não substituiu. */
   mostrandoCache: boolean;
   /** Assinatura do dono logado (null = ainda não carregou / demo). */
@@ -76,6 +84,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [erro, setErro] = useState<string | null>(null);
   const [restaurando, setRestaurando] = useState(true);
   const [logado, setLogado] = useState(false);
+  const [cadastroCompleto, setCadastroCompleto] = useState<boolean | null>(null);
   const [mostrandoCache, setMostrandoCache] = useState(false);
   const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
 
@@ -95,10 +104,14 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setFonte(null);
     setCompanyId(null);
     setLogado(false);
+    setCadastroCompleto(null);
     setMostrandoCache(false);
     setAssinatura(null);
     await AsyncStorage.multiRemove([CHAVE_TOKEN, CHAVE_CACHE]);
   }, []);
+
+  /** Otimista: ao concluir o cadastro no onboarding, libera as abas na hora. */
+  const marcarCadastroCompleto = useCallback(() => setCadastroCompleto(true), []);
 
   /** Re-consulta a assinatura (o "Já paguei, atualizar" chama isto). */
   const atualizarAssinatura = useCallback(async (): Promise<MySubscription | null> => {
@@ -129,12 +142,14 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setCarregando(true);
     setErro(null);
     try {
-      const { dashboard: dash, companyId: id, role: papel } = await fetchMyDashboard(t);
+      const { dashboard: dash, companyId: id, role: papel, onboarded } = await fetchMyDashboard(t);
       setDashboard(dash);
       setCompanyId(id);
       setRole(papel);
       setFonte('servidor');
       setLogado(true);
+      setCadastroCompleto(onboarded); // trava do onboarding obrigatório
+
       setMostrandoCache(false); // dado fresco do servidor substitui o cache
       // assinatura (para o gate). Fail-open: o gate só bloqueia com 'pendente' explícito.
       try {
@@ -200,6 +215,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setRole(null); // demonstração nunca é admin
     setErro(null);
     setLogado(true);
+    setCadastroCompleto(true); // demonstração nunca é barrada pela tranca do cadastro
     setMostrandoCache(false); // demonstração não é cache de servidor
   }, []);
 
@@ -265,6 +281,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       erro,
       restaurando,
       logado,
+      cadastroCompleto,
+      marcarCadastroCompleto,
       mostrandoCache,
       assinatura,
       atualizarAssinatura,
@@ -284,6 +302,8 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       erro,
       restaurando,
       logado,
+      cadastroCompleto,
+      marcarCadastroCompleto,
       mostrandoCache,
       assinatura,
       atualizarAssinatura,

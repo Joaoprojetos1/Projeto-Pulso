@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, Tabs, type Href } from 'expo-router';
+import { Redirect, router, Tabs, type Href } from 'expo-router';
 import { useEffect } from 'react';
 
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function TabsLayout() {
-  const { ehAdmin, assinatura, fonte, logado } = usePulso();
+  const { ehAdmin, assinatura, fonte, logado, cadastroCompleto } = usePulso();
 
   // O reset de navegação por logout vive no AuthGate (raiz). Aqui fica só o gate
   // da assinatura: quem está logado e PENDENTE não usa as abas — cai na tela
@@ -17,6 +17,15 @@ export default function TabsLayout() {
       router.replace('/assinar' as Href);
     }
   }, [logado, fonte, assinatura?.status]);
+
+  // TRANCA DO ONBOARDING OBRIGATÓRIO (Bloco 1): sem o cadastro da empresa (CNPJ +
+  // segmento) o dono não usa as abas — vai para o onboarding. Ponto único de
+  // controle: pega quem se cadastrou e pulou, e quem já pulou em sessões antigas.
+  // Fail-open: só bloqueia com FALSE explícito (null = ainda carregando; admin e
+  // demonstração passam sempre, para não prender operador nem a demo).
+  if (logado && fonte === 'servidor' && !ehAdmin && cadastroCompleto === false) {
+    return <Redirect href={'/onboarding' as Href} />;
+  }
 
   return (
     <Tabs
