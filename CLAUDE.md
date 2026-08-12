@@ -167,10 +167,16 @@ crescer sem reescrever o núcleo. Quando forem implementados, NADA do resto muda
   indicador da empresa; a referência só acrescenta o "em relação ao mercado". Uma
   fonte real (pesquisa própria, base setorial) implementa a interface.
 
-- **Provedor de geração de texto** — `apps/api/src/ai/provider.ts`. Interface
-  `TextProvider.generate(request)` abstrai "dado um prompt, devolva texto". Hoje a
-  voz usa a Anthropic; outro provedor (OpenAI, Gemini, ou um roteador que combina
-  provedores) só precisa satisfazer o contrato — sem reescrever writer/diagnóstico/
-  chat. REGRA QUE NÃO MUDA: os fiscais (grounding de números + fiscal de juízo)
-  ficam POR FORA do provedor; trocar de IA não afrouxa as travas. O texto de
-  qualquer provedor passa pelas mesmas verificações.
+- **Provedor de geração de texto** — contrato em `apps/api/src/ai/provider.ts`,
+  implementações e fábrica em `apps/api/src/ai/providers.ts`. Interface
+  `TextProvider.generate(request)` abstrai "dado um prompt, devolva texto". A voz
+  padrão é a Anthropic (classes concretas, chat multi-turno). **JÁ PLUGÁVEL:** um
+  segundo provedor (OpenAI, via HTTP puro, sem SDK) satisfaz o contrato; o
+  "adaptador fino" (`alertWriterFromProvider`/`chatModelFromProvider`) liga qualquer
+  `TextProvider` ao writer e ao chat. Seleção por ambiente: `PULSO_AI_PROVIDER`
+  (`anthropic` padrão | `openai`) + a chave do provedor (`ANTHROPIC_API_KEY` /
+  `OPENAI_API_KEY`); sem chave, cai no texto padrão/aviso honesto. REGRA QUE NÃO
+  MUDA: os fiscais (grounding de números + fiscal de juízo) ficam POR FORA do
+  provedor, em `writeAlert`/`askPulso`; trocar de IA NÃO afrouxa as travas — o
+  texto de qualquer provedor passa pelas mesmas verificações (testado em
+  `test/providers.test.ts`).

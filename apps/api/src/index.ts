@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-import { AnthropicChatModel } from './ai/chat';
-import { AnthropicAlertWriter } from './ai/writer';
+import { makeAiModels } from './ai/providers';
 import { buildApp } from './app';
 import { createSql } from './db';
 import { migrate } from './migrate';
@@ -23,11 +22,11 @@ if (!url) {
 
 const sql = createSql(url);
 
-// com ANTHROPIC_API_KEY a IA redige alertas e responde a conversa;
-// sem ela, entram o texto padrão e o aviso honesto no chat
-const temIA = Boolean(process.env.ANTHROPIC_API_KEY);
-const alertWriter = temIA ? new AnthropicAlertWriter() : null;
-const chatModel = temIA ? new AnthropicChatModel() : null;
+// Escolhe o provedor de IA (padrão Claude; PULSO_AI_PROVIDER=openai troca).
+// Com a chave do provedor a IA redige alertas e responde a conversa; sem ela,
+// entram o texto padrão e o aviso honesto no chat. Os fiscais valem igual.
+const { alertWriter, chatModel, provider: aiProvider } = makeAiModels();
+const temIA = Boolean(alertWriter);
 
 // entrega de push pelo serviço do Expo (não precisa de chave)
 const pushSender = new ExpoPushSender();
@@ -37,7 +36,8 @@ const app = buildApp(sql, { logger: true, alertWriter, chatModel, pushSender });
 // migrações no boot (idempotentes) — registradas pelo logger estruturado
 const applied = await migrate(sql);
 if (applied.length) app.log.info({ applied }, 'migrações aplicadas');
-if (!temIA) app.log.warn('ANTHROPIC_API_KEY ausente: alertas com texto padrão e conversa desligada');
+if (temIA) app.log.info({ aiProvider }, 'IA ligada');
+else app.log.warn({ aiProvider }, 'chave do provedor de IA ausente: alertas com texto padrão e conversa desligada');
 
 const port = Number(process.env.PORT ?? 3000);
 // HOST=0.0.0.0 deixa o celular (Expo Go) acessar a API pela rede local
