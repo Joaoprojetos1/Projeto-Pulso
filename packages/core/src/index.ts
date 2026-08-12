@@ -17,5 +17,6 @@ export * from './coverage';
 export * from './claims';
 export * from './fixed-cost';
 export * from './market-reference';
+export * from './market-data';
 export * from './segments';
 export * from './segments/questionnaire';

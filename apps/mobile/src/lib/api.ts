@@ -92,6 +92,14 @@ export interface SegmentIndicatorJson {
   /** true = não calculável porque o dono DECLAROU não ter o dado (não é "esperando"). */
   declaredUnavailable?: boolean;
   reason: string | null;
+  /** Comparativo de mercado (item 3.6): só vem quando há benchmark validado. */
+  market?: {
+    typicalValue: number;
+    source: string;
+    asOfMonth: string | null;
+    position: 'acima' | 'abaixo' | 'na_media';
+    favorable: boolean;
+  } | null;
 }
 
 /** Contexto do cadastro que o motor leva em conta (transparência). */

@@ -2,6 +2,7 @@ import {
   addDays,
   allowedClaims,
   claimEvidenceFromSnapshot,
+  compareToMarket,
   computeAll,
   CORE_VERSION,
   diagnose,
@@ -10,6 +11,7 @@ import {
   missingInfoRecommendations,
   projectCash,
   segmentRules,
+  TABLE_MARKET_REFERENCE,
 } from '@pulso/core';
 import type { CashProjection, CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
@@ -295,6 +297,11 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
         const required = reqByKey.get(key) ?? [];
         const dependeEstoque = required.some((slug) => ESTOQUE.test(slug));
         const declaredUnavailable = value == null && semEstoque && dependeEstoque;
+        // COMPARATIVO DE MERCADO (item 3.6): só quando há valor da empresa E um
+        // benchmark validado na tabela (hoje vazia → não aparece; degrada elegante).
+        const benchmark =
+          value != null && seg ? TABLE_MARKET_REFERENCE.benchmarkFor(seg.id, key) : null;
+        const cmp = benchmark && value != null ? compareToMarket(value, benchmark) : null;
         return {
           key,
           label: meta.label,
@@ -306,6 +313,15 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
           reason: declaredUnavailable
             ? 'Você declarou não ter controle de estoque, então este indicador não é calculável.'
             : (ind?.insufficientReason ?? null),
+          market: cmp
+            ? {
+                typicalValue: cmp.benchmark.typicalValue,
+                source: cmp.benchmark.source,
+                asOfMonth: cmp.benchmark.asOfMonth ?? null,
+                position: cmp.position,
+                favorable: cmp.favorable,
+              }
+            : null,
         };
       })
     : [];

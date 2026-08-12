@@ -104,7 +104,7 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
           ? 'já tinha sido enviado'
           : tipo === 'bank_statement'
             ? `lido (${r.rowsImported ?? 0} lançamentos)`
-            : 'recebido';
+            : 'recebido (leitura automática em breve)';
         setProgresso((p) => p.map((x, j) => (j === i ? { ...x, status: 'ok', msg } : x)));
       } catch (e) {
         setProgresso((p) =>

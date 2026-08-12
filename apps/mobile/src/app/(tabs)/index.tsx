@@ -376,6 +376,19 @@ export default function Dashboard() {
                     >
                       {s.declaredUnavailable && s.reason ? s.reason : s.hint}
                     </Text>
+                    {/* comparativo de mercado (item 3.6): só quando há benchmark validado */}
+                    {s.available && s.market ? (
+                      <Text
+                        style={[
+                          styles.segMercado,
+                          { color: s.market.favorable ? colors.okEscuro : colors.alerta },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        Mercado ~{valorSegmento(s.market.typicalValue, s.unit)} · você está{' '}
+                        {s.market.position === 'na_media' ? 'na média' : s.market.position}
+                      </Text>
+                    ) : null}
                   </View>
                 ))}
               </ScrollView>
@@ -875,6 +888,7 @@ const styles = StyleSheet.create({
   segCardValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },
   segCardHint: { fontFamily: fonts.corpo, fontSize: 11, lineHeight: 15, color: colors.cinza },
   segCardDeclarado: { color: colors.alerta },
+  segMercado: { fontFamily: fonts.corpoMedio, fontSize: 10.5, lineHeight: 14, marginTop: 4 },
   segPrompt: {
     marginHorizontal: 16,
     backgroundColor: colors.branco,
