@@ -11,8 +11,9 @@ import { readCsvRows } from './csv';
 import { decodeMicrovixBuffer, readHtmlRows } from './microvix';
 import { detectColumns, extractRecords, type TableExtract, type TableShape } from './table';
 import { ParseError } from './types';
+import { readXlsxRows } from './xlsx';
 
-export type SpreadsheetFormat = 'csv' | 'html';
+export type SpreadsheetFormat = 'csv' | 'html' | 'xlsx';
 
 export interface SpreadsheetTable {
   format: SpreadsheetFormat;
@@ -28,11 +29,8 @@ export function readSpreadsheetRows(buf: Buffer): { format: SpreadsheetFormat; r
     throw new ParseError('Isto é um PDF, não uma planilha. Envie a planilha em CSV.');
   }
   if (buf[0] === 0x50 && buf[1] === 0x4b) {
-    // "PK": ZIP — Excel .xlsx moderno
-    throw new ParseError(
-      'Excel (.xlsx) ainda não é lido aqui. Por ora, salve como CSV (no Excel: ' +
-        'Arquivo → Salvar como → CSV) e envie de novo. Em breve leremos o .xlsx direto.',
-    );
+    // "PK": ZIP — Excel .xlsx moderno (lido direto pelo diretório central do ZIP)
+    return { format: 'xlsx', rows: readXlsxRows(buf) };
   }
   const texto = decodeMicrovixBuffer(buf);
   if (/<table[\s>]/i.test(texto) || /^\s*<(?:!doctype\s+html|html)[\s>]/i.test(texto)) {

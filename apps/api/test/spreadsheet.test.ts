@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import { readCsvRows, detectDelimiter, parseCsv } from '../src/parsers/csv';
@@ -5,6 +9,8 @@ import { findColumn } from '../src/parsers/table';
 import { readSpreadsheet, readSpreadsheetRows } from '../src/parsers/spreadsheet';
 
 const buf = (s: string) => Buffer.from(s, 'utf8');
+const fixtura = (name: string): Buffer =>
+  readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures', name));
 
 describe('CSV — transporte', () => {
   it('detecta separador ; (padrão BR, vírgula é decimal)', () => {
@@ -99,5 +105,18 @@ describe('spreadsheet — formatos e rejeições honestas', () => {
 
   it('sem coluna de valor: não chuta, avisa', () => {
     expect(() => readSpreadsheet(buf('Nome;Cidade\nAna;SP\n'))).toThrow(/colunas/i);
+  });
+});
+
+describe('xlsx — Excel binário de verdade (ZIP + XML, sem dependência nova)', () => {
+  it('lê a 1ª planilha: textos compartilhados, inline e número de máquina (ponto→vírgula BR)', () => {
+    const t = readSpreadsheet(fixtura('planilha-exemplo.xlsx'));
+    expect(t.format).toBe('xlsx');
+    expect(t.shape.columns).toEqual({ value: 2, date: 0, description: 1 });
+    expect(t.extract.records).toHaveLength(2);
+    // 1200.5 (número do Excel) → R$ 1.200,50; 18500 → R$ 18.500,00
+    expect(t.extract.records[0]).toMatchObject({ date: '2026-08-05', description: 'Aluguel', valueCents: 120050 });
+    expect(t.extract.records[1]).toMatchObject({ date: '2026-08-10', description: 'Folha', valueCents: 1850000 });
+    expect(t.extract.totalCents).toBe(1970050);
   });
 });
