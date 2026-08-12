@@ -35,6 +35,7 @@ const DOC_TYPES = [
   'services',
   'card_acquirer',
   'accounting',
+  'payroll',
   'other',
 ] as const;
 type DocType = (typeof DOC_TYPES)[number];

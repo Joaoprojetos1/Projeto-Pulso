@@ -629,6 +629,7 @@ export type DocType =
   | 'services'
   | 'card_acquirer'
   | 'accounting'
+  | 'payroll'
   | 'other';
 
 export type ImportStatus = 'processed' | 'received' | 'error';

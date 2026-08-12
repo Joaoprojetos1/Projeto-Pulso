@@ -30,6 +30,7 @@ const TIPOS: Array<{ id: DocType; label: string; hint: string }> = [
   { id: 'management', label: 'Relatório gerencial', hint: 'Faturamento, movimento' },
   { id: 'services', label: 'Relatório de serviços', hint: 'Atendimentos / agenda' },
   { id: 'accounting', label: 'Documento contábil', hint: 'Balanço, DRE, balancete' },
+  { id: 'payroll', label: 'Folha de pagamento', hint: 'Salários e encargos (custo fixo)' },
   { id: 'other', label: 'Outro', hint: 'O motor avalia se é útil' },
 ];
 
