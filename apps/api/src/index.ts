@@ -5,6 +5,7 @@ import { buildApp } from './app';
 import { createSql } from './db';
 import { migrate } from './migrate';
 import { ExpoPushSender } from './push';
+import { makeWhatsAppSender } from './channels/whatsapp';
 
 // conveniência de dev: carrega .env local se existir (sem sobrescrever o ambiente)
 if (existsSync('.env')) {
@@ -31,13 +32,27 @@ const temIA = Boolean(alertWriter);
 // entrega de push pelo serviço do Expo (não precisa de chave)
 const pushSender = new ExpoPushSender();
 
-const app = buildApp(sql, { logger: true, alertWriter, chatModel, pushSender });
+// canal WhatsApp: liga só com as credenciais do provedor (Meta por padrão).
+// Sem elas, o sender é null e o canal fica desligado — o resto não muda.
+const { sender: whatsappSender, provider: waProvider, verifyToken: whatsappVerifyToken } =
+  makeWhatsAppSender();
+
+const app = buildApp(sql, {
+  logger: true,
+  alertWriter,
+  chatModel,
+  pushSender,
+  whatsappSender,
+  whatsappVerifyToken,
+});
 
 // migrações no boot (idempotentes) — registradas pelo logger estruturado
 const applied = await migrate(sql);
 if (applied.length) app.log.info({ applied }, 'migrações aplicadas');
 if (temIA) app.log.info({ aiProvider }, 'IA ligada');
 else app.log.warn({ aiProvider }, 'chave do provedor de IA ausente: alertas com texto padrão e conversa desligada');
+if (whatsappSender) app.log.info({ waProvider }, 'canal WhatsApp ligado');
+else app.log.info({ waProvider }, 'canal WhatsApp desligado (sem credenciais do provedor)');
 
 const port = Number(process.env.PORT ?? 3000);
 // HOST=0.0.0.0 deixa o celular (Expo Go) acessar a API pela rede local

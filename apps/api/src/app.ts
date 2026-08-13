@@ -25,6 +25,8 @@ import { registerSegments } from './routes/segments';
 import { registerSimulate } from './routes/simulate';
 import { registerSnapshots } from './routes/snapshots';
 import { registerSubscription } from './routes/subscription';
+import { registerWhatsApp } from './routes/whatsapp';
+import type { WhatsAppSender } from './channels/whatsapp';
 
 export interface AppOptions {
   logger?: boolean;
@@ -38,6 +40,10 @@ export interface AppOptions {
   mailer?: Mailer;
   /** Consulta de CNPJ: injeta um fetcher nos testes; produção usa o fetch global. */
   cnpjLookup?: import('./services/cnpj').LookupDeps;
+  /** Sem provedor (null), o canal WhatsApp não entrega (o resto segue igual). */
+  whatsappSender?: WhatsAppSender | null;
+  /** Segredo do handshake de verificação do webhook do WhatsApp (Meta). */
+  whatsappVerifyToken?: string | null;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -140,6 +146,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerReports(app, sql);
   registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
+  registerWhatsApp(app, sql, opts.chatModel ?? null, opts.whatsappSender ?? null, opts.whatsappVerifyToken ?? null);
   registerAvatar(app, sql);
 
   return app;

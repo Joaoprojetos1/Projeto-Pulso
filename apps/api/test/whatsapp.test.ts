@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   handleWhatsAppWebhook,
+  incomingMessageId,
+  makeWhatsAppSender,
+  MetaWhatsAppSender,
+  normalizePhone,
   NOT_LINKED_REPLY,
   parseIncomingMessage,
   toMetaReply,
@@ -77,5 +81,99 @@ describe('handleWhatsAppWebhook (stub, cérebro compartilhado)', () => {
     );
     expect(out).toBeNull();
     expect(converse).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------
+// TRANSPORTE — envio pela Graph API, normalização, idempotência, fábrica
+// ---------------------------------------------------------------
+
+const idPayload: MetaWebhookPayload = {
+  object: 'whatsapp_business_account',
+  entry: [
+    {
+      changes: [
+        {
+          value: {
+            messaging_product: 'whatsapp',
+            messages: [{ from: '553199990000', id: 'wamid.ABC', type: 'text', text: { body: 'oi' } }],
+          },
+        },
+      ],
+    },
+  ],
+};
+
+describe('normalizePhone', () => {
+  it('prefixa 55 num número BR sem país; mantém quando já tem país', () => {
+    expect(normalizePhone('(31) 99999-0000')).toBe('5531999990000');
+    expect(normalizePhone('31 3333-0000')).toBe('553133330000');
+    expect(normalizePhone('553199990000')).toBe('553199990000');
+  });
+});
+
+describe('incomingMessageId', () => {
+  it('extrai o id da mensagem de texto; null quando não há', () => {
+    expect(incomingMessageId(idPayload)).toBe('wamid.ABC');
+    expect(incomingMessageId(textPayload)).toBeNull();
+    expect(incomingMessageId(statusPayload)).toBeNull();
+  });
+});
+
+describe('MetaWhatsAppSender', () => {
+  it('POSTa na Graph API com Bearer e devolve o id da mensagem', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ messages: [{ id: 'wamid.OUT' }] }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    const sender = new MetaWhatsAppSender('PHONE_ID', 'TOKEN', fetchImpl as unknown as typeof fetch);
+    const r = await sender.send(toMetaReply('553199990000', 'olá'));
+    expect(r).toEqual({ ok: true, id: 'wamid.OUT' });
+    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('/PHONE_ID/messages');
+    expect((init.headers as Record<string, string>).authorization).toBe('Bearer TOKEN');
+    expect(JSON.parse(init.body as string)).toMatchObject({ to: '553199990000', text: { body: 'olá' } });
+  });
+
+  it('erro do provedor: ok=false com a mensagem', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: { message: 'número inválido' } }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    const sender = new MetaWhatsAppSender('P', 'T', fetchImpl as unknown as typeof fetch);
+    expect(await sender.send(toMetaReply('x', 'y'))).toEqual({ ok: false, error: 'número inválido' });
+  });
+
+  it('falha de rede: ok=false, não estoura', async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error('sem rede');
+    });
+    const sender = new MetaWhatsAppSender('P', 'T', fetchImpl as unknown as typeof fetch);
+    expect(await sender.send(toMetaReply('x', 'y'))).toEqual({ ok: false, error: 'sem rede' });
+  });
+});
+
+describe('makeWhatsAppSender', () => {
+  it('com credenciais da Meta: liga o sender', () => {
+    const cfg = makeWhatsAppSender({
+      PULSO_WHATSAPP_PROVIDER: 'meta',
+      PULSO_WHATSAPP_PHONE_ID: '123',
+      PULSO_WHATSAPP_TOKEN: 'tok',
+      PULSO_WHATSAPP_VERIFY_TOKEN: 'v',
+    } as NodeJS.ProcessEnv);
+    expect(cfg.sender).toBeInstanceOf(MetaWhatsAppSender);
+    expect(cfg.provider).toBe('meta');
+    expect(cfg.verifyToken).toBe('v');
+  });
+
+  it('sem credenciais: canal desligado (sender null)', () => {
+    expect(makeWhatsAppSender({} as NodeJS.ProcessEnv).sender).toBeNull();
+    expect(makeWhatsAppSender({ PULSO_WHATSAPP_PROVIDER: 'none' } as NodeJS.ProcessEnv).sender).toBeNull();
   });
 });
