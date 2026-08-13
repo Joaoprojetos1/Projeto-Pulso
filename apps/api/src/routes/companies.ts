@@ -21,9 +21,9 @@ export function registerCompanies(app: FastifyInstance, sql: Sql) {
           required: ['name'],
           additionalProperties: false,
           properties: {
-            name: { type: 'string', minLength: 1 },
-            cnpj: { type: 'string' },
-            niche: { type: 'string' },
+            name: { type: 'string', minLength: 1, maxLength: 200 },
+            cnpj: { type: 'string', maxLength: 20 },
+            niche: { type: 'string', maxLength: 40 },
             declaredFixedCostCents: { type: 'integer', minimum: 0 },
           },
         },
@@ -50,10 +50,15 @@ export function registerCompanies(app: FastifyInstance, sql: Sql) {
     return { companies: rows.map((r) => toCompanyJson(r as unknown as CompanyRow)) };
   });
 
+  // Dados de UMA empresa por id trazem CNPJ, endereço e sócios (PII/LGPD). Como o
+  // GET /companies acima, é só operador (admin) — o dono usa /me/dashboard, que já
+  // escopa pela empresa dele. Sem o guard, um id vazado exporia o cadastro alheio.
   app.get<{ Params: { id: string } }>(
     '/companies/:id',
     { schema: { params: companyParamsSchema } },
     async (req, reply) => {
+      const admin = await requireAdmin(sql, req, reply);
+      if (!admin) return reply;
       const company = await findCompany(sql, req.params.id);
       if (!company) return reply.code(404).send({ error: 'Empresa não encontrada.' });
       return toCompanyJson(company);

@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -163,6 +164,59 @@ describe('mensagem recebida (fluxo de entrada)', () => {
     expect(r2.statusCode).toBe(200);
     expect(r2.json()).toMatchObject({ duplicate: true });
     expect(sent).toHaveLength(1); // não enviou de novo
+  });
+});
+
+describe('webhook com App Secret exige assinatura da Meta (A2)', () => {
+  const APP_SECRET = 'segredo-app-teste';
+  let appSec: ReturnType<typeof buildApp>;
+
+  beforeAll(async () => {
+    appSec = buildApp(sql, { whatsappSender: fakeSender, whatsappAppSecret: APP_SECRET, chatModel: null });
+    await appSec.ready();
+  });
+  afterAll(async () => {
+    await appSec.close();
+  });
+
+  it('recusa (401) sem assinatura', async () => {
+    const raw = JSON.stringify(inbound('5511888887777', 'oi'));
+    const res = await appSec.inject({
+      method: 'POST',
+      url: '/webhooks/whatsapp',
+      headers: { 'content-type': 'application/json' },
+      payload: raw,
+    });
+    expect(res.statusCode).toBe(401);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('aceita com a assinatura correta', async () => {
+    const raw = JSON.stringify(inbound('5511888887777', 'oi'));
+    const sig = 'sha256=' + createHmac('sha256', APP_SECRET).update(raw).digest('hex');
+    const res = await appSec.inject({
+      method: 'POST',
+      url: '/webhooks/whatsapp',
+      headers: { 'content-type': 'application/json', 'x-hub-signature-256': sig },
+      payload: raw,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(sent).toHaveLength(1); // número não vinculado → NOT_LINKED entregue
+  });
+});
+
+describe('GET /companies/:id exige admin — não vaza o cadastro (A1)', () => {
+  it('sem token: recusado (não devolve CNPJ/sócios)', async () => {
+    const [row] = await sql`SELECT company_id FROM users WHERE role = 'admin' LIMIT 1`;
+    const res = await app.inject({ method: 'GET', url: `/companies/${row!.company_id}` });
+    expect(res.statusCode).not.toBe(200);
+  });
+
+  it('com token de admin: 200', async () => {
+    const [row] = await sql`SELECT company_id FROM users WHERE role = 'admin' LIMIT 1`;
+    const res = await app.inject({ method: 'GET', url: `/companies/${row!.company_id}`, headers: bearer(TOKEN) });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().id).toBe(row!.company_id);
   });
 });
 

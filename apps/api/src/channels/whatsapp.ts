@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
 /**
  * Canal WhatsApp — ADAPTADOR (stub). Preparação, não integração.
  *
@@ -181,11 +183,32 @@ export class MetaWhatsAppSender implements WhatsAppSender {
   }
 }
 
+/**
+ * Confere a assinatura `X-Hub-Signature-256` da Meta: HMAC-SHA256 do CORPO CRU
+ * (bytes recebidos, não o JSON re-serializado) com o App Secret. Comparação em
+ * tempo constante. Sem isso, um POST forjado faria nosso número enviar WhatsApp
+ * para qualquer telefone e injetar mensagens na conversa.
+ */
+export function verifyMetaSignature(
+  rawBody: Buffer,
+  signatureHeader: string | undefined,
+  appSecret: string,
+): boolean {
+  if (!signatureHeader || !signatureHeader.startsWith('sha256=')) return false;
+  const expected = 'sha256=' + createHmac('sha256', appSecret).update(rawBody).digest('hex');
+  const a = Buffer.from(signatureHeader);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
 export interface WhatsAppConfig {
   sender: WhatsAppSender | null;
   provider: string;
   /** token do handshake de verificação do webhook (GET). */
   verifyToken: string | null;
+  /** App Secret da Meta para conferir a assinatura do webhook (POST). */
+  appSecret: string | null;
 }
 
 /**
@@ -201,12 +224,13 @@ export interface WhatsAppConfig {
 export function makeWhatsAppSender(env: NodeJS.ProcessEnv = process.env): WhatsAppConfig {
   const provider = (env.PULSO_WHATSAPP_PROVIDER ?? 'meta').toLowerCase();
   const verifyToken = env.PULSO_WHATSAPP_VERIFY_TOKEN ?? null;
+  const appSecret = env.PULSO_WHATSAPP_APP_SECRET ?? null;
   if (provider === 'meta') {
     const phoneId = env.PULSO_WHATSAPP_PHONE_ID;
     const token = env.PULSO_WHATSAPP_TOKEN;
     if (phoneId && token) {
-      return { sender: new MetaWhatsAppSender(phoneId, token), provider, verifyToken };
+      return { sender: new MetaWhatsAppSender(phoneId, token), provider, verifyToken, appSecret };
     }
   }
-  return { sender: null, provider, verifyToken };
+  return { sender: null, provider, verifyToken, appSecret };
 }

@@ -8,10 +8,12 @@ import {
   normalizePhone,
   parseIncomingMessage,
   toMetaReply,
+  verifyMetaSignature,
   type MetaWebhookPayload,
   type WhatsAppSender,
 } from '../channels/whatsapp';
 import type { Sql } from '../db';
+import { constantTimeEqual } from '../http';
 import { QuotaExceededError } from '../quota';
 import { CompanyNotFoundError, converse } from '../services/conversation';
 
@@ -43,6 +45,7 @@ export function registerWhatsApp(
   chatModel: ChatModel | null = null,
   sender: WhatsAppSender | null = null,
   verifyToken: string | null = null,
+  appSecret: string | null = null,
 ) {
   // fecha o cérebro sobre (sql, chatModel): o WhatsApp é só mais um canal dele.
   const converseWhatsApp = (input: { companyId: string; userMessage: string; channel: 'whatsapp' }) =>
@@ -55,19 +58,45 @@ export function registerWhatsApp(
   };
 
   // Handshake de verificação (Meta): GET com hub.mode/hub.verify_token/hub.challenge.
+  // Comparação do token em tempo constante.
   app.get<{ Querystring: Record<string, string> }>('/webhooks/whatsapp', async (req, reply) => {
     const q = req.query;
-    if (q['hub.mode'] === 'subscribe' && verifyToken && q['hub.verify_token'] === verifyToken) {
+    if (q['hub.mode'] === 'subscribe' && verifyToken && constantTimeEqual(q['hub.verify_token'] ?? '', verifyToken)) {
       return reply.type('text/plain').send(q['hub.challenge'] ?? '');
     }
     req.log.warn({ temToken: Boolean(verifyToken) }, 'verificação do webhook do whatsapp recusada');
     return reply.code(403).send({ error: 'verificação falhou' });
   });
 
-  // Entrada: mensagens recebidas. Processa e SEMPRE devolve 200 (a Meta reentrega em
-  // não-200; a idempotência abaixo protege contra reprocessar a mesma mensagem). O
-  // envio da resposta é da conversa (o mesmo cérebro do app), nunca uma segunda IA.
-  app.post<{ Body: MetaWebhookPayload }>('/webhooks/whatsapp', async (req, reply) => {
+  // Entrada: mensagens recebidas. Registrada num ESCOPO isolado com parser que
+  // guarda o corpo CRU (rawBody) — necessário para conferir a assinatura HMAC da
+  // Meta sem alterar o parser JSON global das outras rotas.
+  app.register(async (scope) => {
+    scope.addContentTypeParser('application/json', { parseAs: 'buffer' }, (_req, body, done) => {
+      const buf = body as Buffer;
+      (_req as unknown as { rawBody?: Buffer }).rawBody = buf;
+      if (buf.length === 0) return done(null, undefined);
+      try {
+        done(null, JSON.parse(buf.toString('utf8')));
+      } catch (e) {
+        (e as { statusCode?: number }).statusCode = 400;
+        done(e as Error, undefined);
+      }
+    });
+
+    // Processa e SEMPRE devolve 200 (a Meta reentrega em não-200; a idempotência
+    // protege contra reprocessar). A resposta é da conversa (o mesmo cérebro do
+    // app), nunca uma segunda IA.
+    scope.post<{ Body: MetaWebhookPayload }>('/webhooks/whatsapp', async (req, reply) => {
+    // assinatura da Meta: com o App Secret configurado, corpo forjado é recusado.
+    if (appSecret) {
+      const raw = (req as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.alloc(0);
+      const sig = req.headers['x-hub-signature-256'];
+      if (!verifyMetaSignature(raw, typeof sig === 'string' ? sig : undefined, appSecret)) {
+        req.log.warn('whatsapp: assinatura do webhook inválida');
+        return reply.code(401).send({ error: 'assinatura inválida' });
+      }
+    }
     const body = req.body;
     const msg = parseIncomingMessage(body);
     if (!msg) return reply.code(200).send({ ok: true }); // status/tipo não-texto: só 200
@@ -101,6 +130,7 @@ export function registerWhatsApp(
       }
     }
     return reply.code(200).send({ ok: true });
+    });
   });
 
   // Opt-in do dono logado: liga este WhatsApp à empresa dele (um telefone → uma empresa).

@@ -44,6 +44,8 @@ export interface AppOptions {
   whatsappSender?: WhatsAppSender | null;
   /** Segredo do handshake de verificação do webhook do WhatsApp (Meta). */
   whatsappVerifyToken?: string | null;
+  /** App Secret da Meta para conferir a assinatura do webhook do WhatsApp. */
+  whatsappAppSecret?: string | null;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -146,7 +148,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerReports(app, sql);
   registerDevices(app, sql, opts.pushSender ?? null);
   registerChat(app, sql, opts.chatModel ?? null);
-  registerWhatsApp(app, sql, opts.chatModel ?? null, opts.whatsappSender ?? null, opts.whatsappVerifyToken ?? null);
+  registerWhatsApp(app, sql, opts.chatModel ?? null, opts.whatsappSender ?? null, opts.whatsappVerifyToken ?? null, opts.whatsappAppSecret ?? null);
   registerAvatar(app, sql);
 
   return app;

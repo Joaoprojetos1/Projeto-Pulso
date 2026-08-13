@@ -123,7 +123,7 @@ describe('incomingMessageId', () => {
 describe('MetaWhatsAppSender', () => {
   it('POSTa na Graph API com Bearer e devolve o id da mensagem', async () => {
     const fetchImpl = vi.fn(
-      async () =>
+      async (_url: string, _init: RequestInit) =>
         new Response(JSON.stringify({ messages: [{ id: 'wamid.OUT' }] }), {
           status: 200,
           headers: { 'content-type': 'application/json' },
@@ -132,7 +132,7 @@ describe('MetaWhatsAppSender', () => {
     const sender = new MetaWhatsAppSender('PHONE_ID', 'TOKEN', fetchImpl as unknown as typeof fetch);
     const r = await sender.send(toMetaReply('553199990000', 'olá'));
     expect(r).toEqual({ ok: true, id: 'wamid.OUT' });
-    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchImpl.mock.calls[0]!;
     expect(url).toContain('/PHONE_ID/messages');
     expect((init.headers as Record<string, string>).authorization).toBe('Bearer TOKEN');
     expect(JSON.parse(init.body as string)).toMatchObject({ to: '553199990000', text: { body: 'olá' } });

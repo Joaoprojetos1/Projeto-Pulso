@@ -1,4 +1,17 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
 import type { Sql } from './db';
+
+/**
+ * Compara dois segredos em TEMPO CONSTANTE (não vaza por timing e não vaza o
+ * tamanho): faz o hash dos dois lados e compara os digests de tamanho fixo.
+ * Para conferir segredos de webhook (x-webhook-secret, verify_token).
+ */
+export function constantTimeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a ?? '').digest();
+  const hb = createHash('sha256').update(b ?? '').digest();
+  return timingSafeEqual(ha, hb);
+}
 
 /** Padrões de validação compartilhados pelas rotas. */
 export const UUID_PATTERN =

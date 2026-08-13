@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 
 import { companyFromRequest, normalizeEmail } from '../auth';
 import type { Sql } from '../db';
-import { DATE_PATTERN } from '../http';
+import { constantTimeEqual, DATE_PATTERN } from '../http';
 import { saoPauloToday } from '../quota';
 import { getSubscriptionTestMode } from '../settings';
 
@@ -90,7 +90,8 @@ export function registerSubscription(app: FastifyInstance, sql: Sql) {
     },
     async (req, reply) => {
       const secret = process.env.PULSO_WEBHOOK_SECRET;
-      if (!secret || req.headers['x-webhook-secret'] !== secret) {
+      const provided = req.headers['x-webhook-secret'];
+      if (!secret || typeof provided !== 'string' || !constantTimeEqual(provided, secret)) {
         req.log.warn({ temSegredo: Boolean(secret) }, 'webhook de assinatura recusado (segredo inválido)');
         return reply.code(401).send({ error: 'não autorizado' });
       }

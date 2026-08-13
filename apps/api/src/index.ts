@@ -34,8 +34,12 @@ const pushSender = new ExpoPushSender();
 
 // canal WhatsApp: liga só com as credenciais do provedor (Meta por padrão).
 // Sem elas, o sender é null e o canal fica desligado — o resto não muda.
-const { sender: whatsappSender, provider: waProvider, verifyToken: whatsappVerifyToken } =
-  makeWhatsAppSender();
+const {
+  sender: whatsappSender,
+  provider: waProvider,
+  verifyToken: whatsappVerifyToken,
+  appSecret: whatsappAppSecret,
+} = makeWhatsAppSender();
 
 const app = buildApp(sql, {
   logger: true,
@@ -44,6 +48,7 @@ const app = buildApp(sql, {
   pushSender,
   whatsappSender,
   whatsappVerifyToken,
+  whatsappAppSecret,
 });
 
 // migrações no boot (idempotentes) — registradas pelo logger estruturado

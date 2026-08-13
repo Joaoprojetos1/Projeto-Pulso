@@ -135,6 +135,7 @@ export function registerAuth(
     login: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_LOGIN ?? 20), name: 'auth/login' }),
     signup: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_SIGNUP ?? 20), name: 'auth/signup' }),
     forgot: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_FORGOT ?? 20), name: 'auth/forgot' }),
+    reset: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_RESET ?? 20), name: 'auth/reset' }),
     chat: makeRateLimiter({ windowMs: 60_000, max: Number(process.env.PULSO_RL_CHAT ?? 30), name: 'me/chat', keyFn: keyByToken }),
   };
 
@@ -275,7 +276,7 @@ export function registerAuth(
   // redefinir a senha com o token recebido por e-mail (uso único, com expiração)
   app.post<{ Body: { token: string; password: string } }>(
     '/auth/reset-password',
-    { schema: { body: resetSchema } },
+    { schema: { body: resetSchema }, preHandler: async (req, reply) => { if (rl.reset.check(req, reply)) return reply; } },
     async (req, reply) => {
       const [row] = await sql`
         SELECT id, user_id
