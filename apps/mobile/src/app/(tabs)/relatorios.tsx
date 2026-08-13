@@ -188,11 +188,11 @@ export default function Relatorios() {
               onPress={() => relatorioRef.current?.gerar()}
             >
               <Ionicons name="download-outline" size={20} color="#06231A" />
-              <Text style={styles.docBtnTexto}>Baixar relatório do mês</Text>
+              <Text style={styles.docBtnTexto}>Baixar relatório em PDF</Text>
             </Pressable>
             <Text style={styles.docNota}>
-              Documento com a marca, o período e a leitura do Pulso — para salvar ou projetar numa
-              reunião com a equipe.
+              PDF com a marca, o período e a leitura do Pulso — para salvar, imprimir ou projetar
+              numa reunião com a equipe.
             </Text>
           </>
         )}
