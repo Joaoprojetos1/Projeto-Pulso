@@ -69,6 +69,21 @@ describe('buildChatPrompt', () => {
     expect(p.system).not.toMatch(/entries|lançamento|settledOn|issuedOn/);
   });
 
+  it('inclui o cadastro (razão social, situação, sócios) como contexto qualitativo', () => {
+    const p = buildChatPrompt(
+      { ...CTX, cadastro: { razaoSocial: 'Clínica Horizonte LTDA', situacao: 'Ativa', ramo: 'Atividades de atenção à saúde', socios: ['Ana Souza (Sócia-administradora)'] } },
+      [{ role: 'user', content: 'quem são os sócios?' }],
+    );
+    expect(p.system).toMatch(/cadastro/);
+    expect(p.system).toMatch(/Clínica Horizonte LTDA/);
+    expect(p.system).toMatch(/Ana Souza/);
+  });
+
+  it('sem cadastro, o retrato traz cadastro:null (não quebra)', () => {
+    const p = buildChatPrompt(CTX, [{ role: 'user', content: 'oi' }]);
+    expect(p.system).toMatch(/"cadastro":null/);
+  });
+
   it('conversa começa sempre num turno do usuário', () => {
     const p = buildChatPrompt(CTX, [
       { role: 'assistant', content: 'Olá!' },

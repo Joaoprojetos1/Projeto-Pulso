@@ -138,11 +138,33 @@ export async function converse(deps: ConversationDeps, input: ConverseInput): Pr
     LIMIT 1`;
   const diagPrevious = (prevSnap?.diagnosis as typeof diagCurrent) ?? null;
 
+  // dados CADASTRAIS (do CNPJ): contexto qualitativo para a IA saber com quem
+  // fala. Só texto (razão social, situação, ramo, sócios) — nenhum número
+  // financeiro, então não afrouxa o fiscal de grounding.
+  const socios = Array.isArray(company.quadro_societario)
+    ? (company.quadro_societario as Array<{ nome?: string; qualificacao?: string | null }>)
+        .map((soc) => (soc.qualificacao ? `${soc.nome} (${soc.qualificacao})` : soc.nome))
+        .filter((x): x is string => Boolean(x && x.trim()))
+        .slice(0, 10)
+    : [];
+  const temCadastro =
+    Boolean(company.razao_social || company.situacao_cadastral || company.cnae_descricao) ||
+    socios.length > 0;
+  const cadastro = temCadastro
+    ? {
+        razaoSocial: company.razao_social ?? null,
+        situacao: company.situacao_cadastral ?? null,
+        ramo: company.cnae_descricao ?? null,
+        socios,
+      }
+    : null;
+
   const aiUsage: AiCallUsage[] = [];
   const answer = await askPulso(
     chatModel,
     {
       profile: { name: company.name, niche: company.niche },
+      cadastro,
       asOf: snapshot.as_of as string,
       indicators: snapshot.payload,
       alerts: alertRows.map((a) => ({

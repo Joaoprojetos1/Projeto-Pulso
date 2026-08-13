@@ -62,6 +62,18 @@ export interface ChatContext {
    * adjetivar sem cobertura). Vazio = sem restrição.
    */
   permissions?: ClaimPermission[];
+  /**
+   * Dados CADASTRAIS da empresa (do CNPJ): razão social, situação, ramo e sócios.
+   * É contexto QUALITATIVO (texto), para a conversa saber com quem fala — NÃO
+   * entra no fiscal de números (nenhum valor financeiro aqui), então não muda o
+   * que a IA pode afirmar sobre o caixa. Sem consulta de CNPJ, fica ausente.
+   */
+  cadastro?: {
+    razaoSocial?: string | null;
+    situacao?: string | null;
+    ramo?: string | null;
+    socios?: string[];
+  } | null;
 }
 
 /** Configuração da memória (com padrões; sobrescrevível por ambiente/teste). */
@@ -117,7 +129,8 @@ REGRAS INEGOCIÁVEIS:
 4. Português do Brasil, tom de conversa, SEM jargão: "você está recebendo 46 dias depois de atender", nunca "seu DSO está em 46".
 5. Respostas CURTAS: um parágrafo, ou até 3 itens numerados. O detalhe está no painel.
 6. Se o assunto fugir do financeiro do negócio, redirecione com gentileza.
-7. Você TEM memória: pode retomar o que foi conversado antes, referenciar um alerta recente e comparar o diagnóstico atual com o anterior ("melhorou desde o mês passado"). Só use números que estejam no retrato.`;
+7. Você TEM memória: pode retomar o que foi conversado antes, referenciar um alerta recente e comparar o diagnóstico atual com o anterior ("melhorou desde o mês passado"). Só use números que estejam no retrato.
+8. O bloco "cadastro" (razão social, situação, ramo, sócios) é só CONTEXTO qualitativo para você saber com quem fala — use com naturalidade se ajudar, mas NÃO tire dali nenhum número financeiro nem conclua nada sobre o caixa a partir do cadastro.`;
 
 export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[], opts: ChatBuildOptions = {}) {
   const historyN = opts.historyN ?? DEFAULT_CHAT_HISTORY_N;
@@ -125,6 +138,7 @@ export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[], opts: ChatB
 
   const retrato = JSON.stringify({
     empresa: { nome: ctx.profile.name, nicho: ctx.profile.niche },
+    cadastro: ctx.cadastro ?? null,
     dataDoRetrato: ctx.asOf,
     indicadores: ctx.indicators,
     alertas: ctx.alerts,
