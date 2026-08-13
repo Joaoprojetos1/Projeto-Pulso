@@ -17,6 +17,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Line as SvgLine, Polyline } from 'react-native-svg';
 
+import { EnviarContadorCard, type EnviarContadorHandle } from '@/components/enviar-contador';
 import { RelatorioMensalCard, type RelatorioMensalHandle } from '@/components/relatorio-mensal';
 import {
   fetchMyHistory,
@@ -30,7 +31,7 @@ import {
   type SurveyJson,
 } from '@/lib/api';
 import { brl, dataBR, dias, pct } from '@/lib/format';
-import { relatorioFromDashboard } from '@/lib/relatorio';
+import { relatorioFromDashboard, resumoContadorFromDashboard } from '@/lib/relatorio';
 import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
@@ -78,6 +79,7 @@ export default function Relatorios() {
   const [periodo, setPeriodo] = useState(6);
   const [indicadorSel, setIndicadorSel] = useState<string | null>(null);
   const relatorioRef = useRef<RelatorioMensalHandle>(null);
+  const contadorRef = useRef<EnviarContadorHandle>(null);
 
   const carregar = useCallback(async () => {
     if (!token) return;
@@ -111,6 +113,7 @@ export default function Relatorios() {
   );
 
   const relatorioData = dashboard ? relatorioFromDashboard(dashboard, ops, survey, demo) : null;
+  const resumoContador = dashboard ? resumoContadorFromDashboard(dashboard, demo) : null;
   const result = survey?.result;
   const abertas = recs.filter((r) => r.status === 'aberta');
   const resolvidas = recs.filter((r) => r.status === 'resolvida');
@@ -194,6 +197,17 @@ export default function Relatorios() {
               PDF com a marca, o período e a leitura do Pulso — para salvar, imprimir ou projetar
               numa reunião com a equipe.
             </Text>
+            <Pressable
+              style={({ pressed }) => [styles.docBtnSec, pressed && styles.pressionado]}
+              onPress={() => contadorRef.current?.gerar()}
+            >
+              <Ionicons name="share-outline" size={19} color={colors.mata} />
+              <Text style={styles.docBtnSecTexto}>Resumo para o contador (PDF)</Text>
+            </Pressable>
+            <Text style={styles.docNota}>
+              Um retrato enxuto do caixa — com de onde vem cada número — para mandar pro seu
+              contador no WhatsApp ou por e-mail.
+            </Text>
           </>
         )}
 
@@ -259,8 +273,9 @@ export default function Relatorios() {
           <Ionicons name="chevron-forward" size={20} color={colors.cinza} />
         </Pressable>
 
-        {/* documento renderizado fora da tela, capturado ao tocar em "Baixar" */}
+        {/* geradores de PDF (não desenham nada; emitem o documento ao tocar nos botões) */}
         {relatorioData && <RelatorioMensalCard ref={relatorioRef} data={relatorioData} />}
+        {resumoContador && <EnviarContadorCard ref={contadorRef} resumo={resumoContador} />}
       </ScrollView>
     </SafeAreaView>
   );
@@ -323,6 +338,8 @@ const styles = StyleSheet.create({
 
   docBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 15 },
   docBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#06231A' },
+  docBtnSec: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, paddingVertical: 14, marginTop: 14 },
+  docBtnSecTexto: { fontFamily: fonts.displayMedio, fontSize: 14.5, color: colors.mata },
   docNota: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 19, color: colors.cinza, marginTop: 8 },
 
   notaLinha: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },

@@ -8,6 +8,7 @@
 
 import type { AdminDossier, Comparativos, DashboardJson, IndicatorJson, OperationsJson, SurveyJson } from './api';
 import { brl, dias, pct } from './format';
+import type { ResumoContador } from '@/components/enviar-contador';
 import type { RelatorioMensalData, RelatorioSerie } from '@/components/relatorio-mensal';
 import { SEGMENT_LABEL, segmentIndicatorsFromPayload } from './segmentos';
 import { colors, severityColor, type Severity } from '@/theme';
@@ -87,6 +88,36 @@ export function relatorioFromDashboard(dash: DashboardJson, ops: OperationsJson 
     alertas: dash.alerts.map((a) => ({ titulo: a.textTitle ?? a.ruleKey, severidade: a.severity })),
     leituraIA: diag?.text?.body ?? null,
     gestao: gestaoDoSurvey(survey),
+  };
+}
+
+/** Ponto da curva de projeção (o que o retrato do contador precisa). */
+type ProjPoint = { horizonDays: number; projectedCents: number; zeroOn?: string | null };
+
+/**
+ * Retrato do caixa para o "Resumo para o contador" (só apresentação; nada é
+ * calculado aqui — os números vêm prontos do dashboard).
+ */
+export function resumoContadorFromDashboard(dash: DashboardJson, demo: boolean): ResumoContador {
+  const ind = dash.snapshot.indicators;
+  const proj = (ind.cash_projection?.value ?? null) as ProjPoint[] | null;
+  const p30 = proj?.find((p) => p.horizonDays === 30) ?? null;
+  const zeroOn = proj?.find((p) => p.zeroOn)?.zeroOn ?? null;
+  const diag = dash.diagnosis ?? null;
+  return {
+    nome: dash.company.name,
+    data: dash.snapshot.asOf,
+    saldoHoje: num(ind.cash_balance?.value),
+    caixa30: p30?.projectedCents ?? null,
+    zeroOn: zeroOn ?? null,
+    saudavel: !zeroOn,
+    ciclo: num(ind.cash_cycle?.value),
+    margem: num(ind.contribution_margin?.value),
+    receita: num(ind.revenue_current?.value),
+    estagio: diag ? STAGE_LABEL[diag.stage] ?? diag.stage : null,
+    estagioCor: diag ? severityColor[STAGE_SEV[diag.stage] ?? 'ok'] : colors.vivo,
+    alertas: dash.alerts.map((a) => ({ titulo: a.textTitle ?? a.ruleKey, facts: a.facts })),
+    demo,
   };
 }
 
