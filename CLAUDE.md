@@ -27,6 +27,17 @@ Motivo: número alucinado em alerta financeiro destrói a confiança de forma
 irreversível, e o especialista do projeto audita cada fórmula contra a
 planilha dele.
 
+**Exceção controlada — extração de arquivo por tipo** (decidida com o
+especialista, 13/08). Como cada empresa manda o arquivo num formato diferente,
+quando o dono sobe um arquivo por um **campo de TIPO declarado** (folha,
+maquininha, DRE…), a IA **pode ler o arquivo apenas para EXTRAIR** os valores
+daquele tipo — nunca para calcular indicador nem decidir alerta. O que a IA
+extrai é **proposta**: o **código valida** (formato, faixa) e o **dono confirma**
+("li R$ X de folha, confere?") **antes** de qualquer número entrar no motor.
+Nenhum valor extraído alimenta o cálculo sem passar por essa peneira (código) +
+confirmação (humano) — o mesmo padrão do custo fixo. Fora desse fluxo de
+extração-com-confirmação, a regra acima vale integralmente.
+
 ### 2. `packages/core` é puro
 
 Sem I/O, sem banco, sem HTTP, sem SDK de IA. Só funções: entrada tipada,

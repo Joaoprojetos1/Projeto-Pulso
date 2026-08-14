@@ -11,7 +11,6 @@ import {
   missingInfoRecommendations,
   projectCash,
   segmentRules,
-  TABLE_MARKET_REFERENCE,
 } from '@pulso/core';
 import type { CashProjection, CompanySnapshot, DiagnosisHistoryPoint, DiagnosisStage } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
@@ -24,6 +23,7 @@ import { companyFromRequest } from '../auth';
 import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 import type { PushMessage, PushSender } from '../push';
+import { loadMarketReference } from '../services/market';
 import { saoPauloToday } from '../quota';
 import { requireAdmin } from './admin/guard';
 
@@ -285,6 +285,9 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
   // Indicadores do SEGMENTO da empresa, já rotulados (home focada no segmento —
   // item 3.5). Os valores vêm do payload; os rótulos, do pacote do segmento no core.
   const seg = getSegment(company.niche);
+  // referência de mercado pesquisada pela IA (item 3.6): vem do banco. Vazio →
+  // não compara (degrada elegante). Caixa SEPARADA dos números do caixa.
+  const marketRef = await loadMarketReference(sql);
   const reqByKey = new Map((seg?.requirements ?? []).map((r) => [r.key, r.required]));
   const payloadInd = (snapshot.payload ?? {}) as Record<
     string,
@@ -300,7 +303,7 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
         // COMPARATIVO DE MERCADO (item 3.6): só quando há valor da empresa E um
         // benchmark validado na tabela (hoje vazia → não aparece; degrada elegante).
         const benchmark =
-          value != null && seg ? TABLE_MARKET_REFERENCE.benchmarkFor(seg.id, key) : null;
+          value != null && seg ? marketRef.benchmarkFor(seg.id, key) : null;
         const cmp = benchmark && value != null ? compareToMarket(value, benchmark) : null;
         return {
           key,

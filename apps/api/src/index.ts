@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 
 import { makeAiModels } from './ai/providers';
+import { AnthropicMarketResearcher } from './ai/market-researcher';
 import { buildApp } from './app';
 import { createSql } from './db';
 import { migrate } from './migrate';
 import { ExpoPushSender } from './push';
+import { refreshBenchmarks } from './services/market';
 import { makeWhatsAppSender } from './channels/whatsapp';
 
 // conveniência de dev: carrega .env local se existir (sem sobrescrever o ambiente)
@@ -41,6 +43,10 @@ const {
   appSecret: whatsappAppSecret,
 } = makeWhatsAppSender();
 
+// pesquisador de referência de mercado: usa a busca na web da Anthropic. Só liga
+// com a chave da Anthropic; sem ela, a atualização de mercado fica indisponível.
+const marketResearcher = process.env.ANTHROPIC_API_KEY ? new AnthropicMarketResearcher() : null;
+
 const app = buildApp(sql, {
   logger: true,
   alertWriter,
@@ -49,6 +55,7 @@ const app = buildApp(sql, {
   whatsappSender,
   whatsappVerifyToken,
   whatsappAppSecret,
+  marketResearcher,
 });
 
 // migrações no boot (idempotentes) — registradas pelo logger estruturado
@@ -76,6 +83,20 @@ if (keepaliveOn) {
       /* best-effort: manter vivo, nunca derrubar */
     });
   }, intervalo).unref();
+}
+
+// atualização periódica da referência de mercado (item 3.6): a IA repesquisa as
+// médias do setor "sempre que possível". OPT-IN por ambiente (PULSO_MARKET_REFRESH_DAYS),
+// para não disparar custo de IA por engano. O disparo manual segue no /admin/market/refresh.
+const marketDays = Number(process.env.PULSO_MARKET_REFRESH_DAYS ?? 0);
+if (marketResearcher && marketDays > 0) {
+  const intervalo = marketDays * 24 * 60 * 60_000;
+  setInterval(() => {
+    refreshBenchmarks(sql, marketResearcher, { log: (m, e) => app.log.info(e, `mercado: ${m}`) })
+      .then((r) => app.log.info({ updated: r.updated, skipped: r.skipped.length }, 'mercado: atualização periódica'))
+      .catch((err) => app.log.error({ err }, 'mercado: falha na atualização periódica'));
+  }, intervalo).unref();
+  app.log.info({ marketDays }, 'mercado: atualização periódica ligada');
 }
 
 // desligar com elegância: fecha o servidor e o pool antes de sair

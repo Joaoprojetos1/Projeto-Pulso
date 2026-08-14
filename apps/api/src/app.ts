@@ -19,6 +19,7 @@ import { registerDevices } from './routes/devices';
 import { registerFixedCost } from './routes/fixed-cost';
 import { registerImport } from './routes/import';
 import { registerInterest } from './routes/interest';
+import { registerMarket } from './routes/market';
 import { registerPlanned } from './routes/planned';
 import { registerReports } from './routes/reports';
 import { registerSegments } from './routes/segments';
@@ -46,6 +47,8 @@ export interface AppOptions {
   whatsappVerifyToken?: string | null;
   /** App Secret da Meta para conferir a assinatura do webhook do WhatsApp. */
   whatsappAppSecret?: string | null;
+  /** Pesquisador de referência de mercado (IA). Sem ele, a atualização recusa (503). */
+  marketResearcher?: import('./services/market').BenchmarkResearcher | null;
 }
 
 export function buildApp(sql: Sql, opts: AppOptions = {}) {
@@ -135,6 +138,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerAuth(app, sql, opts.chatModel ?? null, opts.mailer);
   registerAdmin(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerInterest(app, sql);
+  registerMarket(app, sql, opts.marketResearcher ?? null);
   registerPlanned(app, sql);
   registerCompanies(app, sql);
   registerCompany(app, sql, opts.cnpjLookup);
