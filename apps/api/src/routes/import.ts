@@ -14,8 +14,16 @@ import { createHash } from 'node:crypto';
 
 import type { FastifyInstance } from 'fastify';
 
+import {
+  extractProposal,
+  isExtractable,
+  type ExtractableType,
+  type ExtractedItem,
+  type ExtractionModel,
+} from '../ai/extract';
 import type { AlertWriterModel } from '../ai/writer';
 import { companyFromRequest } from '../auth';
+import type { CompanyRow } from '../http';
 import type { Sql } from '../db';
 import { toCompanyJson, UUID_PATTERN } from '../http';
 import { detectAndParseBankStatement } from '../parsers/detect';
@@ -48,11 +56,53 @@ async function latestAsOf(sql: Sql, companyId: string): Promise<string> {
   return (b?.d as string | undefined) ?? saoPauloToday();
 }
 
+/**
+ * Aplica uma extração CONFIRMADA ao motor, por tipo. Hoje: FOLHA → custo fixo.
+ * REGRA: nenhuma conta financeira de negócio aqui — só somamos os itens que o
+ * DONO confirmou (o mesmo que ele faria à mão) e mandamos o core recalcular.
+ * A soma vira `declared_fixed_cost_cents` (o que o core já consome).
+ */
+async function applyConfirmed(
+  sql: Sql,
+  company: CompanyRow,
+  docType: ExtractableType,
+  items: ExtractedItem[],
+  alertWriter: AlertWriterModel | null,
+  pushSender: PushSender | null,
+  log: FastifyInstance['log'],
+) {
+  if (docType === 'payroll') {
+    await sql.begin(async (tx) => {
+      // uma nova folha SUBSTITUI a anterior (o custo de pessoal do mês é um só,
+      // não se acumula entre meses). Os itens inferidos/manuais ficam intactos.
+      await tx`DELETE FROM fixed_cost_items WHERE company_id = ${company.id} AND source = 'payroll'`;
+      if (items.length > 0) {
+        const rows = items.map((i) => ({
+          company_id: company.id,
+          label: i.label,
+          amount_cents: i.amountCents,
+          category: 'Pessoal',
+          source: 'payroll',
+        }));
+        await tx`INSERT INTO fixed_cost_items ${tx(rows)}`;
+      }
+      const [{ total }] = await tx`
+        SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
+        FROM fixed_cost_items WHERE company_id = ${company.id}`;
+      await tx`UPDATE companies SET declared_fixed_cost_cents = ${Number(total)} WHERE id = ${company.id}`;
+      company.declared_fixed_cost_cents = Number(total);
+    });
+    const asOf = await latestAsOf(sql, company.id);
+    await computeAndStore(sql, company, asOf, alertWriter, pushSender, log);
+  }
+}
+
 export function registerImport(
   app: FastifyInstance,
   sql: Sql,
   alertWriter: AlertWriterModel | null = null,
   pushSender: PushSender | null = null,
+  extractionModel: ExtractionModel | null = null,
 ) {
   app.post<{ Body: { filename: string; contentBase64: string; docType?: DocType } }>(
     '/me/import',
@@ -90,9 +140,42 @@ export function registerImport(
         return reply.code(200).send({ ...(dash ?? {}), import: { alreadyImported: true } });
       }
 
+      // Tipos EXTRAÍVEIS por IA (hoje: folha de pagamento). O CÓDIGO lê o arquivo
+      // → a IA TRANSCREVE os valores → o CÓDIGO valida. Guardamos a PROPOSTA e o
+      // dono confirma antes de qualquer número entrar no motor (nada é aplicado
+      // aqui). Sem modelo de IA (sem chave) ou se a leitura falhar, cai no
+      // "recebido" honesto — leitura automática indisponível, sem chutar.
+      if (docType !== 'bank_statement' && isExtractable(docType) && extractionModel) {
+        try {
+          const proposal = await extractProposal(extractionModel, docType, buf);
+          const [imp] = await sql`
+            INSERT INTO imports (company_id, source, period_start, period_end, file_hash, row_count, doc_type, filename, status, extraction)
+            VALUES (${company.id}, ${docType}, NULL, NULL, ${fileHash}, ${proposal.items.length}, ${docType}, ${req.body.filename}, 'extracted',
+                    ${sql.json({ items: proposal.items, issues: proposal.issues, modelVersion: proposal.modelVersion } as never)})
+            RETURNING id`;
+          const dash = await buildDashboard(sql, company);
+          return reply.code(201).send({
+            ...(dash ?? { company: toCompanyJson(company), snapshot: null, alerts: [] }),
+            import: {
+              id: imp!.id as string,
+              docType,
+              status: 'extracted',
+              proposal: { items: proposal.items, issues: proposal.issues },
+            },
+          });
+        } catch (err) {
+          // leitura/transcrição falhou: guarda como erro (transparência), sem derrubar
+          app.log.warn({ err, docType }, 'extração por tipo falhou; guardando como erro');
+          await sql`
+            INSERT INTO imports (company_id, source, period_start, period_end, file_hash, row_count, doc_type, filename, status)
+            VALUES (${company.id}, ${docType}, NULL, NULL, ${fileHash}, 0, ${docType}, ${req.body.filename}, 'error')`;
+          const msg = err instanceof ParseError ? err.message : 'Não consegui ler este arquivo automaticamente.';
+          return reply.code(422).send({ error: msg });
+        }
+      }
+
       // Tipos ainda SEM leitor: guardamos o arquivo classificado com situação
-      // "recebido" (transparência), sem tentar interpretar. O extrato bancário é
-      // o único com leitor hoje.
+      // "recebido" (transparência), sem tentar interpretar.
       if (docType !== 'bank_statement') {
         await sql`
           INSERT INTO imports (company_id, source, period_start, period_end, file_hash, row_count, doc_type, filename, status)
@@ -185,22 +268,89 @@ export function registerImport(
     const rows = await sql`
       SELECT id, doc_type, source, filename, status,
              period_start::text AS period_start, period_end::text AS period_end,
-             row_count, imported_at
+             row_count, imported_at, extraction
       FROM imports WHERE company_id = ${company.id}
       ORDER BY imported_at DESC`;
     return {
-      imports: rows.map((r) => ({
-        id: r.id,
-        docType: (r.doc_type as string | null) ?? r.source,
-        filename: r.filename,
-        status: r.status,
-        periodStart: r.period_start,
-        periodEnd: r.period_end,
-        rowCount: r.row_count,
-        importedAt: r.imported_at,
-      })),
+      imports: rows.map((r) => {
+        const ext = r.extraction as { items?: ExtractedItem[]; issues?: string[] } | null;
+        return {
+          id: r.id,
+          docType: (r.doc_type as string | null) ?? r.source,
+          filename: r.filename,
+          status: r.status,
+          periodStart: r.period_start,
+          periodEnd: r.period_end,
+          rowCount: r.row_count,
+          importedAt: r.imported_at,
+          // proposta pendente (status 'extracted'): o app mostra para o dono confirmar
+          proposal:
+            r.status === 'extracted' && ext
+              ? { items: ext.items ?? [], issues: ext.issues ?? [] }
+              : null,
+        };
+      }),
     };
   });
+
+  // O dono CONFIRMA a proposta de extração (ex.: os valores lidos da folha). Só
+  // aqui o número entra no motor. O corpo traz os itens já revisados/editados —
+  // a fonte da verdade é o que o dono confirmou, não o que a IA leu.
+  app.post<{ Params: { id: string }; Body: { items: Array<{ label: string; amountCents: number }> } }>(
+    '/me/imports/:id/confirm',
+    {
+      schema: {
+        params: { type: 'object', required: ['id'], properties: { id: { type: 'string', pattern: UUID_PATTERN } } },
+        body: {
+          type: 'object',
+          required: ['items'],
+          additionalProperties: false,
+          properties: {
+            items: {
+              type: 'array',
+              maxItems: 60,
+              items: {
+                type: 'object',
+                required: ['label', 'amountCents'],
+                additionalProperties: false,
+                properties: {
+                  label: { type: 'string', minLength: 1, maxLength: 120 },
+                  amountCents: { type: 'integer', minimum: 0 },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const company = await companyFromRequest(sql, req);
+      if (!company) return reply.code(401).send({ error: 'Faça login.' });
+
+      const [imp] = await sql`
+        SELECT id, doc_type FROM imports
+        WHERE id = ${req.params.id} AND company_id = ${company.id}`;
+      if (!imp) return reply.code(404).send({ error: 'Arquivo não encontrado.' });
+      const docType = imp.doc_type as string | null;
+      if (!docType || !isExtractable(docType)) {
+        return reply.code(422).send({ error: 'Este arquivo não tem valores para confirmar.' });
+      }
+
+      // itens confirmados (valor > 0). A soma é feita dentro do apply (código).
+      const items: ExtractedItem[] = req.body.items
+        .filter((i) => i.amountCents > 0)
+        .map((i) => ({ label: i.label.trim().slice(0, 120), amountCents: i.amountCents }));
+
+      await applyConfirmed(sql, company, docType, items, alertWriter, pushSender, app.log);
+      await sql`UPDATE imports SET status = 'confirmed', row_count = ${items.length} WHERE id = ${imp.id}`;
+
+      const dash = await buildDashboard(sql, company);
+      return reply.code(200).send({
+        ...(dash ?? {}),
+        confirmed: { docType, itemsApplied: items.length },
+      });
+    },
+  );
 
   // Remove um arquivo enviado por engano: apaga o registro (os lançamentos vão
   // junto pela FK ON DELETE CASCADE) e RECALCULA o painel.

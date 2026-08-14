@@ -4,6 +4,7 @@ import cors from '@fastify/cors';
 import fastify, { type FastifyError } from 'fastify';
 
 import type { ChatModel } from './ai/chat';
+import type { ExtractionModel } from './ai/extract';
 import type { AlertWriterModel } from './ai/writer';
 import type { Sql } from './db';
 import type { Mailer } from './mailer';
@@ -35,6 +36,8 @@ export interface AppOptions {
   alertWriter?: AlertWriterModel | null;
   /** Sem modelo (null), a conversa responde com o aviso honesto. */
   chatModel?: ChatModel | null;
+  /** Sem modelo (null), a extração de arquivo por tipo fica indisponível (recebido honesto). */
+  extractionModel?: ExtractionModel | null;
   /** Sem enviador (null), nada é entregue no celular (o cálculo segue igual). */
   pushSender?: PushSender | null;
   /** Envio de e-mail (recuperação de senha). Sem opção, resolve pelo ambiente (log em dev). */
@@ -144,7 +147,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerCompany(app, sql, opts.cnpjLookup);
   registerData(app, sql);
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
-  registerImport(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
+  registerImport(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null, opts.extractionModel ?? null);
   registerFixedCost(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSegments(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSubscription(app, sql);

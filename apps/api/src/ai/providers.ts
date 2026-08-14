@@ -13,7 +13,10 @@
  * arquivo só troca QUEM gera o texto, nunca quem confere.
  */
 
+import Anthropic from '@anthropic-ai/sdk';
+
 import { AnthropicChatModel, type ChatModel, type ChatReply, type ChatTurn } from './chat';
+import { EXTRACT_MODEL } from './models';
 import type { TextGenerationRequest, TextGenerationResult, TextProvider } from './provider';
 import type { AlertText } from './templates';
 import { AnthropicAlertWriter, type AlertPrompt, type AlertWriterModel, type WrittenAlert } from './writer';
@@ -88,6 +91,66 @@ export class OpenAiTextProvider implements TextProvider {
       },
     };
   }
+}
+
+// ---------------------------------------------------------------
+// Provedor Anthropic — TextProvider cru (usado pela EXTRAÇÃO por tipo)
+// ---------------------------------------------------------------
+
+/**
+ * A forma canônica `TextProvider` sobre a Anthropic. O alerta e o chat usam
+ * classes concretas dedicadas (multi-turno, fiscais); ESTE provedor cru serve a
+ * superfícies novas que só precisam de "dado um prompt, devolva texto/JSON" —
+ * hoje a extração de arquivo por tipo. Structured output via output_config.
+ */
+export class AnthropicTextProvider implements TextProvider {
+  readonly name = 'anthropic';
+  private client: Anthropic;
+  private model: string;
+
+  constructor(opts: { apiKey?: string; model?: string } = {}) {
+    this.client = new Anthropic({
+      ...(opts.apiKey ? { apiKey: opts.apiKey } : {}),
+      timeout: 60_000,
+      maxRetries: 2,
+    });
+    this.model = opts.model ?? EXTRACT_MODEL;
+  }
+
+  async generate(req: TextGenerationRequest): Promise<TextGenerationResult> {
+    const res = await this.client.messages.create({
+      model: this.model,
+      max_tokens: req.maxTokens ?? 1024,
+      system: req.system,
+      messages: [{ role: 'user', content: req.user }],
+      ...(req.jsonSchema
+        ? { output_config: { format: { type: 'json_schema', schema: req.jsonSchema } } }
+        : {}),
+    } as never);
+
+    if ((res as { stop_reason?: string }).stop_reason === 'refusal') {
+      throw new Error('Modelo recusou a solicitação.');
+    }
+    const text = res.content.find((b) => b.type === 'text')?.text ?? '';
+    return {
+      text,
+      modelVersion: res.model,
+      usage: { model: res.model, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens },
+    };
+  }
+}
+
+/**
+ * Escolhe o provedor de texto cru por ambiente (mesma regra do makeAiModels):
+ * padrão Anthropic; PULSO_AI_PROVIDER=openai troca. Sem a chave do provedor,
+ * devolve null — a superfície que usa (extração) degrada com honestidade.
+ */
+export function makeTextProvider(env: NodeJS.ProcessEnv = process.env): TextProvider | null {
+  const escolhido = (env.PULSO_AI_PROVIDER ?? 'anthropic').toLowerCase();
+  if (escolhido === 'openai') {
+    return env.OPENAI_API_KEY ? new OpenAiTextProvider({ apiKey: env.OPENAI_API_KEY }) : null;
+  }
+  return env.ANTHROPIC_API_KEY ? new AnthropicTextProvider({ apiKey: env.ANTHROPIC_API_KEY }) : null;
 }
 
 // ---------------------------------------------------------------

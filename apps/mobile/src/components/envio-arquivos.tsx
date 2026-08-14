@@ -13,15 +13,24 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
+  confirmExtraction,
   deleteMyImport,
   fetchMyImports,
   importFile,
   type DocType,
+  type ExtractedItemJson,
   type ImportItem,
 } from '@/lib/api';
 import { escolherArquivos } from '@/lib/file-upload';
 import { usePulso } from '@/lib/pulso-context';
+import { brl } from '@/lib/format';
+import { MoneyInput } from '@/components/money-input';
 import { colors, fonts } from '@/theme';
+
+/** Frase por tipo extraível: o que a IA leu e o que o valor vira no motor. */
+const EXTRAI_FRASE: Record<string, { leu: string; vira: string }> = {
+  payroll: { leu: 'Li da sua folha de pagamento', vira: 'Ao confirmar, isto vira seu custo fixo mensal.' },
+};
 
 const TIPOS: Array<{ id: DocType; label: string; hint: string }> = [
   { id: 'bank_statement', label: 'Extrato bancário', hint: 'Lido automaticamente (PDF ou OFX)' },
@@ -52,6 +61,8 @@ const SITUACAO: Record<string, { texto: string; cor: string }> = {
   processed: { texto: 'Processado', cor: colors.vivo },
   received: { texto: 'Recebido', cor: colors.alerta },
   error: { texto: 'Não consegui ler', cor: colors.critico },
+  extracted: { texto: 'Confira e confirme', cor: colors.alerta },
+  confirmed: { texto: 'Confirmado', cor: colors.vivo },
 };
 
 type ProgressoArquivo = { nome: string; status: 'enviando' | 'ok' | 'erro'; msg?: string };
@@ -102,9 +113,11 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
         const r = await importFile(token, arq.nome, arq.base64, tipo);
         const msg = r.alreadyImported
           ? 'já tinha sido enviado'
-          : tipo === 'bank_statement'
-            ? `lido (${r.rowsImported ?? 0} lançamentos)`
-            : 'recebido (leitura automática em breve)';
+          : r.status === 'extracted'
+            ? `li ${r.proposal?.items.length ?? 0} valores — confira abaixo`
+            : tipo === 'bank_statement'
+              ? `lido (${r.rowsImported ?? 0} lançamentos)`
+              : 'recebido (leitura automática em breve)';
         setProgresso((p) => p.map((x, j) => (j === i ? { ...x, status: 'ok', msg } : x)));
       } catch (e) {
         setProgresso((p) =>
@@ -132,6 +145,16 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
       setRemovendo(null);
     }
   }
+
+  async function confirmarProposta(id: string, itens: ExtractedItemJson[]) {
+    if (!token) return;
+    await confirmExtraction(token, id, itens);
+    await recarregar();
+    await carregar(); // o motor recalculou com o valor confirmado
+  }
+
+  // Propostas pendentes de confirmação (o servidor devolve a leitura na lista).
+  const pendentes = itens.filter((it) => it.status === 'extracted' && it.proposal);
 
   return (
     <View style={{ gap: 6 }}>
@@ -181,6 +204,16 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
           ))}
         </View>
       )}
+
+      {/* propostas de extração aguardando o dono confirmar (ex.: folha → custo fixo) */}
+      {pendentes.map((it) => (
+        <CartaoConfirmacao
+          key={it.id}
+          item={it}
+          onConfirmar={(itens) => confirmarProposta(it.id, itens)}
+          onDescartar={() => remover(it.id)}
+        />
+      ))}
 
       <Text style={styles.rotuloLista}>Arquivos enviados</Text>
       {carregando ? (
@@ -234,6 +267,88 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
   );
 }
 
+/**
+ * Card de CONFIRMAÇÃO da extração: o dono vê o que a IA leu, ajusta se precisar e
+ * confirma. Só na confirmação o valor entra no motor (mesmo padrão do custo fixo).
+ * O app não calcula: só desenha os valores e devolve o que o dono confirmou.
+ */
+function CartaoConfirmacao({
+  item,
+  onConfirmar,
+  onDescartar,
+}: {
+  item: ImportItem;
+  onConfirmar: (itens: ExtractedItemJson[]) => Promise<void>;
+  onDescartar: () => void;
+}) {
+  const frase = EXTRAI_FRASE[item.docType] ?? {
+    leu: 'Li deste arquivo',
+    vira: 'Ao confirmar, os valores entram no seu caixa.',
+  };
+  const [itens, setItens] = useState<ExtractedItemJson[]>(item.proposal?.items ?? []);
+  const [enviando, setEnviando] = useState(false);
+  const total = itens.reduce((s, i) => s + (i.amountCents || 0), 0);
+
+  function ajustar(idx: number, cents: number | null) {
+    setItens((lista) => lista.map((it, j) => (j === idx ? { ...it, amountCents: cents ?? 0 } : it)));
+  }
+
+  async function confirmar() {
+    if (enviando) return;
+    setEnviando(true);
+    try {
+      await onConfirmar(itens.filter((i) => i.amountCents > 0));
+    } catch {
+      setEnviando(false); // deixa tentar de novo; em sucesso o card some (recarregar)
+    }
+  }
+
+  return (
+    <View style={styles.cartao}>
+      <View style={styles.cartaoTopo}>
+        <Ionicons name="reader-outline" size={18} color={colors.mata} />
+        <Text style={styles.cartaoTitulo}>{frase.leu}</Text>
+      </View>
+      {item.filename ? <Text style={styles.cartaoArquivo} numberOfLines={1}>{item.filename}</Text> : null}
+      <Text style={styles.cartaoSub}>Confira e ajuste se precisar. Nada entra no seu caixa antes de você confirmar.</Text>
+
+      <View style={styles.linhas}>
+        {itens.map((it, idx) => (
+          <View key={idx} style={styles.linha}>
+            <Text style={styles.linhaLabel} numberOfLines={2}>{it.label}</Text>
+            <MoneyInput
+              valueCents={it.amountCents}
+              onChangeCents={(c) => ajustar(idx, c)}
+              style={styles.linhaInput}
+            />
+          </View>
+        ))}
+      </View>
+
+      {item.proposal?.issues && item.proposal.issues.length > 0 ? (
+        <Text style={styles.avisos}>{item.proposal.issues.join(' ')}</Text>
+      ) : null}
+
+      <View style={styles.totalLinha}>
+        <Text style={styles.totalRotulo}>Total</Text>
+        <Text style={styles.totalValor}>{brl(total)}</Text>
+      </View>
+      <Text style={styles.cartaoVira}>{frase.vira}</Text>
+
+      <Pressable
+        style={({ pressed }) => [styles.botao, enviando && styles.botaoOff, pressed && styles.pressionado]}
+        onPress={confirmar}
+        disabled={enviando}
+      >
+        {enviando ? <ActivityIndicator color="#06231A" /> : <Text style={styles.botaoTexto}>Confirmar</Text>}
+      </Pressable>
+      <Pressable onPress={onDescartar} disabled={enviando} style={styles.descartar} hitSlop={8}>
+        <Text style={styles.descartarTexto}>Descartar esta leitura</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   rotulo: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.tinta, marginTop: 8 },
   tipos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
@@ -268,4 +383,22 @@ const styles = StyleSheet.create({
   confirma: { alignItems: 'flex-end', gap: 6 },
   confirmaSim: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.critico },
   confirmaNao: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
+
+  // card de confirmação da extração
+  cartao: { marginTop: 18, backgroundColor: '#F0FBF6', borderWidth: 1.5, borderColor: colors.vivo, borderRadius: 16, padding: 16, gap: 4 },
+  cartaoTopo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cartaoTitulo: { fontFamily: fonts.displayMedio, fontSize: 16, color: colors.mata },
+  cartaoArquivo: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: 2 },
+  cartaoSub: { fontFamily: fonts.corpo, fontSize: 13, color: colors.tinta, marginTop: 6, lineHeight: 19 },
+  linhas: { gap: 10, marginTop: 14 },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  linhaLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
+  linhaInput: { flex: 1.1, fontSize: 16, paddingVertical: 10 },
+  avisos: { fontFamily: fonts.corpo, fontSize: 12, color: colors.alerta, marginTop: 10, lineHeight: 17 },
+  totalLinha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#CDEBDD' },
+  totalRotulo: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.tinta },
+  totalValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },
+  cartaoVira: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: 4 },
+  descartar: { alignSelf: 'center', marginTop: 10, paddingVertical: 4 },
+  descartarTexto: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
 });

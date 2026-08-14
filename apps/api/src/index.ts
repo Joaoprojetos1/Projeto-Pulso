@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-import { makeAiModels } from './ai/providers';
+import { extractionModelFromProvider } from './ai/extract';
+import { makeAiModels, makeTextProvider } from './ai/providers';
 import { AnthropicMarketResearcher } from './ai/market-researcher';
 import { buildApp } from './app';
 import { createSql } from './db';
@@ -31,6 +32,11 @@ const sql = createSql(url);
 const { alertWriter, chatModel, provider: aiProvider } = makeAiModels();
 const temIA = Boolean(alertWriter);
 
+// extração de arquivo por tipo (folha → custo fixo): usa o mesmo provedor de IA.
+// Sem chave, fica null → o upload guarda como "recebido" (leitura indisponível).
+const textProvider = makeTextProvider();
+const extractionModel = textProvider ? extractionModelFromProvider(textProvider) : null;
+
 // entrega de push pelo serviço do Expo (não precisa de chave)
 const pushSender = new ExpoPushSender();
 
@@ -51,6 +57,7 @@ const app = buildApp(sql, {
   logger: true,
   alertWriter,
   chatModel,
+  extractionModel,
   pushSender,
   whatsappSender,
   whatsappVerifyToken,

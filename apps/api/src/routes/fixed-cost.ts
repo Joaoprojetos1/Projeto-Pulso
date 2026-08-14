@@ -38,7 +38,8 @@ async function loadItems(sql: Sql, companyId: string) {
     label: r.label as string,
     amountCents: r.amount_cents as number,
     category: (r.category as string | null) ?? null,
-    source: r.source as 'inferred' | 'manual',
+    // 'payroll' entra quando o dono confirma a extração de uma folha de pagamento
+    source: r.source as 'inferred' | 'manual' | 'payroll',
   }));
 }
 
@@ -74,7 +75,7 @@ export function registerFixedCost(
 
   // O dono confirma a lista final. Substituímos os itens, somamos e mandamos o
   // motor recalcular. A soma é o custo fixo que o core usa.
-  app.put<{ Body: { items: Array<{ label: string; amountCents: number; category?: string | null; source?: 'inferred' | 'manual' }> } }>(
+  app.put<{ Body: { items: Array<{ label: string; amountCents: number; category?: string | null; source?: 'inferred' | 'manual' | 'payroll' }> } }>(
     '/me/fixed-cost',
     {
       schema: {
@@ -94,7 +95,7 @@ export function registerFixedCost(
                   label: { type: 'string', minLength: 1, maxLength: 120 },
                   amountCents: { type: 'integer', minimum: 0 },
                   category: { type: ['string', 'null'], maxLength: 120 },
-                  source: { type: 'string', enum: ['inferred', 'manual'] },
+                  source: { type: 'string', enum: ['inferred', 'manual', 'payroll'] },
                 },
               },
             },

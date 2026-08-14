@@ -13,3 +13,7 @@
 
 export const ALERT_MODEL = process.env.PULSO_ALERT_MODEL ?? 'claude-opus-4-8';
 export const CHAT_MODEL = process.env.PULSO_CHAT_MODEL ?? 'claude-sonnet-4-6';
+// Extração por tipo (transcrição de valores de um arquivo). Não é cálculo nem
+// juízo — o modelo só LÊ e transcreve; o código valida. Um modelo mais leve dá
+// conta e é o que faz sentido no custo. Troca por env, sem tocar no código.
+export const EXTRACT_MODEL = process.env.PULSO_EXTRACT_MODEL ?? 'claude-sonnet-4-6';

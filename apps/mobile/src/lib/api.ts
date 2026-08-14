@@ -640,9 +640,23 @@ export type DocType =
   | 'payroll'
   | 'other';
 
-export type ImportStatus = 'processed' | 'received' | 'error';
+export type ImportStatus = 'processed' | 'received' | 'error' | 'extracted' | 'confirmed';
+
+/** Um valor TRANSCRITO pela IA e já validado pelo código (rótulo + centavos). */
+export interface ExtractedItemJson {
+  label: string;
+  amountCents: number;
+}
+
+/** Proposta de extração pendente de confirmação do dono (ex.: folha → custo fixo). */
+export interface ExtractionProposalJson {
+  items: ExtractedItemJson[];
+  issues: string[];
+}
 
 export interface ImportResult {
+  /** identificador do arquivo (para confirmar a extração). */
+  id?: string;
   /** o mesmo arquivo já tinha sido importado antes. */
   alreadyImported?: boolean;
   /** tipo classificado pelo dono. */
@@ -654,6 +668,8 @@ export interface ImportResult {
   rowsImported?: number;
   balancesImported?: number;
   warnings?: number;
+  /** valores lidos, aguardando o dono confirmar (status 'extracted'). */
+  proposal?: ExtractionProposalJson;
 }
 
 /** Um arquivo já enviado, para a lista de transparência da aba Dados. */
@@ -666,6 +682,8 @@ export interface ImportItem {
   periodEnd: string | null;
   rowCount: number;
   importedAt: string;
+  /** proposta pendente (só quando status === 'extracted'). */
+  proposal: ExtractionProposalJson | null;
 }
 
 /**
@@ -707,6 +725,30 @@ export async function fetchMyImports(token: string): Promise<ImportItem[]> {
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (!res.ok) throw new Error(`HTTP ${res.status} nos arquivos`);
   return ((await res.json()) as { imports: ImportItem[] }).imports;
+}
+
+/**
+ * O dono CONFIRMA a proposta de extração (ex.: os valores lidos da folha). Só
+ * aqui o número entra no motor. Manda os itens já revisados/editados — a fonte da
+ * verdade é o que o dono confirmou, não o que a IA leu.
+ */
+export async function confirmExtraction(
+  token: string,
+  importId: string,
+  items: ExtractedItemJson[],
+): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/imports/${importId}/confirm`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ items }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 404) throw new Error('Arquivo não encontrado.');
+  if (res.status === 422) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? 'Nada para confirmar neste arquivo.');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao confirmar`);
 }
 
 /** Remove um arquivo enviado por engano. O servidor apaga e recalcula o painel. */
