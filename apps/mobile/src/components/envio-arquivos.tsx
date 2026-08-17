@@ -33,7 +33,7 @@ const EXTRAI_FRASE: Record<string, { leu: string; vira: string }> = {
 };
 
 const TIPOS: Array<{ id: DocType; label: string; hint: string }> = [
-  { id: 'bank_statement', label: 'Extrato bancário', hint: 'Lido automaticamente (PDF ou OFX)' },
+  { id: 'bank_statement', label: 'Extrato bancário', hint: 'Lido automaticamente (PDF, OFX, CSV ou Excel)' },
   { id: 'card_acquirer', label: 'Maquininha de cartão', hint: 'Vendas e agenda de recebíveis' },
   { id: 'inventory', label: 'Relatório de estoque', hint: 'Estoque / giro' },
   { id: 'management', label: 'Relatório gerencial', hint: 'Faturamento, movimento' },

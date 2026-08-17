@@ -47,6 +47,7 @@ export type ParserSource =
   | 'inter_pdf'
   | 'santander_pdf'
   | 'ofx'
+  | 'bank_spreadsheet'
   | 'microvix_faturamento'
   | 'microvix_movimento'
   | 'microvix_giro'

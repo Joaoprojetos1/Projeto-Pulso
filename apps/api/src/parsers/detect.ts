@@ -10,6 +10,7 @@
 import { parseInterStatement } from './inter-pdf';
 import { parseOfx } from './ofx';
 import { parseSantanderStatement } from './santander-pdf';
+import { parseBankSpreadsheet } from './statement-table';
 import { extractPdfText } from './pdf-text';
 import { ParseError, type BankStatementResult } from './types';
 
@@ -33,7 +34,13 @@ export async function detectAndParseBankStatement(
     );
   }
 
-  // não-PDF: OFX é texto (ASCII/latin-1). HTML seria relatório de sistema.
+  // .xlsx é um ZIP (assinatura "PK"): extrato em Excel → leitor de planilha.
+  const isZip = buf[0] === 0x50 && buf[1] === 0x4b;
+  if (isZip) {
+    return parseBankSpreadsheet(buf);
+  }
+
+  // não-PDF, não-ZIP: OFX é texto (ASCII/latin-1). HTML seria relatório de sistema.
   const text = buf.toString('utf8');
   if (/<OFX>|OFXHEADER/i.test(text)) {
     return parseOfx(text);
@@ -44,11 +51,12 @@ export async function detectAndParseBankStatement(
         'bancário. Esse tipo de arquivo entra por outro caminho.',
     );
   }
-  if (/[;,].*[;,]/.test(text.split(/\r?\n/)[0] ?? '')) {
-    throw new ParseError('CSV ainda não é lido aqui. Envie o extrato em OFX ou PDF (Inter/Santander).');
+  // CSV: extrato bancário em planilha de texto → leitor de planilha.
+  if (/[;,\t]/.test(text.split(/\r?\n/)[0] ?? '')) {
+    return parseBankSpreadsheet(buf);
   }
   throw new ParseError(
     `Formato não reconhecido${filename ? ` ("${filename}")` : ''}. ` +
-      'Envie um extrato bancário em PDF (Inter ou Santander) ou em OFX.',
+      'Envie um extrato bancário em CSV, Excel (.xlsx), OFX ou PDF (Inter/Santander).',
   );
 }
