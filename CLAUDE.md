@@ -97,6 +97,21 @@ devolve alerta ou nada. O modelo só transforma o alerta em texto.
 - Margem caindo 2 meses seguidos
 - 1 cliente > 30% do faturamento
 
+## Movimentos de sócio (regra PROVISÓRIA — o especialista valida)
+
+O dinheiro que entra/sai em nome de um **sócio** não é operação do negócio: aporte de
+sócio **não é receita**, retirada **não é custo**. Mas o dinheiro **moveu** — então
+segue no **caixa** (que vem do saldo do banco, não da soma de lançamentos).
+
+Implementação que preserva o núcleo: o `core` **não muda**. A regra vive na **fronteira**
+(`loadCompanySnapshot`): lançamentos classificados como `aporte`/`retirada` **não
+alimentam** o motor; `pro_labore` e `nao_socio` (e sem classe) **contam** normalmente.
+A lista de sócios parte do quadro societário do CNPJ + contas que o dono acrescenta; o
+CÓDIGO casa o nome com a contraparte do extrato (`services/partners.ts`), o DONO
+**confirma** a classificação (mesmo padrão do custo fixo) e só então o motor deixa de
+contar. **Pró-labore é o caso cinzento** (remuneração do sócio que toca o negócio):
+por ora **conta como custo** — a decisão final é do especialista.
+
 ## Como o dado entra: direção do produto
 
 Documentação de direção (não é implementação agora): orienta decisões futuras de

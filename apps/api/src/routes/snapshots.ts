@@ -40,11 +40,17 @@ export async function loadCompanySnapshot(
   company: CompanyRow,
   asOf: string,
 ): Promise<CompanySnapshot> {
+  // Movimentos de sócio classificados como aporte/retirada NÃO alimentam o motor
+  // (aporte não é receita, retirada não é custo) — mas seguem no caixa, que vem do
+  // banco. A regra vive AQUI, na fronteira; o core continua puro e não muda. Classes
+  // 'pro_labore' e 'nao_socio' (e NULL) contam normalmente. Ver services/partners.ts.
   const entryRows = await sql`
     SELECT id::text AS id, kind::text AS kind, amount_cents,
            issued_on::text AS issued_on, due_on::text AS due_on, settled_on::text AS settled_on,
            counterparty, category, cost_type::text AS cost_type
-    FROM entries WHERE company_id = ${company.id}`;
+    FROM entries
+    WHERE company_id = ${company.id}
+      AND (party_class IS NULL OR party_class NOT IN ('aporte', 'retirada'))`;
 
   const balanceRows = await sql`
     SELECT observed_on::text AS observed_on, balance_cents

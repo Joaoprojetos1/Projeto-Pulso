@@ -100,6 +100,7 @@ export default function RootLayout() {
         <Stack.Screen name="enviar" />
         <Stack.Screen name="configurar" />
         <Stack.Screen name="custo-fixo" />
+        <Stack.Screen name="socios" />
         <Stack.Screen name="numeros-do-mes" />
         <Stack.Screen name="questionario" />
         <Stack.Screen name="historico" />

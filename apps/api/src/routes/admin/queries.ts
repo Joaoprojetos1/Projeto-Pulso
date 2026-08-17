@@ -214,12 +214,25 @@ export async function overview(sql: Sql): Promise<OverviewRow[]> {
 export async function companyDossier(sql: Sql, companyId: string) {
   const [company] = await sql`
     SELECT c.id::text AS id, c.name, c.cnpj, c.niche, c.phone, c.declared_fixed_cost_cents,
+           c.razao_social, c.quadro_societario,
            c.plan_id, p.name AS plan_name,
            c.subscription_status, c.is_demo, c.chat_quota_monthly,
            p.chat_limit_monthly AS plan_limit, c.created_at
     FROM companies c LEFT JOIN plans p ON p.id = c.plan_id
     WHERE c.id = ${companyId}`;
   if (!company) return null;
+
+  // Quadro de sócios (para a inteligência do motor): a lista efetiva usada no
+  // casamento com as contrapartes + quantos movimentos já foram classificados.
+  const partners = await sql`
+    SELECT name, source, note FROM company_partners
+    WHERE company_id = ${companyId} ORDER BY source, name`;
+  const [partyCounts] = await sql`
+    SELECT
+      count(*) FILTER (WHERE party_class = 'aporte')::int     AS aporte,
+      count(*) FILTER (WHERE party_class = 'retirada')::int   AS retirada,
+      count(*) FILTER (WHERE party_class = 'pro_labore')::int AS pro_labore
+    FROM entries WHERE company_id = ${companyId}`;
 
   const [snapshot] = await sql`
     SELECT as_of::text AS as_of, core_version, payload, diagnosis, computed_at
@@ -338,6 +351,26 @@ export async function companyDossier(sql: Sql, companyId: string) {
       chatQuota:
         (company.chat_quota_monthly as number | null) ?? (company.plan_limit as number | null) ?? 0,
       createdAt: company.created_at as Date,
+    },
+    // quadro de sócios (visível ao operador; não vai para o cliente por padrão) +
+    // a lista efetiva usada no motor e a contagem de movimentos classificados.
+    socios: {
+      quadroSocietario: Array.isArray(company.quadro_societario)
+        ? (company.quadro_societario as Array<{ nome?: string; qualificacao?: string | null }>).map((s) => ({
+            nome: s.nome ?? '',
+            qualificacao: s.qualificacao ?? null,
+          }))
+        : [],
+      partners: partners.map((p) => ({
+        name: p.name as string,
+        source: p.source as 'cnpj' | 'manual',
+        note: (p.note as string | null) ?? null,
+      })),
+      movimentos: {
+        aporte: (partyCounts?.aporte as number) ?? 0,
+        retirada: (partyCounts?.retirada as number) ?? 0,
+        proLabore: (partyCounts?.pro_labore as number) ?? 0,
+      },
     },
     businessNumbers,
     coverage,

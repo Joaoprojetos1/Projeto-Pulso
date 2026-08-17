@@ -23,6 +23,7 @@ import {
   normalizeCnpj,
   type LookupDeps,
 } from '../services/cnpj';
+import { normalizePartnerName } from '../services/partners';
 
 const PURPOSES = ['payables_receivables', 'inventory', 'services', 'bank'] as const;
 const FORMATS = ['pdf', 'excel_csv', 'photo', 'none'] as const;
@@ -73,6 +74,18 @@ export function registerCompany(app: FastifyInstance, sql: Sql, cnpjDeps: Lookup
           niche = ${niche},
           name = COALESCE(NULLIF(${d.nomeFantasia ?? d.razaoSocial}, ''), name)
         WHERE id = ${company.id}`;
+
+      // Semeia a lista de sócios com o quadro societário (para a inteligência do
+      // motor: aporte/retirada não contam). O dono acrescenta contas depois. Não
+      // duplica (UNIQUE por nome normalizado); consulta repetida não recria.
+      for (const soc of d.quadroSocietario) {
+        const norm = normalizePartnerName(soc.nome);
+        if (!norm) continue;
+        await sql`
+          INSERT INTO company_partners (company_id, name, normalized_name, source, note)
+          VALUES (${company.id}, ${soc.nome}, ${norm}, 'cnpj', ${soc.qualificacao ?? null})
+          ON CONFLICT (company_id, normalized_name) DO NOTHING`;
+      }
 
       const updated = await findCompany(sql, company.id);
       return reply.code(200).send({

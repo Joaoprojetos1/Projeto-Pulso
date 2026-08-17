@@ -36,6 +36,19 @@ export default function Dados() {
           <Ionicons name="chevron-forward" size={18} color={colors.cinza} />
         </Pressable>
 
+        {/* sócios: separa aporte/retirada do faturamento e do custo */}
+        <Pressable
+          style={({ pressed }) => [styles.custoFixo, pressed && styles.pressionado]}
+          onPress={() => router.push('/socios' as Href)}
+        >
+          <Ionicons name="people-outline" size={20} color={colors.mata} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.custoFixoTitulo}>Sócios</Text>
+            <Text style={styles.custoFixoDesc}>Aporte ou retirada de sócio não é faturamento nem custo — confirme para os números ficarem certos.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.cinza} />
+        </Pressable>
+
         <EnvioArquivos />
       </ScrollView>
     </SafeAreaView>

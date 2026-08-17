@@ -282,6 +282,30 @@ export default function EmpresaDossie() {
             </View>
           </View>
 
+          {/* quadro de sócios (para a inteligência do motor) */}
+          <View style={styles.cartao}>
+            <Rotulo texto="QUADRO DE SÓCIOS" />
+            {d.socios.partners.length === 0 ? (
+              <Text style={styles.vazioTexto}>
+                Sem quadro societário ainda. Aparece quando a empresa consulta o CNPJ no cadastro.
+              </Text>
+            ) : (
+              d.socios.partners.map((s, i) => (
+                <View key={`soc-${i}`} style={styles.kv}>
+                  <Text style={styles.kvChave} numberOfLines={1}>{s.name}</Text>
+                  <Text style={styles.kvData}>{s.source === 'cnpj' ? (s.note ?? 'CNPJ') : 'adicionado'}</Text>
+                </View>
+              ))
+            )}
+            {(d.socios.movimentos.aporte + d.socios.movimentos.retirada + d.socios.movimentos.proLabore) > 0 && (
+              <Text style={styles.segCobertura}>
+                Movimentos classificados: {d.socios.movimentos.aporte} aporte{d.socios.movimentos.aporte === 1 ? '' : 's'}
+                {' · '}{d.socios.movimentos.retirada} retirada{d.socios.movimentos.retirada === 1 ? '' : 's'}
+                {' · '}{d.socios.movimentos.proLabore} pró-labore
+              </Text>
+            )}
+          </View>
+
           {/* relatório do mês — o admin gera para qualquer empresa */}
           {d.snapshot && (
             <Pressable

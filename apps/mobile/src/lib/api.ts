@@ -762,6 +762,78 @@ export async function deleteMyImport(token: string, id: string): Promise<void> {
   if (!res.ok) throw new Error(`HTTP ${res.status} ao remover o arquivo`);
 }
 
+/* --------------- Sócios (inteligência do motor) --------------- */
+
+export interface PartnerJson {
+  id: string;
+  name: string;
+  source: 'cnpj' | 'manual';
+  note: string | null;
+}
+
+export type PartyClass = 'aporte' | 'retirada' | 'pro_labore' | 'nao_socio';
+
+/** Um lançamento cuja contraparte casa com um sócio (proposta a confirmar). */
+export interface PartnerCandidateJson {
+  entryId: string;
+  counterparty: string;
+  amountCents: number;
+  kind: 'receivable' | 'payable';
+  date: string | null;
+  partnerName: string;
+  suggestedClass: 'aporte' | 'retirada';
+}
+
+export async function fetchMyPartners(token: string): Promise<PartnerJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/partners`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos sócios`);
+  return ((await res.json()) as { partners: PartnerJson[] }).partners;
+}
+
+export async function addMyPartner(token: string, name: string): Promise<PartnerJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/partners`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422) throw new Error('Nome inválido.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao adicionar sócio`);
+  return ((await res.json()) as { partners: PartnerJson[] }).partners;
+}
+
+export async function deleteMyPartner(token: string, id: string): Promise<PartnerJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/partners/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao remover sócio`);
+  return ((await res.json()) as { partners: PartnerJson[] }).partners;
+}
+
+export async function fetchPartnerCandidates(token: string): Promise<PartnerCandidateJson[]> {
+  const res = await fetchWithWake(`${apiBase()}/me/partners/candidates`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} nos candidatos`);
+  return ((await res.json()) as { candidates: PartnerCandidateJson[] }).candidates;
+}
+
+/** Confirma a classificação de lançamentos de sócio; o servidor recalcula o motor. */
+export async function classifyPartners(
+  token: string,
+  items: Array<{ entryId: string; class: PartyClass }>,
+): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/partners/classify`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ items }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao classificar`);
+}
+
 /* --------------- Números do mês (indicadores de segmento) --------------- */
 
 export type OpsUnit = 'cents' | 'count' | 'hours';
@@ -1246,6 +1318,12 @@ export interface AdminDossier {
     isDemo: boolean;
     chatQuota: number;
     createdAt: string;
+  };
+  /** Quadro de sócios + a lista efetiva do motor e movimentos já classificados. */
+  socios: {
+    quadroSocietario: Array<{ nome: string; qualificacao: string | null }>;
+    partners: Array<{ name: string; source: 'cnpj' | 'manual'; note: string | null }>;
+    movimentos: { aporte: number; retirada: number; proLabore: number };
   };
   /** Números do negócio (em centavos) — o app só formata em R$. */
   businessNumbers: {

@@ -21,6 +21,7 @@ import { registerFixedCost } from './routes/fixed-cost';
 import { registerImport } from './routes/import';
 import { registerInterest } from './routes/interest';
 import { registerMarket } from './routes/market';
+import { registerPartners } from './routes/partners';
 import { registerPlanned } from './routes/planned';
 import { registerReports } from './routes/reports';
 import { registerSegments } from './routes/segments';
@@ -149,6 +150,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerSnapshots(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerImport(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null, opts.extractionModel ?? null);
   registerFixedCost(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
+  registerPartners(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSegments(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerSubscription(app, sql);
   registerSimulate(app, sql);
