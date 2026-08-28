@@ -1,9 +1,9 @@
-# Dados necessários para os indicadores do Pulso
+# Dados necessários para os indicadores do Ivo
 
 > Documento gerado automaticamente das regras do motor. Não editar à mão: rode
 > `npx tsx scripts/gen-dados-necessarios.ts` no pacote `packages/core`.
 
-Este material é para as conversas com clientes e com fornecedores de sistema de gestão (ERP). Ele mostra, em linguagem de negócio, o que cada número precisa e onde essa informação costuma existir. Regra de ouro do Pulso: **o número é sempre calculado por código auditado — a inteligência artificial só transforma o resultado em texto, nunca inventa um valor.**
+Este material é para as conversas com clientes e com fornecedores de sistema de gestão (ERP). Ele mostra, em linguagem de negócio, o que cada número precisa e onde essa informação costuma existir. Regra de ouro do Ivo: **o número é sempre calculado por código auditado — a inteligência artificial só transforma o resultado em texto, nunca inventa um valor.**
 
 ## 1. Por indicador
 
@@ -42,7 +42,7 @@ Cada dado que o motor usa, quais indicadores dependem dele e em quais fontes ele
 
 ## 3. O que nenhuma fonte automática cobre hoje
 
-Estas informações não vêm de nenhuma fonte ampla (extrato, maquininha, nota fiscal, Open Finance). Elas só existem no sistema de gestão do próprio cliente ou na declaração do dono — e por isso vão exigir **integração dedicada com o sistema do cliente** para o Pulso escalar sem depender de digitação.
+Estas informações não vêm de nenhuma fonte ampla (extrato, maquininha, nota fiscal, Open Finance). Elas só existem no sistema de gestão do próprio cliente ou na declaração do dono — e por isso vão exigir **integração dedicada com o sistema do cliente** para o Ivo escalar sem depender de digitação.
 
 - **Natureza do custo: fixo ou variável** — Se aquela conta é um custo fixo (que existe todo mês) ou variável (que acompanha a venda).
 - **Custo fixo mensal informado pelo dono** — Quanto sai de custo fixo por mês, quando o dono declara em vez de deixar o sistema deduzir.

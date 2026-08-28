@@ -1,11 +1,17 @@
-# Pulso — Próximos passos (handoff)
+# IVO — Próximos passos (handoff)
 
+> **REBRAND 28/08/2026: o produto agora chama-se IVO** (conselheiro do seu
+> negócio, domínio seuivo.com.br; nome anterior "Pulso" descartado por
+> inviabilidade de registro de marca — ver CLAUDE.md). Tokens novos: letras
+> #37373F, acento #0F7A69 (claro) / #3FBFA6 (escuro), descritor #838993;
+> Manrope provisória até licenciar a Objektiv VF.
+>
 > Atualizado em 22/07/2026. Leia isto ao começar uma sessão nova.
 > **Comece pela seção "ATUALIZAÇÃO 22/07" logo abaixo — é o estado mais recente.**
 > Estado atual: tudo no ar. Servidor (Render + Neon), site
-> (pulso-site.onrender.com), app Android instalável (EAS/APK), IA dos alertas
-> ligada (chave Anthropic no Render), marca nova (Pulso, cinza #37373F + verde
-> #23C883, Josefin Sans), comunicação GERAL (não clínica). Sem Oliveira Alves.
+> (pulso-site.onrender.com, serviço com nome interno antigo), app Android
+> instalável (EAS/APK), IA dos alertas ligada (chave Anthropic no Render),
+> comunicação GERAL (não clínica).
 
 ---
 
@@ -117,7 +123,7 @@ tudo num APK só**: Firebase/FCM (push, já pendente) + `expo-haptics` (12) +
   `accessibilityLabel` resumindo a projeção. Performance: reanimated, sem re-render por frame.
 - [ ] **Item 15 — "Mandar pro contador" (app).** No detalhe do alerta, botão que gera
   uma imagem limpa (título, corpo, o "de onde vem esse número" completo, data, wordmark
-  do Pulso + site no rodapé) via `react-native-view-shot` de um componente PRÓPRIO de
+  do Ivo + site no rodapé) via `react-native-view-shot` de um componente PRÓPRIO de
   exportação (não a tela ao vivo), e abre o share sheet nativo. Fundo papel, sem navegação.
   Na demo, a imagem carrega o selo de dados fictícios. [NATIVO→APK]
 - [ ] **Item 16 — Resumo da semana.** **Server:** ao gerar um snapshot, se existir um

@@ -1,4 +1,4 @@
-# Receita que o Render segue para subir a API do Pulso.
+# Receita que o Render segue para subir a API do Ivo.
 # O banco de dados fica no Neon (grátis, à parte) — a string de conexão dele
 # entra na variável DATABASE_URL abaixo.
 #

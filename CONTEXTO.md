@@ -1,4 +1,8 @@
-﻿# CONTEXTO.md - Retrato do projeto Pulso
+# CONTEXTO.md - Retrato do projeto (hoje IVO; era Pulso)
+
+> REBRAND 28/08/2026: o produto passou a se chamar IVO (seuivo.com.br); o nome
+> anterior Pulso foi descartado por inviabilidade de registro de marca. Este
+> documento é um retrato HISTORICO de 22/07 e mantém o nome antigo no corpo.
 
 Gerado em 2026-07-22 20:51 a partir do repositorio Joaoprojetos1/Projeto-Pulso (~/Projeto-Pulso).
 Documento unico para colar num chat do Claude.ai que nao tem acesso ao repositorio.

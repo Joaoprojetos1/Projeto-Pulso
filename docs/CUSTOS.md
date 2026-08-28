@@ -1,4 +1,4 @@
-# Estrutura de custos do Pulso — levantamento (12/08/2026)
+# Estrutura de custos do Ivo — levantamento (12/08/2026)
 
 > Levantamento inicial para a Seção 6 da planilha de acompanhamento. Valores de
 > IA vêm do próprio código (`apps/api/src/ai/prices.ts`); os demais, de consulta

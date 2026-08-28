@@ -1,4 +1,4 @@
-# Pulso — Próximos passos
+# IVO — Próximos passos
 
 Consolidado em 13/08/2026. O que dá pra fazer, o que espera o Marco e o que
 espera o João. (Feito recente: relatório e "resumo para o contador" em PDF;

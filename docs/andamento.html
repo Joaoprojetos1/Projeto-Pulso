@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pulso — Andamento do projeto</title>
+<title>IVO — Andamento do projeto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,8 +11,8 @@
 <body>
 <style>
   :root{
-    /* marca Pulso (tokens atuais: packages/tokens) */
-    --mata:#37373F; --vivo:#23C883; --papel:#F5F4F2; --tinta:#2A2A31;
+    /* marca IVO (tokens atuais: packages/tokens) */
+    --mata:#37373F; --vivo:#0F7A69; --papel:#F5F4F2; --tinta:#2A2A31;
     --cinza:#838993; --linha:#E0DEDA; --alerta:#E39A26; --critico:#D8503F;
     --branco:#FFFFFF;
 
@@ -24,7 +24,7 @@
     --text:var(--tinta);
     --muted:var(--cinza);
     --border:var(--linha);
-    --ok:#158556;
+    --ok:#0F7A69;
     --shadow:0 20px 44px -28px rgba(42,42,49,.42);
 
     --display:"Manrope","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -35,20 +35,20 @@
     :root{
       --bg:#26262B; --surface:#33333B; --surface-2:#2C2C33;
       --brand:#1F1F24; --brand-ink:var(--papel); --text:#ECEBEF;
-      --muted:#A6A6AE; --border:#3C3C45; --ok:#4FE0A3;
+      --muted:#A6A6AE; --border:#3C3C45; --vivo:#3FBFA6; --ok:#3FBFA6;
       --shadow:0 22px 48px -30px rgba(0,0,0,.65);
     }
   }
   :root[data-theme="light"]{
     --bg:var(--papel); --surface:var(--branco); --surface-2:#FBFAF9;
     --brand:var(--mata); --brand-ink:var(--papel); --text:var(--tinta);
-    --muted:var(--cinza); --border:var(--linha); --ok:#158556;
+    --muted:var(--cinza); --border:var(--linha); --ok:#0F7A69;
     --shadow:0 20px 44px -28px rgba(42,42,49,.42);
   }
   :root[data-theme="dark"]{
     --bg:#26262B; --surface:#33333B; --surface-2:#2C2C33;
     --brand:#1F1F24; --brand-ink:var(--papel); --text:#ECEBEF;
-    --muted:#A6A6AE; --border:#3C3C45; --ok:#4FE0A3;
+    --muted:#A6A6AE; --border:#3C3C45; --vivo:#3FBFA6; --ok:#3FBFA6;
     --shadow:0 22px 48px -30px rgba(0,0,0,.65);
   }
 
@@ -170,19 +170,18 @@
 <div class="wrap">
 
   <header class="top">
-    <svg class="logo" viewBox="0 0 520 120" role="img" aria-label="Pulso" xmlns="http://www.w3.org/2000/svg">
-      <text x="0" y="86" font-family="Manrope, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">pu</text>
-      <path class="beat" d="M118 86 L150 86 L163 40 L178 96 L190 66 L204 86 L236 86" fill="none" stroke="#23C883" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="240" y="86" font-family="Manrope, sans-serif" font-weight="800" font-size="88" letter-spacing="-4" fill="currentColor">so</text>
-      <circle cx="236" cy="86" r="7" fill="#23C883"/>
+    <svg class="logo" viewBox="-8 -20 292 136" role="img" aria-label="IVO" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="20" height="100" fill="currentColor"/>
+      <path class="beat" d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--vivo)" stroke-width="20"/>
+      <circle cx="210" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="20"/>
     </svg>
     <div class="eyebrow">Andamento do projeto · intensivo</div>
   </header>
 
   <section class="hero">
     <p class="k">Onde estamos</p>
-    <h1>De produto a negócio: o Pulso agora sabe cobrar, operar e encher o próprio caixa.</h1>
-    <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Pulso ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. Por baixo, o Pulso foi blindado para produção: proteção contra abuso, isolamento entre empresas, registros sem dado pessoal e mais robustez sob carga. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
+    <h1>De produto a negócio: o Ivo agora sabe cobrar, operar e encher o próprio caixa.</h1>
+    <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Ivo ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. Por baixo, o Ivo foi blindado para produção: proteção contra abuso, isolamento entre empresas, registros sem dado pessoal e mais robustez sob carga. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
 
     <div class="stat">
       <b class="tnum">77<span> / 95 tarefas</span></b>
@@ -201,16 +200,16 @@
     </div>
   </div>
 
-  <h2 class="sec">Ver o Pulso agora</h2>
+  <h2 class="sec">Ver o Ivo agora</h2>
   <p class="seclead">Três formas de acompanhar. O app no navegador é o jeito mais fácil de testar no computador.</p>
   <div class="links">
-    <a class="linkcard" href="https://pulso-site.onrender.com" target="_blank" rel="noopener">
+    <a class="linkcard" href="https://seuivo.com.br" target="_blank" rel="noopener">
       <span class="lk">Site</span>
       <span class="lt">Site de vendas</span>
-      <span class="ld">A página pública do Pulso, com planos e lista de espera.</span>
-      <span class="lgo">pulso-site.onrender.com →</span>
+      <span class="ld">A página pública do Ivo, com planos e lista de espera.</span>
+      <span class="lgo">seuivo.com.br →</span>
     </a>
-    <a class="linkcard" href="https://joaoprojetos1.github.io/Projeto-Pulso/app/" target="_blank" rel="noopener">
+    <a class="linkcard" href="https://seuivo.com.br/app/" target="_blank" rel="noopener">
       <span class="lk">App · navegador</span>
       <span class="lt">Abrir o app no PC</span>
       <span class="ld">O aplicativo rodando no navegador, sem instalar nada. Toque em "Ver demonstração" para explorar.</span>
@@ -253,16 +252,16 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 2</span>
-        <span class="dtit">20 de julho — o Pulso no ar, fora do computador</span>
+        <span class="dtit">20 de julho — o Ivo no ar, fora do computador</span>
         <span class="dresumo tnum">6 entregas</span>
         <span class="seta-d">›</span>
       </summary>
       <div class="dcorpo">
         <ul>
-          <li><span class="ok">✓</span><span>Servidor na nuvem (Render) + banco de dados (Neon): o Pulso passa a responder 24h na internet, sem depender de nenhum computador ligado</span></li>
+          <li><span class="ok">✓</span><span>Servidor na nuvem (Render) + banco de dados (Neon): o Ivo passa a responder 24h na internet, sem depender de nenhum computador ligado</span></li>
           <li><span class="ok">✓</span><span>App tolerante à "soneca" do plano gratuito: espera o servidor acordar em vez de dar erro na primeira visita</span></li>
           <li><span class="ok">✓</span><span>Inteligência artificial ligada em produção: o chat responde com os números reais, sempre conferidos contra invenção</span></li>
-          <li><span class="ok">✓</span><span>Cara da marca no app: ícone e tela de abertura com o batimento do Pulso</span></li>
+          <li><span class="ok">✓</span><span>Cara da marca no app: ícone e tela de abertura com o batimento do Ivo</span></li>
           <li><span class="ok">✓</span><span>App instalável no Android (sem depender do computador do projeto)</span></li>
           <li><span class="ok">✓</span><span>Notificação push: todo o código pronto e testado (falta só a configuração do Firebase para os avisos chegarem)</span></li>
         </ul>
@@ -281,7 +280,7 @@
           <li><span class="ok">✓</span><span>Login de verdade: o dono cria a própria conta com e-mail e senha (senha guardada com segurança) e o app o mantém logado</span></li>
           <li><span class="ok">✓</span><span>Contas a pagar e a receber: o dono cadastra o que espera receber e pagar, tudo marcado como "previsão", separado do que já aconteceu de verdade. Ao confirmar, a conta "gradua" e guarda a data real</span></li>
           <li><span class="ok">✓</span><span>Site de vendas publicado e enxuto: planos, segurança/LGPD, perguntas frequentes e lista de espera (o cadastro de e-mail funciona de verdade)</span></li>
-          <li><span class="ok">✓</span><span>Versão do app no navegador: dá pra abrir e testar o Pulso no computador, sem instalar</span></li>
+          <li><span class="ok">✓</span><span>Versão do app no navegador: dá pra abrir e testar o Ivo no computador, sem instalar</span></li>
           <li><span class="ok">✓</span><span>Acabamento e marca: nova fonte, rótulos em linguagem de dono ("Dinheiro preso" no lugar de "ciclo de caixa"), cor viva só onde é sinal</span></li>
           <li><span class="ok">✓</span><span>Conversa que responde na demonstração: as perguntas de caixa têm resposta certa com os números do exemplo, sem depender de internet</span></li>
           <li><span class="ok">✓</span><span>Tendência nos indicadores: cada número mostra se melhorou ou piorou em relação ao mês passado</span></li>
@@ -299,7 +298,7 @@
       </summary>
       <div class="dcorpo">
         <ul>
-          <li><span class="ok">✓</span><span>Diagnóstico do momento: o Pulso agora dá um veredito do seu caixa (Saudável, Atenção, Pressão, Crítico ou UTI) e explica por quê — baseado em réguas de mercado, cada uma auditável</span></li>
+          <li><span class="ok">✓</span><span>Diagnóstico do momento: o Ivo agora dá um veredito do seu caixa (Saudável, Atenção, Pressão, Crítico ou UTI) e explica por quê — baseado em réguas de mercado, cada uma auditável</span></li>
           <li><span class="ok">✓</span><span>Simulador "E se…": teste uma decisão (adiar o maior pagamento, cortar custo fixo, antecipar um recebível) e veja a curva do caixa se redesenhar com a nova data de risco. Nada é alterado de verdade</span></li>
           <li><span class="ok">✓</span><span>As contas previstas agora entram na projeção: o futuro do caixa considera o que você cadastrou, do jeito realista (recebimento chega com o atraso de sempre, não na data prometida)</span></li>
           <li><span class="ok">✓</span><span>Resumo da semana: em até 3 frases, o que mudou no caixa, no ciclo e na receita desde a semana passada</span></li>
@@ -327,7 +326,7 @@
         <ul>
           <li><span class="ok">✓</span><span>Painel de operação (bastidores): uma área só para a equipe, com visão de todas as clínicas de uma vez (quem está há mais tempo sem enviar dado aparece primeiro), o dossiê de cada empresa e ações do operador — tudo protegido por papel de acesso e com registro de cada ação</span></li>
           <li><span class="ok">✓</span><span>Configurar meu caixa: o dono enche o painel sozinho informando o caixa de hoje e o custo fixo do mês — o motor já projeta o futuro sem precisar esperar o arquivo do sistema da clínica</span></li>
-          <li><span class="ok">✓</span><span>Assinatura no servidor: o Pulso passa a saber quem é assinante e até quando; o app mostra o plano e um botão "Assinar" que abre o pagamento no site (fora das lojas, sem a comissão de 15% a 30%); no piloto, o operador ativa o cliente manualmente (Pix)</span></li>
+          <li><span class="ok">✓</span><span>Assinatura no servidor: o Ivo passa a saber quem é assinante e até quando; o app mostra o plano e um botão "Assinar" que abre o pagamento no site (fora das lojas, sem a comissão de 15% a 30%); no piloto, o operador ativa o cliente manualmente (Pix)</span></li>
           <li><span class="ok">✓</span><span>Casca do checkout no site: o cliente escolhe o plano, vê o resumo e deixa os dados — a intenção de compra já é capturada como contato (o pagamento online entra quando houver meio de pagamento e CNPJ)</span></li>
           <li><span class="ok">✓</span><span>Site refeito: menu enxuto, botão "Simular grátis" em destaque, seção de sinais com cor de severidade, rodapé completo e um WhatsApp flutuante para contato</span></li>
           <li><span class="ok">✓</span><span>Captura de contatos mais completa: a lista de espera e a calculadora agora pedem nome, e-mail e telefone (com máscara), para o time conseguir retornar</span></li>
@@ -338,7 +337,7 @@
           <li><span class="ok">✓</span><span>Firebase configurado para as notificações: falta apenas gerar o novo aplicativo para o aviso passar a chegar sozinho no celular</span></li>
           <li><span class="ok">✓</span><span>Planos de verdade no lugar do "piloto": Essencial R$ 97, Pro R$ 147 e Premium R$ 197, cada um com um limite de conversas com a IA por mês. O limite passou a vir do plano, e o operador pode criar e editar planos pelos bastidores</span></li>
           <li><span class="ok">✓</span><span>Fluxo de assinatura no app: ao criar a conta, o dono escolhe um plano e vai para o pagamento no site (fora das lojas); enquanto não paga, o app fica na tela de planos; ao pagar, toca em "já paguei" e o app libera. Sair volta para a tela inicial</span></li>
-          <li><span class="ok">✓</span><span>Bastidores mais completos: visão de "economia por plano" (quanto sobra por cliente depois do custo da IA) e ativação da assinatura na mão pelo operador. E, no app, a conversa passou a se chamar "IA Pulso"</span></li>
+          <li><span class="ok">✓</span><span>Bastidores mais completos: visão de "economia por plano" (quanto sobra por cliente depois do custo da IA) e ativação da assinatura na mão pelo operador. E, no app, a conversa passou a se chamar "Ivo IA"</span></li>
         </ul>
       </div>
     </details>
@@ -371,7 +370,7 @@
           <li><span class="ok">✓</span><span><b>Sair da conta</b> corrigido de vez: de qualquer tela, sair limpa a sessão e volta para a tela inicial de boas-vindas</span></li>
           <li><span class="ok">✓</span><span><b>Cadastro pede o WhatsApp</b>: o novo cliente informa o telefone (com máscara automática) — é o canal dos avisos futuros e o contato do time</span></li>
           <li><span class="ok">✓</span><span><b>Primeira vez mais clara</b>: só quem acabou de criar a conta vê "Vamos ligar o monitor"; quem já tem conta cai direto no painel; e um cartão "Primeiros passos" mostra o que falta configurar (informar o caixa, cadastrar contas), sumindo quando estiver tudo pronto</span></li>
-          <li><span class="ok">✓</span><span><b>Demonstração vira um caso positivo</b>: a empresa de exemplo agora é saudável (caixa projetado subindo), com um único aviso leve — mostra como o Pulso funciona sem assustar</span></li>
+          <li><span class="ok">✓</span><span><b>Demonstração vira um caso positivo</b>: a empresa de exemplo agora é saudável (caixa projetado subindo), com um único aviso leve — mostra como o Ivo funciona sem assustar</span></li>
           <li><span class="ok">✓</span><span><b>Linguagem para qualquer negócio</b>: textos do app e da IA deixaram de falar em "clínica/convênio"; as categorias de contas ficaram neutras; e os valores de projeção aparecem em reais redondos (é estimativa, centavo passa falsa precisão)</span></li>
           <li><span class="ok">✓</span><span><b>Resumo para o contador</b> foi para a tela de Conta: gera uma imagem limpa (situação do caixa e avisos, com "de onde vem cada número") para enviar ou salvar</span></li>
           <li><span class="ok">✓</span><span><b>Painel de operação reformulado</b>: no topo, os números do negócio (assinantes ativos, receita mensal, pendentes de pagamento, uso da IA no mês); busca e filtros; e cada empresa com uma bolinha de status de dados. O perfil de cada empresa foi refeito — contato com botão de WhatsApp, números do negócio em reais (corrigido um erro que mostrava centavos), avisos em linguagem clara e uso da IA com barra de progresso</span></li>
@@ -406,13 +405,13 @@
     <details class="dia" open>
       <summary>
         <span class="dnum">DIA 9</span>
-        <span class="dtit">29 de julho — o Pulso aprende o setor de cada negócio</span>
+        <span class="dtit">29 de julho — o Ivo aprende o setor de cada negócio</span>
         <span class="dresumo tnum">6 entregas</span>
         <span class="seta-d">›</span>
       </summary>
       <div class="dcorpo">
         <ul>
-          <li><span class="ok">✓</span><span><b>Motor por segmento no ar</b>: além dos indicadores que valem para qualquer negócio, o Pulso agora entende <b>clínica, varejo de roupa e restaurante</b>, cada um com seus próprios sinais (glosa de convênio, giro de estoque, custo da mercadoria vendida). O cérebro universal não foi tocado — o conhecimento de setor entra por cima, e só depois de aprovado</span></li>
+          <li><span class="ok">✓</span><span><b>Motor por segmento no ar</b>: além dos indicadores que valem para qualquer negócio, o Ivo agora entende <b>clínica, varejo de roupa e restaurante</b>, cada um com seus próprios sinais (glosa de convênio, giro de estoque, custo da mercadoria vendida). O cérebro universal não foi tocado — o conhecimento de setor entra por cima, e só depois de aprovado</span></li>
           <li><span class="ok">✓</span><span><b>Números do mês</b>: uma tela onde o dono informa os poucos números do mês do setor dele (a lista muda conforme o negócio) e o motor passa a olhar também esses sinais</span></li>
           <li><span class="ok">✓</span><span><b>Diagnóstico de gestão</b>: um questionário curto (15 perguntas) que devolve uma nota por área e aponta os dois pontos mais frágeis do negócio</span></li>
           <li><span class="ok">✓</span><span><b>Relatório do mês</b>: um documento visual por segmento (imagem para salvar ou apresentar) com a situação do caixa, os indicadores do setor, a série do mês e a leitura da IA</span></li>
@@ -496,7 +495,7 @@
     <div class="grupo">
       <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">14 de 16</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">As telas com a marca Pulso</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">As telas com a marca</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">"De onde vem esse número" aberto em todo alerta</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Modo demonstração, sempre à mão na tela de entrada</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Login de verdade (cria conta, mantém logado)</span></li>
@@ -507,7 +506,7 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Não abre mais vazio: mostra o último dado e atualiza por trás</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Central de alertas: histórico, lido e "fiz algo com isso"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Refino de experiência: boas-vindas, login melhorado, tela de conta, máscara de dinheiro, teclado e animações</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de assinatura (escolher plano) e "IA Pulso" no lugar de "Conversa"</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de assinatura (escolher plano) e "Ivo IA" no lugar de "Conversa"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Toques finais nativos: vibração, biometria opcional, foto do avatar e "mandar pro contador"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Fluxo e cadastro afinados: sair volta ao início, cadastro pede WhatsApp, "primeiros passos" e demonstração positiva</span></li>
         <li class="t-now"><span class="ic">●</span><span class="tx">Notificações: <b>novo aplicativo gerado com o aviso (Firebase)</b> — falta instalar e confirmar o aviso chegando</span></li>
@@ -567,7 +566,7 @@
       <div class="ghead"><h3>11 · WhatsApp</h3><span class="gcount tnum">1 de 3</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Cérebro separado do canal + adaptador pronto para plugar o WhatsApp</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Chatbot do Pulso no WhatsApp (conta Business + provedor)</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Chatbot do Ivo no WhatsApp (conta Business + provedor)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Alertas chegando pelo WhatsApp</span></li>
       </ul>
     </div>
@@ -623,18 +622,18 @@
       <h3>Como acompanhar</h3>
       <ul>
         <li><span class="seta">→</span> <b>Esta página:</b> atualizada a cada avanço, sempre no mesmo link.</li>
-        <li><span class="seta">→</span> <b>Site e app:</b> os links no topo, para ver o Pulso funcionando.</li>
+        <li><span class="seta">→</span> <b>Site e app:</b> os links no topo, para ver o Ivo funcionando.</li>
         <li><span class="seta">→</span> <b>GitHub:</b> o histórico detalhado, com data e explicação.</li>
       </ul>
     </div>
   </div>
 
   <div class="note">
-    <b>A promessa do produto, em uma frase:</b> avisar o dono do negócio <b>antes</b> do caixa acabar, não depois do fechamento do mês. E todo alerta mostra "de onde vem esse número", com as contas abertas. É isso que separa o Pulso de uma "IA que dá palpite".
+    <b>A promessa do produto, em uma frase:</b> avisar o dono do negócio <b>antes</b> do caixa acabar, não depois do fechamento do mês. E todo alerta mostra "de onde vem esse número", com as contas abertas. É isso que separa o Ivo de uma "IA que dá palpite".
   </div>
 
   <footer class="foot">
-    <span>Pulso</span>
+    <span>IVO</span>
     <span>Atualizado 26 jul 2026</span>
   </footer>
 

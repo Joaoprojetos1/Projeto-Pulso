@@ -1,7 +1,12 @@
-# Pulso
+# IVO
 
-O sinal vital do seu negócio. O Pulso avisa o dono da pequena empresa
-**antes** do caixa acabar — não depois do fechamento do mês.
+O conselheiro do seu negócio (seuivo.com.br). O Ivo confere os números e
+avisa o dono da pequena empresa **antes** do caixa acabar — não depois do
+fechamento do mês.
+
+> Nome anterior ("Pulso") descartado por inviabilidade de registro de marca;
+> o repositório e os nomes internos de código mantêm o nome antigo de
+> propósito (nada disso aparece ao usuário). Ver CLAUDE.md.
 
 App + chatbot WhatsApp para controle financeiro de PMEs. MVP focado em
 clínicas médicas.

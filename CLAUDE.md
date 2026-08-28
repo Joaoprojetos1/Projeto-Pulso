@@ -1,8 +1,18 @@
-# Pulso
+# IVO
 
 Assistente financeiro para pequenas empresas brasileiras. Recebe dados
 financeiros, calcula indicadores e usa IA para interpretar e alertar o dono
-antes do caixa acabar.
+antes do caixa acabar. Descritor da marca: **conselheiro do seu negócio**.
+Domínio: **seuivo.com.br**. A IA do chat chama-se **Ivo IA** (aba "Ivo IA" no
+app) e se apresenta como "Eu sou o Ivo, o conselheiro do seu negócio."
+
+> **Decisão histórica (28/08/2026): o nome anterior, "Pulso", foi DESCARTADO
+> por inviabilidade de registro de marca. Não propor voltar ao nome antigo.**
+> O rebrand para IVO cobriu código, textos, identidade visual e documentação.
+> Nomes INTERNOS (pacotes `@pulso/*`, env `PULSO_*`, `usePulso`, tabelas,
+> serviços `pulso-api`/`pulso-site` no Render) permaneceram de propósito:
+> nada disso aparece ao usuário, e renomear env/serviço quebraria a produção.
+> Regra: texto visível NUNCA diz Pulso; nome interno pode.
 
 **Foco de vendas:** pequenas empresas, começando pelas clínicas (é onde o time
 prospecta). Mas a **comunicação do produto (app e site) é GERAL** — fala com
@@ -155,24 +165,32 @@ segundo nicho · cobrança dentro do app (venda acontece no site)
 
 ## Tokens da marca
 
-Marca **Pulso** (própria, se sustenta sozinha). Fonte única de verdade:
+Marca **IVO** (própria, se sustenta sozinha). O wordmark é a palavra IVO com o
+**V desenhado como um check verde** (conferido, aprovado, validado). Vetores
+canônicos em `packages/tokens/brand/`. Fonte única de verdade:
 `packages/tokens/src/index.ts` — ver `packages/tokens/DESIGN.md` e o board
 `packages/tokens/design-system.html`. App e site derivam dali; nunca escreva hex
 cru na UI, use o nome semântico.
 
-Cores: escuro do sistema `#37373F` (estrutura sóbria) ·
-vivo `#23C883` (o pulso, positivo — único ponto de cor viva) · papel `#F5F4F2`
-(fundo) · tinta `#2A2A31` (texto) · cinza `#838993` (secundário) · linha
-`#E0DEDA` · alerta `#E39A26` · crítico `#D8503F`
+Cores: letras `#37373F` (texto principal, wordmark, superfície escura) ·
+acento `#0F7A69` (verde do check sobre fundo CLARO: ação principal, positivo) ·
+acento claro `#3FBFA6` (verde sobre fundo ESCURO; nunca texto em fundo claro) ·
+descritor `#838993` (secundário) · papel `#F5F4F2` (fundo) · tinta `#2A2A31`
+(texto) · linha `#E0DEDA` · alerta `#E39A26` (texto sobre claro: `#8A5A0B`) ·
+crítico `#D8503F` (texto pequeno sobre claro: `#B23A2B`)
 
-O crítico só aparece em risco real de caixa. Vermelho abundante vira ruído. A cor
-viva e as de severidade são função (o dono precisa distinguir "tudo bem" de "seu
-caixa zera" num relance), não estética — não remover em nome da sobriedade.
+O verde é acento e sinal, nunca decoração: se não está sinalizando nada, use
+cinza. O crítico só aparece em risco real de caixa. Vermelho abundante vira
+ruído. As cores de severidade são função (o dono precisa distinguir "tudo bem"
+de "seu caixa zera" num relance), não estética — não remover em nome da
+sobriedade.
 
-Fontes: as oficiais de títulos são licenciadas (comprar para uso oficial).
-Substitutas em uso: **Josefin Sans** (títulos,
-geométrica fina) · Figtree (corpo) · IBM Plex Mono (rótulos, datas). Números com
-`tabular-nums`.
+Fontes: a definitiva da marca é a **Objektiv VF** (ainda não licenciada).
+Substituta provisória: **Manrope** (títulos e wordmark) · Figtree (corpo) ·
+IBM Plex Mono (só uso interno/dev). A troca para a Objektiv VF é UMA linha em
+`packages/tokens/src/index.ts` (`font.display`) + o espelho em
+`apps/mobile/src/theme.ts`. Números com `tabular-nums`. Nunca usar travessão
+em texto visível.
 
 ## Voz do produto
 

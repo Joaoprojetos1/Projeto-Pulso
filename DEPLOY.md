@@ -1,4 +1,4 @@
-# Colocar o Pulso na nuvem (sem gastar nada)
+# Colocar o Ivo na nuvem (sem gastar nada)
 
 Objetivo: o app funcionar sozinho na internet, sem depender do seu computador
 ligado com o túnel. Duas peças gratuitas:
@@ -37,7 +37,7 @@ Pronto o passo 1.
 ## Passo 2 — Servidor no Render
 
 1. Entre em **https://render.com** e clique em **Get Started** / **Sign up**.
-   Use a conta do **GitHub** (assim ele já enxerga o repositório do Pulso).
+   Use a conta do **GitHub** (assim ele já enxerga o repositório do Ivo).
 2. No painel, clique em **New +** → **Blueprint**.
    - "Blueprint" faz o Render ler o arquivo `render.yaml` que já está no repo e
      montar o servidor sozinho.

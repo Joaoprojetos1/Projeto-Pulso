@@ -1,4 +1,4 @@
-# Segurança e LGPD — Pulso (API)
+# Segurança e LGPD — Ivo (API)
 
 Revisão de segurança do backend (item 7.1), 13/08/2026. Registra o que foi
 auditado, o que foi corrigido, o que já estava seguro e o que fica como próximo
