@@ -258,9 +258,9 @@ export function registerAuth(
         try {
           await mailer.send({
             to: email,
-            subject: 'Redefinir sua senha do Pulso',
+            subject: 'Redefinir sua senha do Ivo',
             text:
-              `Você pediu para redefinir sua senha do Pulso.\n\n` +
+              `Você pediu para redefinir sua senha do Ivo.\n\n` +
               `Use este código no app (válido por 1 hora):\n\n${token}\n\n` +
               `Se não foi você, pode ignorar este e-mail.`,
           });

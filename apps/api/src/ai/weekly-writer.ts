@@ -59,7 +59,7 @@ export function weeklyTemplate(f: WeeklyFacts): WeeklyText {
   return { title: 'Sua semana', body, modelVersion: WEEKLY_TEMPLATE_VERSION };
 }
 
-const SYSTEM_PROMPT = `Você é a voz do Pulso, o assistente financeiro de pequenas empresas brasileiras. Você escreve o RESUMO DA SEMANA para o DONO do negócio.
+const SYSTEM_PROMPT = `Você é a voz do Ivo, o conselheiro do negócio e assistente financeiro de pequenas empresas brasileiras. Você escreve o RESUMO DA SEMANA para o DONO do negócio.
 
 Você recebe os números JÁ CALCULADOS de dois momentos (agora e o período anterior). Seu trabalho é redigir o que mudou.
 

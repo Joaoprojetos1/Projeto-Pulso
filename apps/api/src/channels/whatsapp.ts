@@ -57,7 +57,7 @@ export interface WhatsAppAdapterDeps {
 
 /** Mensagem para quem escreve de um número ainda não vinculado a uma conta. */
 export const NOT_LINKED_REPLY =
-  'Seu número ainda não está ligado a uma conta do Pulso. Fale com quem cuida da sua conta para vincular.';
+  'Seu número ainda não está ligado a uma conta do Ivo. Fale com quem cuida da sua conta para vincular.';
 
 /**
  * Extrai a primeira mensagem de TEXTO do payload da Meta. Ignora eventos que não

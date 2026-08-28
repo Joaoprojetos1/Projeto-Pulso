@@ -147,7 +147,7 @@ async function notifyNewAlerts(
     for (const to of tokens) {
       messages.push({
         to,
-        title: a.title ?? 'Pulso',
+        title: a.title ?? 'IVO',
         body: a.body ?? 'Há um sinal importante no seu caixa.',
         data: { kind: 'alert', ruleKey: a.ruleKey },
       });

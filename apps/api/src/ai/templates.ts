@@ -71,7 +71,7 @@ export function templateFor(alert: AlertFact): AlertText {
     case 'all_clear':
       return {
         title: 'Semana tranquila',
-        body: 'Seus números seguem estáveis e nada pede atenção hoje. Continue registrando os movimentos que o Pulso segue de olho.',
+        body: 'Seus números seguem estáveis e nada pede atenção hoje. Continue registrando os movimentos que o Ivo segue de olho.',
       };
 
     // ---- Segmento: clínica ----
@@ -164,7 +164,7 @@ export function templateFor(alert: AlertFact): AlertText {
     default:
       return {
         title: 'Novidade nos seus números',
-        body: 'Encontramos um ponto de atenção nos seus números. Abra o Pulso para ver os detalhes.',
+        body: 'Encontramos um ponto de atenção nos seus números. Abra o Ivo para ver os detalhes.',
       };
   }
 }

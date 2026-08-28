@@ -98,8 +98,8 @@ export function registerDevices(
 
       const messages: PushMessage[] = tokens.map((t) => ({
         to: t.token as string,
-        title: 'Pulso — teste',
-        body: 'Se você recebeu isto, os avisos do Pulso estão chegando. 💚',
+        title: 'IVO · teste',
+        body: 'Se você recebeu isto, os avisos do Ivo estão chegando. 💚',
         data: { kind: 'test' },
       }));
       const results = await pushSender.send(messages);

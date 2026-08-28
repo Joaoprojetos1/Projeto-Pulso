@@ -1,5 +1,5 @@
 /**
- * Pulso core — REQUISITOS DE JUÍZO.
+ * Ivo core — REQUISITOS DE JUÍZO.
  *
  * O problema que este arquivo resolve (apontado pelo especialista): o fiscal de
  * números (`grounding`) confere se os NÚMEROS citados são verdadeiros, mas não se
@@ -136,7 +136,7 @@ export const CLAIMS: ClaimSpec[] = [
       'Dizer que o caixa "está bom" olhando só o saldo esconde as contas que ainda vão vencer. ' +
       'É a diferença entre ter dinheiro hoje e ter dinheiro depois de pagar todo mundo.',
     action:
-      'Cadastre ou importe as contas a pagar e a receber. Com o saldo e as duas listas, o Pulso ' +
+      'Cadastre ou importe as contas a pagar e a receber. Com o saldo e as duas listas, o Ivo ' +
       'passa a dizer, com segurança, se o seu caixa está tranquilo ou apertado.',
     priority: 'alta',
   },
@@ -156,7 +156,7 @@ export const CLAIMS: ClaimSpec[] = [
     ],
     whyItMatters: 'Sem as saídas futuras, qualquer data de "quando o dinheiro acaba" seria um chute.',
     action:
-      'Envie as contas a pagar dos próximos dias. Com o saldo e as saídas, o Pulso projeta e avisa ' +
+      'Envie as contas a pagar dos próximos dias. Com o saldo e as saídas, o Ivo projeta e avisa ' +
       'antes de o caixa apertar.',
     priority: 'alta',
   },
@@ -178,7 +178,7 @@ export const CLAIMS: ClaimSpec[] = [
     whyItMatters:
       'Sem separar o que entra do que custa, não dá para saber se cada venda dá lucro ou prejuízo.',
     action:
-      'Informe as vendas e os custos do período (com a natureza fixo/variável). Com os dois, o Pulso ' +
+      'Informe as vendas e os custos do período (com a natureza fixo/variável). Com os dois, o Ivo ' +
       'diz quanto sobra de cada real vendido.',
     priority: 'media',
   },
@@ -198,7 +198,7 @@ export const CLAIMS: ClaimSpec[] = [
     whyItMatters: 'Saber em quantos dias você recebe é o que mostra se o dinheiro demora a entrar.',
     action:
       'Registre (ou importe) os recebimentos: o que já foi pago e quando. Com histórico suficiente, ' +
-      'o Pulso mede em quantos dias você recebe.',
+      'o Ivo mede em quantos dias você recebe.',
     priority: 'baixa',
   },
   {
@@ -220,7 +220,7 @@ export const CLAIMS: ClaimSpec[] = [
     ],
     whyItMatters: 'Comparar com o período anterior é o que revela a tendência: melhorando ou piorando.',
     action:
-      'Assim que houver um segundo período com dados, o Pulso compara os dois e mostra o que melhorou ' +
+      'Assim que houver um segundo período com dados, o Ivo compara os dois e mostra o que melhorou ' +
       'ou piorou.',
     priority: 'baixa',
   },
@@ -244,7 +244,7 @@ export const CLAIMS: ClaimSpec[] = [
       'Os números do seu segmento mostram problemas que o extrato não vê: estoque parado, glosa dos ' +
       'convênios, custo da mercadoria.',
     action:
-      'Informe os números do mês do seu segmento (ex.: estoque, glosa, CMV) para o Pulso avaliar a ' +
+      'Informe os números do mês do seu segmento (ex.: estoque, glosa, CMV) para o Ivo avaliar a ' +
       'operação, não só o caixa.',
     priority: 'media',
   },

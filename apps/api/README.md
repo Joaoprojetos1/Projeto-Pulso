@@ -1,6 +1,6 @@
 # @pulso/api
 
-API do Pulso: carrega dados, chama o `packages/core` (que faz TODA a conta) e
+API do Ivo: carrega dados, chama o `packages/core` (que faz TODA a conta) e
 persiste o resultado. **Nenhuma conta financeira acontece aqui** — a regra de
 ouro do repo vale também neste pacote.
 

@@ -186,7 +186,7 @@ export function chatModelFromProvider(provider: TextProvider): ChatModel {
   return {
     async reply(prompt: { system: string; turns: ChatTurn[] }): Promise<ChatReply> {
       const user = prompt.turns
-        .map((t) => `${t.role === 'user' ? 'Dono' : 'Pulso'}: ${t.content}`)
+        .map((t) => `${t.role === 'user' ? 'Dono' : 'Ivo'}: ${t.content}`)
         .join('\n\n');
       const r = await provider.generate({ system: prompt.system, user, maxTokens: 700 });
       const text = r.text.trim();

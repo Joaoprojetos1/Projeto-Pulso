@@ -5,7 +5,7 @@ import { LogMailer, maskEmail } from '../src/mailer';
 const TOKEN = 'segredo-de-redefinicao-123456';
 const MSG = {
   to: 'dona@empresa.com.br',
-  subject: 'Redefinir sua senha do Pulso',
+  subject: 'Redefinir sua senha do Ivo',
   text: `Use este código no app: ${TOKEN}`,
 };
 

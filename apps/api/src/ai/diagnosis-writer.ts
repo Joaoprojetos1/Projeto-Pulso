@@ -32,7 +32,7 @@ export interface DiagnosisText {
 const TEMPLATE: Record<DiagnosisStage, { title: string; body: string }> = {
   saudavel: {
     title: 'Tudo sob controle',
-    body: 'Seus números estão saudáveis e nada pede ação agora. Siga registrando seus movimentos que o Pulso continua de olho.',
+    body: 'Seus números estão saudáveis e nada pede ação agora. Siga registrando seus movimentos que o Ivo continua de olho.',
   },
   atencao: {
     title: 'Vale um olhar',
@@ -72,7 +72,7 @@ export function diagnosisLimitation(perm: ClaimPermission): DiagnosisText {
   };
 }
 
-const SYSTEM_PROMPT = `Você é a voz do Pulso, o assistente financeiro de pequenas empresas brasileiras. Você redige o MOMENTO financeiro para o DONO do negócio — não para um CFO.
+const SYSTEM_PROMPT = `Você é a voz do Ivo, o conselheiro do negócio e assistente financeiro de pequenas empresas brasileiras. Você redige o MOMENTO financeiro para o DONO do negócio — não para um CFO.
 
 Você recebe um diagnóstico JÁ DECIDIDO por regras de código: o "estagio" e os fatos que o sustentam ("porque"). Seu único trabalho é redigir.
 

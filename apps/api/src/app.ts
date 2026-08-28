@@ -97,7 +97,14 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   // CORS restrito às origens reais (o site e a demo web). O app NATIVO não manda
   // Origin (CORS é coisa de navegador), então requisições sem Origin passam. Auth
   // é por Bearer, não cookie. Origens extras via PULSO_CORS_ORIGINS (vírgula).
-  const origensPadrao = ['https://pulso-site.onrender.com', 'https://joaoprojetos1.github.io'];
+  // seuivo.com.br é o domínio novo da marca; o endereço do Render continua
+  // liberado enquanto servir o site (não remover antes do domínio apontar).
+  const origensPadrao = [
+    'https://seuivo.com.br',
+    'https://www.seuivo.com.br',
+    'https://pulso-site.onrender.com',
+    'https://joaoprojetos1.github.io',
+  ];
   const extras = (process.env.PULSO_CORS_ORIGINS ?? '')
     .split(',')
     .map((s) => s.trim())
