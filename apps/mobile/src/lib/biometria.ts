@@ -1,7 +1,7 @@
 /**
  * Trava do app por biometria (digital / rosto).
  *
- * É opcional e mora no aparelho: o dono liga em Conta e, a partir daí, o Pulso
+ * É opcional e mora no aparelho: o dono liga em Conta e, a partir daí, o Ivo
  * pede a digital ou o rosto ao abrir. Como é dinheiro na tela, faz sentido ter
  * essa camada extra — mas nunca é obrigatória e nunca depende do servidor.
  */
@@ -48,7 +48,7 @@ export async function autenticar(): Promise<boolean> {
   if (Platform.OS === 'web') return true;
   try {
     const r = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Desbloquear o Pulso',
+      promptMessage: 'Desbloquear o Ivo',
       cancelLabel: 'Cancelar',
       disableDeviceFallback: false,
     });

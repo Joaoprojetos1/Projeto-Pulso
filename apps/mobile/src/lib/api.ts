@@ -1,12 +1,12 @@
 /**
- * Cliente da API do Pulso. O app busca JSON e desenha — nada mais.
+ * Cliente da API do Ivo. O app busca JSON e desenha — nada mais.
  *
  * Por padrão fala com o servidor na nuvem (Render), então o app funciona sem
  * depender de nenhum computador ligado. Para desenvolver contra um servidor
  * local, defina EXPO_PUBLIC_API_URL=http://localhost:3000 (ou o IP da máquina).
  */
 
-/** Servidor de produção do Pulso (Render + banco Neon). */
+/** Servidor de produção do Ivo (Render + banco Neon). */
 const CLOUD_API_URL = 'https://pulso-api-9byl.onrender.com';
 
 export interface AlertJson {
@@ -63,7 +63,7 @@ export interface DiagnosisJson {
     direction: 'melhorou' | 'piorou' | 'igual' | null;
   };
   facts: { unavailable: Record<string, string>; [k: string]: unknown };
-  /** Texto redigido (voz do Pulso). */
+  /** Texto redigido (voz do Ivo). */
   text: { title: string; body: string; modelVersion: string };
 }
 

@@ -242,7 +242,7 @@ export default function Onboarding() {
             <View style={styles.etapa}>
               <Text style={styles.titulo}>Vamos começar pelo seu CNPJ</Text>
               <Text style={styles.corpo}>
-                Com ele o Pulso já traz o nome da empresa, o endereço e a atividade — você não
+                Com ele o Ivo já traz o nome da empresa, o endereço e a atividade — você não
                 precisa digitar. É rápido.
               </Text>
 
@@ -284,7 +284,7 @@ export default function Onboarding() {
               </Pressable>
 
               <Text style={styles.ajuda}>
-                O CNPJ é obrigatório: é por ele que o Pulso conhece a sua empresa e os sócios.
+                O CNPJ é obrigatório: é por ele que o Ivo conhece a sua empresa e os sócios.
               </Text>
 
               {/* fallback: só quando a consulta falhou E há um CNPJ válido digitado.
@@ -360,7 +360,7 @@ export default function Onboarding() {
             <View style={styles.etapa}>
               <Text style={styles.titulo}>Quais sistemas você usa?</Text>
               <Text style={styles.corpo}>
-                Isso ajuda o Pulso a saber o que esperar de cada arquivo. Não sabe algum? Pode deixar
+                Isso ajuda o Ivo a saber o que esperar de cada arquivo. Não sabe algum? Pode deixar
                 em branco.
               </Text>
 
@@ -435,7 +435,7 @@ export default function Onboarding() {
                 onPress={() => router.push('/questionario' as Href)}
               >
                 <Text style={styles.cartaoAcaoTitulo}>Responder o diagnóstico de gestão</Text>
-                <Text style={styles.cartaoAcaoDesc}>15 perguntas rápidas. Ajusta o que o Pulso avalia.</Text>
+                <Text style={styles.cartaoAcaoDesc}>15 perguntas rápidas. Ajusta o que o Ivo avalia.</Text>
               </Pressable>
 
               <Pressable

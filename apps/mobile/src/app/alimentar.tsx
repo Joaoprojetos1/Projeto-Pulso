@@ -1,5 +1,5 @@
 /**
- * Alimentar o Pulso — o "hub" de entrada de dados.
+ * Alimentar o Ivo — o "hub" de entrada de dados.
  *
  * Reúne as formas de abastecer o motor: cada fonte (extrato, maquininha, DRE)
  * preenche uma "premissa" do cálculo. Ligados: EXTRATO bancário (sobe o arquivo →
@@ -44,7 +44,7 @@ const FONTES: Fonte[] = [
     icone: 'document-text-outline',
     titulo: 'Enviar arquivos',
     descricao:
-      'Vários de uma vez, de meses diferentes: extrato bancário, relatórios, documentos contábeis. Você classifica cada um; o Pulso lê o que sabe ler e recalcula.',
+      'Vários de uma vez, de meses diferentes: extrato bancário, relatórios, documentos contábeis. Você classifica cada um; o Ivo lê o que sabe ler e recalcula.',
     disponivel: true,
     rota: '/enviar' as Href,
   },
@@ -118,15 +118,15 @@ export default function Alimentar() {
         <Pressable onPress={() => router.back()} hitSlop={10} style={styles.voltar}>
           <Ionicons name="chevron-back" size={22} color={colors.tinta} />
         </Pressable>
-        <Text style={styles.tituloTopo}>Alimentar o Pulso</Text>
+        <Text style={styles.tituloTopo}>Alimentar o Ivo</Text>
         <View style={styles.voltar} />
       </View>
 
       <ScrollView contentContainerStyle={styles.corpo}>
         <Animated.View entering={FadeInDown.duration(220)}>
-          <Text style={styles.titulo}>Por onde o Pulso vai conhecer o seu caixa?</Text>
+          <Text style={styles.titulo}>Por onde o Ivo vai conhecer o seu caixa?</Text>
           <Text style={styles.subtitulo}>
-            Quanto mais o Pulso souber do seu negócio, melhor ele prevê o caixa. Escolha por
+            Quanto mais o Ivo souber do seu negócio, melhor ele prevê o caixa. Escolha por
             onde começar; dá para juntar mais de uma fonte.
           </Text>
         </Animated.View>
@@ -153,7 +153,7 @@ export default function Alimentar() {
         <View style={styles.nota}>
           <Ionicons name="shield-checkmark-outline" size={18} color={colors.okEscuro} />
           <Text style={styles.notaTexto}>
-            Quem lê o seu arquivo é o código do Pulso, nunca a IA — e o Pulso nunca inventa um
+            Quem lê o seu arquivo é o código do Ivo, nunca a IA — e o Ivo nunca inventa um
             número: tudo que ele mostra vem do seu arquivo.
           </Text>
         </View>

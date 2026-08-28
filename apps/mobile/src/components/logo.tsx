@@ -1,55 +1,46 @@
 /**
- * O wordmark do Pulso: "pu" + linha de batimento no lugar do "l" + "so".
- * O logo é a tese do produto: enquanto houver pulso, o negócio está vivo.
+ * O wordmark do IVO: I e O geométricos, com o "V" desenhado como o check verde.
+ * O check é a tese do produto: conferido, aprovado, validado.
+ * Geometria canônica em packages/tokens/brand/ (não redesenhar em outro lugar).
+ *
+ * (O nome exportado PulsoLogo é interno, herdado; nada dele aparece ao usuário.)
  */
 
-import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { View } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { colors, fonts } from '@/theme';
+import { colors } from '@/theme';
 
 interface Props {
-  /** Altura da fonte do wordmark. */
+  /** Altura das letras do wordmark (equivale ao antigo font-size). */
   size?: number;
-  /** Cor do texto (o batimento é sempre verde-vivo). */
+  /** Cor das letras. O check é sempre o verde da marca (tom conforme o fundo). */
   color?: string;
 }
 
+/** Cores de letra que indicam fundo escuro: o check usa o verde p/ fundo escuro. */
+const LETRAS_CLARAS: string[] = [colors.papel, colors.branco, colors.papelSobreMata];
+
 export function PulsoLogo({ size = 34, color = colors.tinta }: Props) {
-  const beatWidth = size * 1.35;
-  const beatHeight = size * 0.72;
+  const check = LETRAS_CLARAS.includes(color) ? colors.vivoSobreEscuro : colors.vivo;
+  // glifo canônico: 260 de largura x 100 de altura (+ overshoot do check)
+  const width = size * 2.92;
+  const height = size * 1.36;
 
   return (
-    <View style={styles.row}>
-      <Text style={[styles.word, { fontSize: size, color }]}>pu</Text>
-      <Svg
-        width={beatWidth}
-        height={beatHeight}
-        viewBox="0 0 118 56"
-        style={{ marginHorizontal: -size * 0.06 }}
-      >
+    <View>
+      <Svg width={width} height={height} viewBox="-8 -20 292 136" accessibilityLabel="IVO">
+        <Rect x={0} y={0} width={20} height={100} fill={color} />
         <Path
-          d="M2 44 L30 44 L43 6 L58 52 L70 24 L84 44 L112 44"
+          d="M52 46 L86 88 L134 -8"
           fill="none"
-          stroke={colors.vivo}
-          strokeWidth={9}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke={check}
+          strokeWidth={20}
+          strokeLinecap="butt"
+          strokeLinejoin="miter"
         />
-        <Circle cx={112} cy={44} r={6.5} fill={colors.vivo} />
+        <Circle cx={210} cy={50} r={40} fill="none" stroke={color} strokeWidth={20} />
       </Svg>
-      <Text style={[styles.word, { fontSize: size, color }]}>so</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  word: {
-    fontFamily: fonts.displayBlack,
-    letterSpacing: -1.5,
-  },
-});

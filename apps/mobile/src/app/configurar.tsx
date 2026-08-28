@@ -88,7 +88,7 @@ export default function Configurar() {
 
   async function calcular() {
     if (!token || caixaCents == null || custoCents == null || custoCents < 0) {
-      setErro('Preencha os dois valores para o Pulso calcular.');
+      setErro('Preencha os dois valores para o Ivo calcular.');
       return;
     }
     setSalvando(true);
@@ -119,7 +119,7 @@ export default function Configurar() {
       >
       <ScrollView contentContainerStyle={styles.corpo} keyboardShouldPersistTaps="handled">
         <Animated.View entering={FadeInDown.duration(220)}>
-          <Text style={styles.titulo}>Dois números e o Pulso já projeta o seu caixa.</Text>
+          <Text style={styles.titulo}>Dois números e o Ivo já projeta o seu caixa.</Text>
           <Text style={styles.subtitulo}>
             Não precisa de planilha nem de sistema. Com isto, mais as suas Contas a receber e a
             pagar, o monitor liga na hora.
@@ -132,7 +132,7 @@ export default function Configurar() {
           <View style={styles.esperando}>
             <Heartbeat color={colors.vivo} width={72} height={26} />
             <Text style={styles.esperandoMsg}>{ETAPAS[etapa]}</Text>
-            <Text style={styles.esperandoSub}>O Pulso está montando a sua projeção.</Text>
+            <Text style={styles.esperandoSub}>O Ivo está montando a sua projeção.</Text>
           </View>
         ) : (
           <Animated.View entering={FadeInDown.duration(240).delay(60)}>

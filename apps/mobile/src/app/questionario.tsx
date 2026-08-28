@@ -139,7 +139,7 @@ function Intro({ total, onComecar }: { total: number; onComecar: () => void }) {
       <Animated.View entering={FadeInDown.duration(240)}>
         <Text style={styles.titulo}>Responda {total} perguntas rápidas sobre a sua gestão.</Text>
         <Text style={styles.subtitulo}>
-          Leva uns 3 minutos. No fim, o Pulso mostra onde você está mais forte, onde está mais frágil e o que atacar primeiro — sem precisar enviar nenhum arquivo.
+          Leva uns 3 minutos. No fim, o Ivo mostra onde você está mais forte, onde está mais frágil e o que atacar primeiro — sem precisar enviar nenhum arquivo.
         </Text>
       </Animated.View>
       <Pressable onPress={onComecar} style={({ pressed }) => [styles.botao, pressed && styles.botaoOff]}>

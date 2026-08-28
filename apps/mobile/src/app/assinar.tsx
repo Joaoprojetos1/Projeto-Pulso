@@ -1,5 +1,5 @@
 /**
- * "Assine o Pulso" — a tela de planos. É a porta de entrada de quem ainda está
+ * "Assine o Ivo" — a tela de planos. É a porta de entrada de quem ainda está
  * com a assinatura pendente (as abas ficam bloqueadas até virar ativa) e também
  * a tela de upgrade para quem já assina. O app NÃO cobra: cada plano abre o
  * checkout no site (fora das lojas). O "Já paguei" reconsulta a assinatura.
@@ -92,7 +92,7 @@ export default function Assinar() {
 
         <Animated.View entering={FadeInDown.duration(220)} style={styles.cabecalho}>
           <Heartbeat color={colors.vivo} width={72} height={24} />
-          <Text style={styles.titulo}>{jaAtivo ? 'Seu plano' : 'Assine o Pulso'}</Text>
+          <Text style={styles.titulo}>{jaAtivo ? 'Seu plano' : 'Assine o Ivo'}</Text>
           <Text style={styles.subtitulo}>
             {jaAtivo
               ? 'Você pode trocar de plano quando quiser. A cobrança acontece no site.'

@@ -101,7 +101,7 @@ export function relatorioHtml(data: RelatorioMensalData): string {
 
   const leituraHtml = data.leituraIA
     ? `<div class="leitura">
-         <div class="leitura-rot">A leitura do Pulso</div>
+         <div class="leitura-rot">A leitura do Ivo</div>
          <div class="leitura-txt">${esc(data.leituraIA)}</div>
        </div>`
     : '';
@@ -201,7 +201,7 @@ export function relatorioHtml(data: RelatorioMensalData): string {
 </head>
 <body>
   <div class="topo">
-    <div class="marca">Pulso</div>
+    <div class="marca">IVO</div>
     ${ECG}
   </div>
   <div class="nome">${esc(data.nome)}</div>
@@ -233,7 +233,7 @@ export function relatorioHtml(data: RelatorioMensalData): string {
   ${alertasHtml}
   ${gestaoHtml}
 
-  <div class="rodape">Números calculados pelo Pulso, nunca estimados. pulso-site.onrender.com</div>
+  <div class="rodape">Números calculados pelo IVO, nunca estimados. seuivo.com.br</div>
 </body>
 </html>`;
 }

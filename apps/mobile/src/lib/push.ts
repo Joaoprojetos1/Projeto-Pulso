@@ -43,7 +43,7 @@ export async function registrarParaAvisos(authToken: string): Promise<void> {
     // Android precisa de um "canal" para notificações aparecerem
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('alertas', {
-        name: 'Avisos do Pulso',
+        name: 'Avisos do Ivo',
         importance: Notifications.AndroidImportance.HIGH,
         lightColor: '#23C883',
       });

@@ -35,7 +35,7 @@ const STAGE_SEV: Record<string, Severity> = {
 const VERSAO_APP = Constants.expoConfig?.version ?? '';
 const FEEDBACK_URL =
   'https://wa.me/553194287877?text=' +
-  encodeURIComponent('Olá! Tenho um feedback sobre o app do Pulso: ');
+  encodeURIComponent('Olá! Tenho um feedback sobre o app do Ivo: ');
 const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
 
 /** Iniciais do negócio (até 2 letras) para o avatar. */
@@ -310,7 +310,7 @@ export default function Conta() {
           <Text style={styles.sairTexto}>Sair</Text>
         </Pressable>
 
-        <Text style={styles.versao}>Pulso · versão {VERSAO_APP}</Text>
+        <Text style={styles.versao}>IVO · versão {VERSAO_APP}</Text>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,5 +1,5 @@
 /**
- * Conversa. Com o servidor no ar, as respostas vêm da IA do Pulso —
+ * Conversa. Com o servidor no ar, as respostas vêm da IA do Ivo —
  * que só usa números já calculados e passa pelo fiscal contra número
  * inventado. Em modo demonstração, o app avisa com todas as letras.
  */
@@ -34,10 +34,10 @@ interface Mensagem {
   falhou?: boolean;
 }
 
-// sugestões de partida — perguntas que o Pulso sabe responder bem
+// sugestões de partida — perguntas que o Ivo sabe responder bem
 const SUGESTOES = ['Quando meu caixa zera?', 'Quem me deve?', 'Dá pra pagar as contas do mês?'];
 
-/** A bolha "digitando…" do Pulso: a linha de batimento em miniatura pulsando. */
+/** A bolha "digitando…" do Ivo: a linha de batimento em miniatura pulsando. */
 function Digitando() {
   return (
     <Animated.View
@@ -84,8 +84,8 @@ export default function Chat() {
       id: 'boas-vindas',
       de: 'pulso',
       texto: dashboard
-        ? `Olá! Eu sou o Pulso, o monitor do caixa de ${dashboard.company.name}. Pergunte qualquer coisa sobre seus números.`
-        : 'Olá! Eu sou o Pulso. Pergunte qualquer coisa sobre seus números.',
+        ? `Olá! Eu sou o Ivo, o conselheiro do seu negócio. Acompanho os números de ${dashboard.company.name}. Pergunte qualquer coisa.`
+        : 'Olá! Eu sou o Ivo, o conselheiro do seu negócio. Pergunte qualquer coisa sobre seus números.',
     },
   ]);
   const lista = useRef<FlatList<Mensagem>>(null);
@@ -159,7 +159,7 @@ export default function Chat() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}
       >
-        <Text style={styles.titulo} accessibilityRole="header">IA Pulso</Text>
+        <Text style={styles.titulo} accessibilityRole="header">Ivo IA</Text>
 
         <FlatList
           ref={lista}

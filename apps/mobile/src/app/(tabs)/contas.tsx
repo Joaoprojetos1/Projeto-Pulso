@@ -199,7 +199,7 @@ export default function Contas() {
 
         {!carregando && contas.length === 0 && !erro && (
           <Text style={styles.semContas}>
-            Nada cadastrado ainda. Adicione o que você {visao === 'receivable' ? 'espera receber' : 'tem a pagar'} para o Pulso projetar seu caixa.
+            Nada cadastrado ainda. Adicione o que você {visao === 'receivable' ? 'espera receber' : 'tem a pagar'} para o Ivo projetar seu caixa.
           </Text>
         )}
 

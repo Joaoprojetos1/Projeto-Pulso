@@ -1,5 +1,5 @@
 /**
- * O número principal "subindo" ao carregar — passa a sensação de que o Pulso
+ * O número principal "subindo" ao carregar — passa a sensação de que o Ivo
  * acabou de calcular agorinha. É só APRESENTAÇÃO: recebe o valor já pronto
  * (em centavos, do servidor) e anima a contagem de 0 até ele. Nada é calculado
  * aqui.

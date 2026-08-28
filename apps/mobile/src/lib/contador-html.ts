@@ -98,7 +98,7 @@ export function contadorHtml(r: ResumoContador): string {
 </head>
 <body>
   <div class="topo">
-    <div class="marca">Pulso</div>
+    <div class="marca">IVO</div>
     ${ECG}
   </div>
   <div class="nome">${esc(r.nome)}</div>
@@ -127,7 +127,7 @@ export function contadorHtml(r: ResumoContador): string {
 
   ${avisosHtml}
 
-  <div class="rodape">Números calculados pelo Pulso, nunca estimados. pulso-site.onrender.com</div>
+  <div class="rodape">Números calculados pelo IVO, nunca estimados. seuivo.com.br</div>
 </body>
 </html>`;
 }

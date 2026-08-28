@@ -194,7 +194,7 @@ export default function Relatorios() {
               <Text style={styles.docBtnTexto}>Baixar relatório em PDF</Text>
             </Pressable>
             <Text style={styles.docNota}>
-              PDF com a marca, o período e a leitura do Pulso — para salvar, imprimir ou projetar
+              PDF com a marca, o período e a leitura do Ivo — para salvar, imprimir ou projetar
               numa reunião com a equipe.
             </Text>
             <Pressable
@@ -268,7 +268,7 @@ export default function Relatorios() {
         <Pressable style={({ pressed }) => [styles.cartaoLink, pressed && styles.pressionado]} onPress={() => router.push('/historico' as Href)}>
           <View style={{ flex: 1 }}>
             <Text style={styles.cartaoLinkTitulo}>Alertas e avisos</Text>
-            <Text style={styles.cartaoLinkDesc}>Tudo que o Pulso já sinalizou, com data.</Text>
+            <Text style={styles.cartaoLinkDesc}>Tudo que o Ivo já sinalizou, com data.</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.cinza} />
         </Pressable>

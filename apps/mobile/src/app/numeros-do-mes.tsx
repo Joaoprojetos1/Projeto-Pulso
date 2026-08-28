@@ -160,7 +160,7 @@ export default function NumerosDoMes() {
               <Animated.View entering={FadeInDown.duration(220)}>
                 <Text style={styles.titulo}>Os números do seu {ops.segmentLabel?.toLowerCase() ?? 'negócio'}.</Text>
                 <Text style={styles.subtitulo}>
-                  Informe os números deste mês e o Pulso calcula os indicadores do seu ramo. Preencha o que tiver — o resto fica para depois.
+                  Informe os números deste mês e o Ivo calcula os indicadores do seu ramo. Preencha o que tiver — o resto fica para depois.
                 </Text>
               </Animated.View>
 

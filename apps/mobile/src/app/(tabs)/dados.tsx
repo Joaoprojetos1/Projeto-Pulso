@@ -19,7 +19,7 @@ export default function Dados() {
         <Text style={styles.h1}>Seus dados</Text>
         <Text style={styles.sub}>
           Envie quantos arquivos quiser, de quantos meses precisar. Diga o tipo de cada um — assim o
-          Pulso sabe o que fazer com ele.
+          Ivo sabe o que fazer com ele.
         </Text>
 
         {/* fim da digitação: o custo fixo vem por confirmação do que o motor
@@ -31,7 +31,7 @@ export default function Dados() {
           <Ionicons name="repeat-outline" size={20} color={colors.mata} />
           <View style={{ flex: 1 }}>
             <Text style={styles.custoFixoTitulo}>Custos fixos</Text>
-            <Text style={styles.custoFixoDesc}>Revise os gastos que se repetem todo mês (o Pulso identifica dos seus arquivos).</Text>
+            <Text style={styles.custoFixoDesc}>Revise os gastos que se repetem todo mês (o Ivo identifica dos seus arquivos).</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.cinza} />
         </Pressable>

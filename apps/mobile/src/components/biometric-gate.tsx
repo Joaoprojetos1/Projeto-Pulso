@@ -1,5 +1,5 @@
 /**
- * Portão de biometria: quando o dono ligou a trava, o Pulso cobre a tela e pede
+ * Portão de biometria: quando o dono ligou a trava, o Ivo cobre a tela e pede
  * a digital/rosto ao abrir e sempre que o app volta do segundo plano.
  *
  * Só trança quando há sessão de verdade (logado no servidor). Na tela de entrada
@@ -68,8 +68,8 @@ export function BiometricGate({ children }: { children: React.ReactNode }) {
       {children}
       {bloqueado && (
         <View style={styles.tampa}>
-          <Heartbeat width={64} height={22} />
-          <Text style={styles.marca}>Pulso</Text>
+          <Heartbeat width={48} height={31} />
+          <Text style={styles.marca}>IVO</Text>
           <Text style={styles.frase}>Toque para desbloquear com biometria</Text>
           <Pressable
             onPress={pedir}

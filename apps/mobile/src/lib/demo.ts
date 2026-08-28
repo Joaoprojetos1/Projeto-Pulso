@@ -1,6 +1,6 @@
 /**
  * Dados de DEMONSTRAÇÃO — a "Horizonte Comércio", 100% inventada. Entra quando
- * o servidor não está no ar ou quando o visitante toca em "Ver o Pulso
+ * o servidor não está no ar ou quando o visitante toca em "Ver o Ivo
  * funcionando", sempre rotulada como demonstração na tela.
  *
  * É de propósito um cenário SAUDÁVEL: caixa projetado positivo e subindo, sem

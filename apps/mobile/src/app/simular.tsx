@@ -1,5 +1,5 @@
 /**
- * Simulador "e se" — o Pulso vira consultor interativo.
+ * Simulador "e se" — o Ivo vira consultor interativo.
  *
  * O dono liga ajustes hipotéticos (adiar pagamento, antecipar recebível, cortar
  * custo fixo, somar um recebível) e vê a curva redesenhar com a nova data de

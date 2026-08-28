@@ -28,7 +28,7 @@ export default function Enviar() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.intro}>
           Tem vários documentos, de meses diferentes? Envie todos de uma vez. Diga o tipo de cada um —
-          o Pulso lê o que sabe ler e guarda o resto.
+          o Ivo lê o que sabe ler e guarda o resto.
         </Text>
 
         <EnvioArquivos />

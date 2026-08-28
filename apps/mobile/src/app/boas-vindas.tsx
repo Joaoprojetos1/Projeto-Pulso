@@ -35,12 +35,12 @@ import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts, space } from '@/theme';
 
 const VERSAO_APP = Constants.expoConfig?.version ?? '';
-const TERMOS_URL = 'https://pulso-site.onrender.com/termos.html';
-const PRIVACIDADE_URL = 'https://pulso-site.onrender.com/privacidade.html';
+const TERMOS_URL = 'https://seuivo.com.br/termos.html';
+const PRIVACIDADE_URL = 'https://seuivo.com.br/privacidade.html';
 
 // espera longa na 1ª abertura do dia: mensagens centradas no cliente, nunca em infra.
 const MENSAGENS_CARREGANDO = [
-  'Ligando o monitor…',
+  'Acordando o Ivo…',
   'Preparando seus números. A primeira abertura do dia demora um pouco.',
   'Quase lá, buscando seus números…',
 ];
@@ -230,7 +230,7 @@ export default function Login() {
               <Heartbeat color={colors.vivo} width={96} height={30} />
               <Text style={styles.bvClaim}>Saiba antes do caixa apertar.</Text>
               <Text style={styles.bvSub}>
-                O Pulso acompanha o dinheiro do seu negócio e te avisa, em português claro, quando o
+                O Ivo confere o dinheiro do seu negócio e te avisa, em português claro, quando o
                 caixa vai apertar.
               </Text>
             </View>
@@ -252,7 +252,7 @@ export default function Login() {
                 onPress={verDemonstracao}
               >
                 <Heartbeat color={colors.vivo} width={22} height={12} />
-                <Text style={styles.demoDestaqueTexto}>Ver o Pulso funcionando</Text>
+                <Text style={styles.demoDestaqueTexto}>Ver o Ivo funcionando</Text>
               </Pressable>
             </View>
             <View style={styles.bvRodape}>
@@ -280,7 +280,7 @@ export default function Login() {
           </Pressable>
           <PulsoLogo size={44} color={colors.papel} />
           <Text style={styles.claim}>
-            O sinal vital do seu negócio. O Pulso avisa <Text style={styles.claimForte}>antes</Text>{' '}
+            O conselheiro do seu negócio. O Ivo avisa <Text style={styles.claimForte}>antes</Text>{' '}
             do caixa acabar.
           </Text>
         </View>

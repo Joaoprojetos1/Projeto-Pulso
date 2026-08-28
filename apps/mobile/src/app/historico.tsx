@@ -83,7 +83,7 @@ export default function Historico() {
         </View>
       ) : alertas.length === 0 ? (
         <View style={styles.vazio}>
-          <Text style={styles.vazioTexto}>Nenhum alerta até agora. O Pulso segue de olho no seu caixa.</Text>
+          <Text style={styles.vazioTexto}>Nenhum alerta até agora. O Ivo segue de olho no seu caixa.</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.lista}>

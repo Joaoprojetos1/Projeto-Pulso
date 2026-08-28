@@ -68,7 +68,7 @@ export default function DetalheAlerta() {
             </View>
           ))}
           <Text style={styles.porqueNota}>
-            Estes são os números exatos que o motor do Pulso usou. Nada é estimado por IA.
+            Estes são os números exatos que o motor do Ivo usou. Nada é estimado por IA.
           </Text>
         </View>
 
@@ -114,7 +114,7 @@ export default function DetalheAlerta() {
             router.push('/(tabs)/chat');
           }}
         >
-          <Text style={styles.ctaTexto}>Falar com o Pulso sobre isso</Text>
+          <Text style={styles.ctaTexto}>Falar com o Ivo sobre isso</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

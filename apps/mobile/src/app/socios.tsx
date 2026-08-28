@@ -2,7 +2,7 @@
  * Sócios — a inteligência do motor que separa dinheiro de SÓCIO do faturamento.
  *
  * Aporte de sócio (entrada) não é faturamento; retirada (saída) não é custo — mas
- * o dinheiro segue no caixa. Aqui o dono CONFIRMA os movimentos que o Pulso achou
+ * o dinheiro segue no caixa. Aqui o dono CONFIRMA os movimentos que o Ivo achou
  * (casando o nome do sócio com a contraparte do extrato) e mantém a lista de sócios.
  *
  * App burro: mostra o que o servidor propôs e devolve o que o dono confirmou. Quem
@@ -139,7 +139,7 @@ export default function Socios() {
               <View style={styles.vazio}>
                 <Ionicons name="checkmark-circle-outline" size={24} color={colors.cinza} />
                 <Text style={styles.vazioTexto}>
-                  Nenhum movimento de sócio para conferir agora. Quando o Pulso encontrar uma entrada ou saída no
+                  Nenhum movimento de sócio para conferir agora. Quando o Ivo encontrar uma entrada ou saída no
                   nome de um sócio, ela aparece aqui.
                 </Text>
               </View>

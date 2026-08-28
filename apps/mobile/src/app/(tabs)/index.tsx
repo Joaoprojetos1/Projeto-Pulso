@@ -123,7 +123,7 @@ export default function Dashboard() {
           ) : (
             // CONTA NOVA sem dados: boas-vindas + primeiros passos (a ação principal)
             <>
-              <Text style={styles.vazioBoas}>Bem-vindo ao Pulso</Text>
+              <Text style={styles.vazioBoas}>Bem-vindo ao Ivo</Text>
               <PrimeirosPassos passos={montarPassos(null)} />
             </>
           )}
@@ -443,7 +443,7 @@ export default function Dashboard() {
         )}
 
         <Text style={styles.rodape}>
-          Atualizado em {dataBR(dashboard.snapshot.asOf)} · motor v{dashboard.snapshot.coreVersion}
+          Atualizado em {dataBR(dashboard.snapshot.asOf)} · motor IVO v{dashboard.snapshot.coreVersion}
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -465,7 +465,7 @@ function montarPassos(
   return [
     {
       chave: 'caixa',
-      label: 'Alimente o Pulso com seus dados (extrato, maquininha, DRE ou à mão)',
+      label: 'Alimente o Ivo com seus dados (extrato, maquininha, DRE ou à mão)',
       feito: caixaInformado,
       rota: '/alimentar' as Href,
     },

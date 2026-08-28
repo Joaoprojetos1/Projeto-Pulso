@@ -1,5 +1,5 @@
 /**
- * A linha de pulso do cartão de caixa — a marca dentro do produto.
+ * A linha de projeção do cartão de caixa. (Nome do arquivo é interno, herdado.)
  * Desenha a projeção como batimento; o ponto final ("o agora do futuro") pulsa,
  * como um sinal vital vivo.
  *
