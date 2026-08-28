@@ -55,7 +55,7 @@ function optionalDescription(key: string): string {
 const lines: string[] = [];
 const p = (s = '') => lines.push(s);
 
-p('# Dados necessários para os indicadores do Pulso');
+p('# Dados necessários para os indicadores do Ivo');
 p();
 p('> Documento gerado automaticamente das regras do motor. Não editar à mão: rode');
 p('> `npx tsx scripts/gen-dados-necessarios.ts` no pacote `packages/core`.');
@@ -63,7 +63,7 @@ p();
 p(
   'Este material é para as conversas com clientes e com fornecedores de sistema de gestão (ERP). ' +
     'Ele mostra, em linguagem de negócio, o que cada número precisa e onde essa informação costuma existir. ' +
-    'Regra de ouro do Pulso: **o número é sempre calculado por código auditado — a inteligência artificial só ' +
+    'Regra de ouro do Ivo: **o número é sempre calculado por código auditado — a inteligência artificial só ' +
     'transforma o resultado em texto, nunca inventa um valor.**',
 );
 p();
@@ -106,7 +106,7 @@ p();
 p(
   'Estas informações não vêm de nenhuma fonte ampla (extrato, maquininha, nota fiscal, Open Finance). ' +
     'Elas só existem no sistema de gestão do próprio cliente ou na declaração do dono — e por isso vão ' +
-    'exigir **integração dedicada com o sistema do cliente** para o Pulso escalar sem depender de digitação.',
+    'exigir **integração dedicada com o sistema do cliente** para o Ivo escalar sem depender de digitação.',
 );
 p();
 for (const field of fieldsRequiringClientSystem()) {
