@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="IVO">
+  <!-- Ícone do app, TODOS os tamanhos: as três letras em traço grosso.
+       Decisão de 28/08: o check sozinho num quadrado fica genérico em 32/48px
+       (parece app de tarefas); as três letras leem como nome em qualquer
+       tamanho e o V continua sendo o check. Comparação renderizada nos
+       tamanhos reais antes de decidir. -->
   <rect width="512" height="512" rx="112" fill="#37373F"/>
   <g transform="translate(30,168) scale(1.7)">
     <rect x="0" y="0" width="26" height="100" fill="#F5F4F2"/>

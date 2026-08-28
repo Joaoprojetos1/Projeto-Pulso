@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "Pulso",
+    "name": "IVO",
     "slug": "pulso",
     "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "pulso",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F6F4EE",
+    "backgroundColor": "#F5F4F2",
     "android": {
       "package": "com.vetorfinancas.pulso",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#0E2E2A",
+        "backgroundColor": "#37373F",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -31,7 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0E2E2A",
+          "backgroundColor": "#37373F",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 220
         }
@@ -39,14 +39,14 @@
       [
         "expo-notifications",
         {
-          "color": "#23C883"
+          "color": "#3FBFA6"
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "O Pulso usa suas fotos para você escolher o avatar do seu negócio.",
-          "cameraPermission": "O Pulso usa a câmera para você tirar a foto do avatar do seu negócio."
+          "photosPermission": "O IVO usa suas fotos para você escolher o avatar do seu negócio.",
+          "cameraPermission": "O IVO usa a câmera para você tirar a foto do avatar do seu negócio."
         }
       ]
     ],

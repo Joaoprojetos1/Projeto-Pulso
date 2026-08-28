@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -20 292 136" role="img" aria-label="IVO">
+  <!-- Wordmark IVO para FUNDO CLARO. I e O geométricos; o V é o check da marca:
+       cap reto inclinado, haste direita sobe acima da altura das letras. -->
+  <rect x="0" y="0" width="20" height="100" fill="#37373F"/>
+  <path d="M52 46 L86 88 L134 -8" fill="none" stroke="#0F7A69" stroke-width="20" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="210" cy="50" r="40" fill="none" stroke="#37373F" stroke-width="20"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="IVO">
+  <!-- Glifo alternativo: o check com assinatura própria (cap reto inclinado +
+       o PONTO, eco do O da marca: "conferido, ponto"). Uso: ícone monocromático
+       temático do Android e contextos de glifo único (notificação). NÃO usar
+       como ícone principal em 32/48px: avaliado e descartado por ficar genérico
+       (comparação renderizada em 28/08). -->
+  <path d="M96 288 L204 408 L400 76" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="404" cy="404" r="44" fill="#FFFFFF"/>
+</svg>

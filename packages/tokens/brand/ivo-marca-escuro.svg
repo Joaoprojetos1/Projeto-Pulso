@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -20 292 136" role="img" aria-label="IVO">
+  <!-- Wordmark IVO para FUNDO ESCURO (fundo transparente; usar sobre #37373F). -->
+  <rect x="0" y="0" width="20" height="100" fill="#F5F4F2"/>
+  <path d="M52 46 L86 88 L134 -8" fill="none" stroke="#3FBFA6" stroke-width="20" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="210" cy="50" r="40" fill="none" stroke="#F5F4F2" stroke-width="20"/>
+</svg>

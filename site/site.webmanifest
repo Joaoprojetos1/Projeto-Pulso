@@ -1,13 +1,15 @@
 {
-  "name": "Pulso",
-  "short_name": "Pulso",
-  "description": "O caixa do seu negócio, sob controle. Avisa antes do aperto.",
+  "name": "IVO",
+  "short_name": "IVO",
+  "description": "IVO, conselheiro do seu negócio. Confere os números e avisa antes do aperto.",
   "lang": "pt-BR",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#37373F",
   "theme_color": "#37373F",
   "icons": [
-    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" },
+    { "src": "icones/icone-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icones/icone-512.png", "type": "image/png", "sizes": "512x512" }
   ]
 }
