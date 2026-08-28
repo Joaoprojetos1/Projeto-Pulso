@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------
-   Pulso — folha de estilo das páginas internas (calculadora, legais).
+   Ivo — folha de estilo das páginas internas (calculadora, legais).
    Reaproveita os tokens da marca do index.html. Clara e escura.
    Fonte da marca: packages/tokens.
    --------------------------------------------------------------- */
@@ -20,7 +20,7 @@
   --heading: var(--mata);
   --line: rgba(55, 55, 63, 0.12);
   --line-2: rgba(55, 55, 63, 0.07);
-  --pulse-ink: #158556;
+  --pulse-ink: #0F7A69;      /* igual ao acento: já legível sobre papel */
   --shadow: 0 1px 2px rgba(42, 42, 49, 0.05), 0 12px 32px -12px rgba(42, 42, 49, 0.18);
   --f-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
   --f-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -34,7 +34,7 @@
     --pulse-ink: #4fe0a3; --shadow: 0 1px 2px rgba(0,0,0,.28), 0 18px 44px -16px rgba(0,0,0,.55);
   }
 }
-:root[data-theme='light'] { --bg: var(--papel); --surface:#fff; --surface-2:#fbfaf9; --ink:var(--tinta); --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12); --line-2:rgba(55,55,63,.07); --pulse-ink:#158556; }
+:root[data-theme='light'] { --bg: var(--papel); --surface:#fff; --surface-2:#fbfaf9; --ink:var(--tinta); --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12); --line-2:rgba(55,55,63,.07); --pulse-ink:#0F7A69; }
 :root[data-theme='dark'] { --bg:var(--mata); --surface:#3e3e47; --surface-2:#2e2e36; --ink:#ecebef; --muted:#a6a6ae; --heading:#f4f4f6; --line:rgba(236,235,239,.13); --line-2:rgba(236,235,239,.07); --pulse-ink:#4fe0a3; }
 
 * { box-sizing: border-box; }
@@ -121,3 +121,7 @@ li { margin: 0.3rem 0; }
 .email-msg { font-size: .82rem; min-height: 1.2em; }
 .email-msg.ok { color: var(--pulse-ink); }
 .email-msg.erro { color: var(--critico); }
+
+/* texto só para leitor de tela (o wordmark IVO é svg) */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+

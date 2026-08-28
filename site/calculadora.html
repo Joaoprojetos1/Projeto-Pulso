@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Calculadora do efeito tesoura · Pulso</title>
+<title>Calculadora do efeito tesoura · IVO</title>
 <meta name="description" content="Estime em segundos quando o caixa do seu negócio pode apertar. Cálculo no seu navegador, sem cadastro." />
 <meta name="theme-color" content="#37373F" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2042%2024'%3E%3Cpath%20d='M1,12H12L15.5,12L18,5L20.5,12H24L27,12L29.5,3L32,21L34.5,12L37,12H41'%20fill='none'%20stroke='%2323C883'%20stroke-width='3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='112'%20fill='%2337373F'/%3E%3Cg%20transform='translate(30,168)%20scale(1.7)'%3E%3Crect%20width='26'%20height='100'%20fill='%23F5F4F2'/%3E%3Cpath%20d='M58%2042%20L94%2086%20L142%20-8'%20fill='none'%20stroke='%233FBFA6'%20stroke-width='26'/%3E%3Ccircle%20cx='216'%20cy='50'%20r='37'%20fill='none'%20stroke='%23F5F4F2'%20stroke-width='26'/%3E%3C/g%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -21,11 +21,12 @@
 
 <header class="page-head">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Pulso, início">
-      <svg width="26" height="20" viewBox="0 0 42 24" fill="none" aria-hidden="true">
-        <path d="M1 12 H12 L15.5 12 L18 5 L20.5 12 H24 L27 12 L29.5 3 L32 21 L34.5 12 L37 12 H41" stroke="var(--vivo)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Pulso
+    <a class="brand" href="index.html" aria-label="IVO, início">
+      <svg width="52" height="24" viewBox="-8 -20 292 136" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="100" fill="currentColor"/>
+        <path d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--pulse)" stroke-width="20"/>
+        <circle cx="210" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="20"/>
+      </svg><span class="sr-only">IVO</span>
     </a>
     <a class="back" href="index.html">← Voltar ao site</a>
   </div>
@@ -75,7 +76,7 @@
         <p class="calc-svg-label muted" id="curve-label" style="font-size:.8rem;margin-top:6px"></p>
 
         <div class="disclaimer">
-          <b>Estimativa simplificada.</b> Este cálculo usa um modelo de projeção simples e não considera todos os detalhes do seu negócio. O Pulso calcula com os <b>seus dados reais</b>, todo dia, e avisa antes do aperto.
+          <b>Estimativa simplificada.</b> Este cálculo usa um modelo de projeção simples e não considera todos os detalhes do seu negócio. O Ivo calcula com os <b>seus dados reais</b>, todo dia, e avisa antes do aperto.
         </div>
 
         <div class="email-cta">
@@ -101,7 +102,7 @@
       <a href="termos.html">Termos</a>
       <a href="https://wa.me/553194287877?text=Oi%2C%20preciso%20de%20suporte%20do%20Pulso." target="_blank" rel="noopener">Suporte no WhatsApp</a>
     </nav>
-    <span class="foot-note">Pulso · Estimativa simplificada · o cálculo real usa os seus dados.</span>
+    <span class="foot-note">IVO · Estimativa simplificada · o cálculo real usa os seus dados.</span>
   </div>
 </footer>
 
@@ -116,7 +117,7 @@
   //
   //   caixa(d) = caixaHoje − (custo/30)·d + (faturamento/30)·max(0, d − prazo)
   //
-  // Isto é uma ESTIMATIVA. O core do Pulso projeta com os lançamentos reais,
+  // Isto é uma ESTIMATIVA. O core do Ivo projeta com os lançamentos reais,
   // o atraso real de cada cliente e as contas previstas. Aqui não há IA.
   // ---------------------------------------------------------------
   (function () {

@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------
-   Pulso — FONTE ÚNICA dos preços dos planos.
+   Ivo — FONTE ÚNICA dos preços dos planos.
    Mude aqui e o site inteiro acompanha (planos + FAQ). Consistência:
    estes valores TÊM que bater com os planos exibidos no app e com a cota.
    Dinheiro em centavos inteiros, como no core (nunca float).
