@@ -1,30 +1,34 @@
 /**
- * Tema do app — marca Pulso.
+ * Tema do app — marca IVO.
  *
- * A fonte da verdade dos tokens é `@pulso/tokens` (ver packages/tokens/DESIGN.md
- * e o board em packages/tokens/design-system.html). Aqui os valores são
- * ESPELHADOS de lá com os nomes que as telas do app já usam — se um valor mudar
- * nos tokens, atualize também aqui. (Espelhamos em vez de importar para não
- * exigir configuração de monorepo no Metro; a fonte canônica continua sendo
- * @pulso/tokens.)
+ * A fonte da verdade dos tokens é `@pulso/tokens` (nome interno do pacote; ver
+ * packages/tokens/DESIGN.md e o board em packages/tokens/design-system.html).
+ * Aqui os valores são ESPELHADOS de lá com os nomes que as telas do app já
+ * usam — se um valor mudar nos tokens, atualize também aqui. (Espelhamos em
+ * vez de importar para não exigir configuração de monorepo no Metro; a fonte
+ * canônica continua sendo @pulso/tokens.)
  *
  * O app é burro: zero lógica financeira. Isto aqui é só aparência.
  *
- * Fontes: Manrope (grotesca sobria e encorpada) nos titulos e Figtree no corpo.
- * IBM Plex Mono segue nos dados/rotulos. Fonte unica dos nomes: packages/tokens.
+ * Fontes: a DEFINITIVA da marca é a Objektiv VF (ainda não licenciada).
+ * Manrope é a substituta PROVISÓRIA. A troca é feita SÓ AQUI (nomes de
+ * família abaixo) + packages/tokens/src/index.ts, uma linha em cada.
  */
 
 export const colors = {
-  mata: '#37373F', // escuro do sistema (era o verde-mata)
-  vivo: '#23C883', // o pulso, positivo — único ponto de cor viva
+  mata: '#37373F', // escuro do sistema (letras da marca; nome antigo mantido p/ as telas)
+  vivo: '#0F7A69', // acento verde do IVO sobre fundo CLARO (check, ação, positivo)
+  vivoSobreEscuro: '#3FBFA6', // acento verde sobre fundo ESCURO; nunca texto em fundo claro
   papel: '#F5F4F2', // fundo do app
   tinta: '#2A2A31', // texto forte
-  cinza: '#838993', // secundário, rótulos
+  cinza: '#838993', // secundário, rótulos, descritor
   linha: '#E0DEDA', // bordas, hairlines
-  alerta: '#E39A26', // atenção (severidade média)
+  alerta: '#E39A26', // atenção (severidade média) — NÃO usar como texto em fundo claro
+  alertaTexto: '#8A5A0B', // atenção quando for TEXTO sobre fundo claro
   critico: '#D8503F', // só risco real de caixa
+  criticoTexto: '#B23A2B', // crítico quando for TEXTO pequeno sobre fundo claro
   branco: '#FFFFFF',
-  okEscuro: '#158556', // verde legível sobre fundo claro
+  okEscuro: '#0F7A69', // igual ao acento: verde legível sobre fundo claro
   papelSobreMata: '#C7CBD1', // texto claro sobre o escuro do sistema
   rotuloSobreMata: '#9BA0A9', // rótulo/secundário sobre o escuro do sistema
 } as const;

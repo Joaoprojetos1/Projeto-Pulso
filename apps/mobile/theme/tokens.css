@@ -1,29 +1,31 @@
-/* Pulso × Oliveira Alves — tokens para o site.
+/* IVO — tokens para o site.
    Espelha packages/tokens/src/index.ts. Se um valor mudar lá, muda aqui. */
 
 :root {
-  /* estrutura — Oliveira Alves */
-  --oa-escuro: #37373F;
-  --oa-claro: #838993;
+  /* estrutura — cinzas sóbrios */
+  --letras: #37373F;
+  --descritor: #838993;
   --tinta: #2A2A31;
   --papel: #F5F4F2;
   --branco: #FFFFFF;
   --linha: #E0DEDA;
 
-  /* vida e sinal — Pulso */
-  --vivo: #23C883;
-  --vivo-escuro: #158556;
+  /* acento e sinal — o check do IVO */
+  --acento: #0F7A69;
+  --acento-claro: #3FBFA6;
   --alerta: #E39A26;
+  --alerta-texto: #8A5A0B;
   --critico: #D8503F;
+  --critico-texto: #B23A2B;
 
   /* semântico */
   --bg: var(--papel);
   --surface: var(--branco);
-  --brand: var(--oa-escuro);
-  --accent: var(--vivo);
+  --brand: var(--letras);
+  --accent: var(--acento);
 
-  /* fontes — Objektiv VF / Myriad Pro licenciadas; web usa substitutas */
-  --display: "Josefin Sans", sans-serif;
+  /* fontes — definitiva: Objektiv VF (licença pendente); provisória: Manrope */
+  --display: "Manrope", sans-serif;
   --body: "Figtree", sans-serif;
   --mono: "IBM Plex Mono", monospace;
 

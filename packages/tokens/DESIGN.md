@@ -1,26 +1,42 @@
-# Pulso — Design System
+# IVO — Design System
 
-Marca própria, que se sustenta sozinha. `design-system.html` é o board visual
-navegável.
+Marca própria: **IVO, conselheiro do seu negócio**. `design-system.html` é o
+board visual navegável. O nome anterior (Pulso) foi descartado por
+inviabilidade de registro de marca; registro de IVO já iniciado.
 
-## A regra da fusão
+## Nome e nomenclatura
 
-Estrutura sóbria + sinal de vida legível. O Pulso combina um **esqueleto neutro
-e discreto** (cinzas, linha fina, muito respiro, tipografia geométrica) com o que
-um produto financeiro precisa e uma planilha não tem: **sinal de vida legível**.
+- Produto: **IVO** (caixa alta no wordmark; "Ivo" em texto corrido)
+- Descritor: CONSELHEIRO DO SEU NEGÓCIO
+- IA do chat: **Ivo IA** (aba do app: "Ivo IA")
+- Como a IA se apresenta: "Eu sou o Ivo, o conselheiro do seu negócio."
+- Domínio: seuivo.com.br
+- Nunca usar: Pulso, IA Pulso, ou qualquer variação do nome antigo em texto visível.
 
-**Estrutura (sobriedade):** cinza escuro `#37373F` como escuro do sistema, linha
-fina, muito respiro, tipografia geométrica, hairlines como divisores.
+## A regra da marca
 
-**Vida e sinal (exclusivo do Pulso):** verde-vivo `#23C883` como único ponto de
-cor, cores de severidade, a linha de batimento (no gráfico de caixa), números
-tabulares com peso.
+Estrutura sóbria + acento com significado. O IVO combina um **esqueleto neutro
+e discreto** (cinzas, linha fina, muito respiro, tipografia geométrica) com o
+**check verde** do wordmark: conferido, aprovado, validado — coerente com um
+produto que confere os números do negócio e aconselha.
 
-## Por que verde e vermelho ficam
+**Estrutura (sobriedade):** cinza escuro `#37373F` (letras) como escuro do
+sistema, linha fina, muito respiro, hairlines como divisores.
 
-É usabilidade, não estética. O dono precisa distinguir "tudo bem" de "seu caixa
-zera em setembro" num relance. Cinza sobre cinza não faz esse trabalho num app
-de alerta. A cor aqui é **função**. Não remover em nome da sobriedade.
+**Acento e sinal (o check do IVO):** verde `#0F7A69` sobre fundo claro,
+`#3FBFA6` sobre fundo escuro. O verde é acento e sinal, **nunca decoração**:
+aparece no check do wordmark, na ação principal e no estado positivo. Se o
+verde não estiver sinalizando nada naquele ponto, use cinza.
+
+## Cores de severidade
+
+Verde e vermelho ficam por usabilidade, não estética. O dono precisa
+distinguir "tudo bem" de "seu caixa zera em setembro" num relance. O crítico
+`#D8503F` só aparece em risco real; o alerta `#E39A26` na severidade média.
+Regra de contraste: quando severidade vira TEXTO sobre fundo claro, usar as
+variantes de texto (`alertaTexto #8A5A0B`, `criticoTexto #B23A2B`) — os tons
+cheios ficam para fundos, barras e ícones grandes (mínimo 3:1 para elemento
+gráfico).
 
 ## Fonte única de verdade
 
@@ -43,16 +59,24 @@ de voz e leitura limpa em telas pequenas. Vale para todo texto novo, sempre.
 
 ## Fontes
 
-Duas famílias sustentam a marca: **Manrope** (grotesca sóbria e encorpada) nos
-títulos e wordmark, e **Figtree** (humanista neutra) no corpo. No **site**, ficam
-só estas duas: rótulos e números usam Figtree (com `tabular-nums` e espaçamento de
-letra nos rótulos). No **app**, os dados e rótulos técnicos ainda usam IBM Plex
-Mono. A fonte de títulos oficial pode ser licenciada no futuro; Manrope é a de uso
-atual. Atualizar sempre em `packages/tokens/src/index.ts` (fonte única).
+A fonte definitiva da marca é a **Objektiv VF** — ainda não licenciada.
+Enquanto a licença não sai, a substituta provisória é a **Manrope** (títulos e
+wordmark), com **Figtree** no corpo. A troca para a Objektiv VF é feita em UM
+ponto: `font.display` em `packages/tokens/src/index.ts` (+ o espelho em
+`apps/mobile/src/theme.ts`). Não espalhar nome de fonte pelo código.
 
-## Pendências antes de material impresso/registro
+Regras permanentes: nada de fonte monoespaçada em rótulo de interface; números
+sempre com dígitos tabulares (`tabular-nums`).
 
-- Logo do Pulso não passou por busca no INPI (classes 35 e 42) nem checagem de
-  domínio.
-- A linha de batimento no board é uma **aproximação em SVG**; o vetor oficial da
-  marca ainda será definido.
+## O símbolo
+
+O wordmark é a palavra IVO com o **V desenhado como um check verde**.
+Variações (todas em SVG, em `packages/tokens/brand/`): lockup com descritor
+(fundo claro/escuro), marca sem descritor (fundo claro/escuro), monocromática,
+ícone de app. Nos tamanhos pequenos (32/48px) o ícone usa a variação de
+reconhecimento (ver brand/README.md).
+
+## Pendências antes de material impresso
+
+- Licenciar a Objektiv VF.
+- Concluir o registro da marca IVO (já iniciado).

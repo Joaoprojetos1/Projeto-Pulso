@@ -1,61 +1,66 @@
 /**
- * Pulso — design tokens.
+ * IVO — design tokens.
  * Fonte ÚNICA de verdade. App, site e docs derivam daqui.
  *
- * Regra da fusão: estrutura sóbria (cinzas neutros) + cor viva e sinais
- * exclusivos do Pulso (função, não decoração).
+ * Regra da marca: estrutura sóbria (cinzas neutros) + o verde do check como
+ * acento e sinal (função, não decoração). Se o verde não está sinalizando
+ * nada, use cinza.
  */
 
 export const color = {
   // --- estrutura: cinzas sóbrios ---
-  oaEscuro: '#37373F', // dark do sistema: fundos, botão primário, ícone
-  oaClaro: '#838993', // secundário, rótulos
+  letras: '#37373F', // texto principal, wordmark em fundo claro, superfície escura
+  descritor: '#838993', // texto secundário, rótulos, descritor da marca
   tinta: '#2A2A31', // texto forte
   papel: '#F5F4F2', // fundo do app
   branco: '#FFFFFF',
   linha: '#E0DEDA', // bordas, hairlines
 
-  // --- vida e sinal: exclusivo do Pulso ---
-  vivo: '#23C883', // o pulso — único ponto de cor viva
-  vivoEscuro: '#158556', // texto positivo sobre fundo claro
-  alerta: '#E39A26', // severidade média
+  // --- acento e sinal: o check do IVO ---
+  acento: '#0F7A69', // verde de marca sobre fundo CLARO: check, ação principal, positivo
+  acentoClaro: '#3FBFA6', // verde de marca sobre fundo ESCURO; nunca como texto em fundo claro
+  alerta: '#E39A26', // severidade média (não usar como texto pequeno em fundo claro)
+  alertaTexto: '#8A5A0B', // atenção quando for TEXTO sobre fundo claro
   critico: '#D8503F', // risco de caixa — uso raríssimo
+  criticoTexto: '#B23A2B', // crítico quando for TEXTO pequeno sobre fundo claro
 } as const;
 
 /** Mapa semântico. Use ESTES nomes na UI, nunca o hex cru. */
 export const semantic = {
   bg: color.papel,
   surface: color.branco,
-  surfaceInverse: color.oaEscuro,
+  surfaceInverse: color.letras,
   textPrimary: color.tinta,
-  textSecondary: color.oaClaro,
+  textSecondary: color.descritor,
   textOnDark: color.papel,
   border: color.linha,
-  brand: color.oaEscuro,
-  accent: color.vivo,
-  positive: color.vivoEscuro,
+  brand: color.letras,
+  accent: color.acento,
+  accentOnDark: color.acentoClaro,
+  positive: color.acento,
   warning: color.alerta,
   critical: color.critico,
 } as const;
 
 /** Severidade -> cor. O motor de regras devolve a severidade; a UI mapeia aqui. */
 export const severityColor = {
-  ok: color.vivo,
+  ok: color.acento,
   warn: color.alerta,
   critical: color.critico,
 } as const;
 
 export const font = {
-  // Duas famílias sustentam a marca. Manrope (grotesca sobria e encorpada) nos
-  // titulos, Figtree no corpo. No SITE ficam so estas duas (labels/numeros usam
-  // Figtree com tabular-nums). No APP o mono segue nos dados/rotulos.
-  display: 'Manrope', // titulos, wordmark
+  // A fonte DEFINITIVA da marca é a Objektiv VF (ainda não licenciada).
+  // Enquanto a licença não sai, a substituta provisória é a Manrope.
+  // A troca é UMA linha: mude `display` aqui (e o espelho em
+  // apps/mobile/src/theme.ts) quando a Objektiv VF chegar.
+  display: 'Manrope', // títulos, wordmark — PROVISÓRIA (definitiva: Objektiv VF)
   body: 'Figtree', // corpo
-  mono: 'IBM Plex Mono', // rotulos, dados, datas (so no app)
+  mono: 'IBM Plex Mono', // rótulos, dados, datas (só no app, uso interno)
 } as const;
 
 export const weight = {
-  thin: '300', // títulos institucionais (herança OA)
+  thin: '300', // títulos institucionais
   regular: '400',
   medium: '500',
   semibold: '600', // display padrão
