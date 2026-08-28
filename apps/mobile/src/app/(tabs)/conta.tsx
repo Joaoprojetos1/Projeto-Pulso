@@ -196,7 +196,7 @@ export default function Conta() {
       {/* modo teste de assinatura: tarja permanente, impossível de ignorar */}
       {assinatura?.testMode && (
         <View style={styles.tarjaTeste}>
-          <Ionicons name="flask" size={15} color="#06231A" />
+          <Ionicons name="flask" size={15} color="#FFFFFF" />
           <Text style={styles.tarjaTesteTexto}>Modo teste, nenhuma cobrança</Text>
         </View>
       )}
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
   },
-  tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#06231A', letterSpacing: 0.2 },
+  tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#FFFFFF', letterSpacing: 0.2 },
   scroll: { padding: space.group, gap: space.group },
   titulo: {
     fontFamily: fonts.display,
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   seloTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.okEscuro },
 
   assinarBtn: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  assinarBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  assinarBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
   sair: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   pressionado: { opacity: 0.6 },
-  sairTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.critico },
+  sairTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.criticoTexto },
   versao: {
     fontFamily: fonts.mono,
     fontSize: 10,

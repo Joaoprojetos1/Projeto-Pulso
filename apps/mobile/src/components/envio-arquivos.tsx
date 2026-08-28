@@ -177,7 +177,7 @@ export function EnvioArquivos({ aoConcluir }: { aoConcluir?: () => void }) {
         disabled={enviando}
       >
         {enviando ? (
-          <ActivityIndicator color="#06231A" />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.botaoTexto}>Escolher arquivos e enviar</Text>
         )}
@@ -340,7 +340,7 @@ function CartaoConfirmacao({
         onPress={confirmar}
         disabled={enviando}
       >
-        {enviando ? <ActivityIndicator color="#06231A" /> : <Text style={styles.botaoTexto}>Confirmar</Text>}
+        {enviando ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.botaoTexto}>Confirmar</Text>}
       </Pressable>
       <Pressable onPress={onDescartar} disabled={enviando} style={styles.descartar} hitSlop={8}>
         <Text style={styles.descartarTexto}>Descartar esta leitura</Text>
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
 
   botao: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 14 },
   botaoOff: { opacity: 0.6 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#FFFFFF' },
   pressionado: { opacity: 0.85 },
   multiNota: { fontFamily: fonts.corpo, fontSize: 12, color: colors.cinza, textAlign: 'center', marginTop: 6 },
 
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   badge: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 4 },
   badgeTexto: { fontFamily: fonts.corpoMedio, fontSize: 11 },
   confirma: { alignItems: 'flex-end', gap: 6 },
-  confirmaSim: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.critico },
+  confirmaSim: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.criticoTexto },
   confirmaNao: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
 
   // card de confirmação da extração
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   linhaLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
   linhaInput: { flex: 1.1, fontSize: 16, paddingVertical: 10 },
-  avisos: { fontFamily: fonts.corpo, fontSize: 12, color: colors.alerta, marginTop: 10, lineHeight: 17 },
+  avisos: { fontFamily: fonts.corpo, fontSize: 12, color: colors.alertaTexto, marginTop: 10, lineHeight: 17 },
   totalLinha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#CDEBDD' },
   totalRotulo: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.tinta },
   totalValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },

@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.branco,
   },
   inputErro: { borderColor: colors.critico },
-  campoErro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico },
+  campoErro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.criticoTexto },
   inputPequeno: {
     borderWidth: 1.5,
     borderColor: colors.linha,
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
 
   botao: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
   botaoOff: { opacity: 0.5 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#FFFFFF' },
   botaoLinha: { borderWidth: 1.5, borderColor: colors.linha, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   botaoLinhaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },
   pular: { fontFamily: fonts.corpo, fontSize: 14, color: colors.cinza, textAlign: 'center', paddingVertical: 6, textDecorationLine: 'underline' },

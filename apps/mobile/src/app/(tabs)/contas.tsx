@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  previsaoTagTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.alerta },
+  previsaoTagTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 1, color: colors.alertaTexto },
 
   abas: { flexDirection: 'row', gap: space.tight, paddingHorizontal: 16, paddingVertical: space.item },
   aba: {
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
   },
-  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico, textAlign: 'center' },
+  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.criticoTexto, textAlign: 'center' },
 
   card: {
     backgroundColor: colors.branco,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     alignItems: 'center',
   },
-  confirmarTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: '#06231A' },
+  confirmarTexto: { fontFamily: fonts.displayMedio, fontSize: 14, color: '#FFFFFF' },
   excluir: { padding: 8 },
 
   form: {

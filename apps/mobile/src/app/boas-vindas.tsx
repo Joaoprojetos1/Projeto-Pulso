@@ -227,7 +227,7 @@ export default function Login() {
           >
             <View style={styles.bvHero}>
               <PulsoLogo size={54} color={colors.papel} />
-              <Heartbeat color={colors.vivo} width={96} height={30} />
+              <Heartbeat color={colors.vivoSobreEscuro} width={96} height={30} />
               <Text style={styles.bvClaim}>Saiba antes do caixa apertar.</Text>
               <Text style={styles.bvSub}>
                 O Ivo confere o dinheiro do seu negócio e te avisa, em português claro, quando o
@@ -251,7 +251,7 @@ export default function Login() {
                 style={({ pressed }) => [styles.demoDestaque, pressed && styles.pressionado]}
                 onPress={verDemonstracao}
               >
-                <Heartbeat color={colors.vivo} width={22} height={12} />
+                <Heartbeat color={colors.vivoSobreEscuro} width={22} height={12} />
                 <Text style={styles.demoDestaqueTexto}>Ver o Ivo funcionando</Text>
               </Pressable>
             </View>
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   botaoLinha: { borderWidth: 1.5, borderColor: 'rgba(245,244,242,0.35)', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   botaoLinhaTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.papel },
   demoDestaque: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12 },
-  demoDestaqueTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.vivo },
+  demoDestaqueTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.vivoSobreEscuro },
   bvRodape: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   bvLink: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.papelSobreMata },
   bvLinkSep: { color: colors.rotuloSobreMata, fontSize: 12.5 },
@@ -558,12 +558,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.tinta,
   },
-  inputErro: { borderColor: colors.critico },
+  inputErro: { borderColor: colors.criticoSobreEscuro },
   erroCampo: {
     fontFamily: fonts.corpo,
     fontSize: 12.5,
     lineHeight: 17,
-    color: colors.critico,
+    color: colors.criticoSobreEscuro,
     marginTop: 5,
   },
   // senha com botão de mostrar/ocultar: a "caixa" fica na linha; o input é só texto
@@ -597,14 +597,14 @@ const styles = StyleSheet.create({
   botaoTexto: {
     fontFamily: fonts.displayMedio,
     fontSize: 16,
-    color: '#06231A',
+    color: '#FFFFFF',
   },
   carregandoLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   carregandoMsg: {
     fontFamily: fonts.mono,
     fontSize: 12,
     letterSpacing: 0.3,
-    color: colors.okEscuro,
+    color: colors.vivoSobreEscuro,
     textAlign: 'center',
     marginTop: space.group,
   },
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.corpo,
     fontSize: 13,
     lineHeight: 19,
-    color: colors.critico,
+    color: colors.criticoSobreEscuro,
     textAlign: 'center',
     marginTop: space.group,
   },
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.corpo,
     fontSize: 13,
     lineHeight: 19,
-    color: colors.okEscuro,
+    color: colors.vivoSobreEscuro,
     textAlign: 'center',
     marginBottom: space.tight,
   },

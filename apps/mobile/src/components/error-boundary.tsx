@@ -89,5 +89,5 @@ const styles = StyleSheet.create({
     marginTop: space.tight,
   },
   pressionado: { opacity: 0.85 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
 });

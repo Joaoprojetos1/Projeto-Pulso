@@ -170,7 +170,7 @@ export default function Configurar() {
               style={({ pressed }) => [styles.botao, (pressed || !pode) && styles.botaoOff]}
             >
               {salvando ? (
-                <ActivityIndicator color="#06231A" size="small" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <Text style={styles.botaoTexto}>Calcular meu caixa</Text>
               )}
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: space.group,
   },
   contasNotaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.tinta },
-  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico, textAlign: 'center', marginTop: space.group },
+  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.criticoTexto, textAlign: 'center', marginTop: space.group },
   botao: {
     backgroundColor: colors.vivo,
     borderRadius: 14,
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginTop: space.section,
   },
   botaoOff: { opacity: 0.5 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#FFFFFF' },
   previa: {
     fontFamily: fonts.mono,
     fontSize: 11.5,

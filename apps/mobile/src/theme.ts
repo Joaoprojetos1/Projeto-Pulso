@@ -27,10 +27,11 @@ export const colors = {
   alertaTexto: '#8A5A0B', // atenção quando for TEXTO sobre fundo claro
   critico: '#D8503F', // só risco real de caixa
   criticoTexto: '#B23A2B', // crítico quando for TEXTO pequeno sobre fundo claro
+  criticoSobreEscuro: '#FF9C8A', // crítico como texto sobre o escuro do sistema
   branco: '#FFFFFF',
   okEscuro: '#0F7A69', // igual ao acento: verde legível sobre fundo claro
   papelSobreMata: '#C7CBD1', // texto claro sobre o escuro do sistema
-  rotuloSobreMata: '#9BA0A9', // rótulo/secundário sobre o escuro do sistema
+  rotuloSobreMata: '#A5AAB3', // rótulo/secundário sobre o escuro do sistema (AA)
 } as const;
 
 export const fonts = {

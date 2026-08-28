@@ -78,7 +78,7 @@ export default function Assinar() {
       {/* tarja permanente e impossível de ignorar — fica fora do scroll */}
       {testMode && (
         <View style={styles.tarjaTeste}>
-          <Ionicons name="flask" size={15} color="#06231A" />
+          <Ionicons name="flask" size={15} color="#FFFFFF" />
           <Text style={styles.tarjaTesteTexto}>Modo teste, nenhuma cobrança</Text>
         </View>
       )}
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
   },
-  tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#06231A', letterSpacing: 0.2 },
+  tarjaTesteTexto: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: '#FFFFFF', letterSpacing: 0.2 },
   conteudo: { padding: 20, gap: space.item, paddingBottom: space.block },
   voltar: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start' },
   voltarTexto: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.tinta },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
 
   botao: { backgroundColor: colors.vivo, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
   botaoOff: { backgroundColor: colors.papel, borderWidth: 1, borderColor: colors.linha },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
 
   jaPaguei: { borderWidth: 1.5, borderColor: colors.mata, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 6 },
   jaPagueiTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: colors.mata },

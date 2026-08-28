@@ -59,7 +59,7 @@ export default function Projecao() {
                 points={curva}
                 dates={curvaDatas}
                 height={130}
-                color={saudavel ? colors.vivo : colors.critico}
+                color={saudavel ? colors.vivoSobreEscuro : '#F0A196'}
               />
               <View style={styles.legenda}>
                 {['hoje', ...(projecao ?? []).map((p) => `+${p.horizonDays}d`)]

@@ -173,7 +173,7 @@ export default function NumerosDoMes() {
                   return (
                     <Pressable key={m} onPress={() => selecionarMes(m)} style={[styles.mesChip, ativo && styles.mesChipAtivo]}>
                       <Text style={[styles.mesChipTexto, ativo && styles.mesChipTextoAtivo]}>{mesCurto(m)}</Text>
-                      {temDado && <View style={[styles.mesPonto, ativo && { backgroundColor: '#06231A' }]} />}
+                      {temDado && <View style={[styles.mesPonto, ativo && { backgroundColor: '#FFFFFF' }]} />}
                     </Pressable>
                   );
                 })}
@@ -204,7 +204,7 @@ export default function NumerosDoMes() {
               >
                 {salvando ? (
                   <View style={styles.salvandoRow}>
-                    <Heartbeat color="#06231A" width={44} height={16} />
+                    <Heartbeat color="#FFFFFF" width={44} height={16} />
                     <Text style={styles.botaoTexto}>Calculando…</Text>
                   </View>
                 ) : (
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   mesChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.linha, backgroundColor: colors.branco },
   mesChipAtivo: { backgroundColor: colors.vivo, borderColor: colors.vivo },
   mesChipTexto: { fontFamily: fonts.corpoForte, fontSize: 13, color: colors.tinta },
-  mesChipTextoAtivo: { color: '#06231A' },
+  mesChipTextoAtivo: { color: '#FFFFFF' },
   mesPonto: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.vivo },
   mesAtual: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.tinta, marginTop: 4 },
   campoLabel: { fontFamily: fonts.corpoForte, fontSize: 13.5, color: colors.tinta, marginBottom: space.tight },
@@ -276,12 +276,12 @@ const styles = StyleSheet.create({
   numLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   numInput: { flex: 1, backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontFamily: fonts.display, fontSize: 20, color: colors.tinta, fontVariant: ['tabular-nums'] },
   numSufixo: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
-  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.critico, textAlign: 'center', marginTop: space.group },
+  erro: { fontFamily: fonts.corpo, fontSize: 13, color: colors.criticoTexto, textAlign: 'center', marginTop: space.group },
   okBox: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: '#F0FBF6', borderRadius: 12, padding: 12, marginTop: space.group },
   okTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.tinta },
   botao: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: space.section },
   botaoOff: { opacity: 0.5 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#FFFFFF' },
   salvandoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   previa: { fontFamily: fonts.mono, fontSize: 11.5, color: colors.cinza, textAlign: 'center', marginTop: space.item, fontVariant: ['tabular-nums'] },
   avisoBox: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: colors.branco, borderRadius: 12, borderWidth: 1, borderColor: colors.linha, padding: 16, marginTop: space.section },

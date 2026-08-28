@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   vazioTexto: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.cinza, textAlign: 'center' },
 
   scroll: { padding: 16, gap: space.item },
-  selo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
+  selo: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alertaTexto },
   intro: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza },
 
   grafico: {

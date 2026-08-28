@@ -264,7 +264,7 @@ function Kpi({
       onPress={onPress}
       style={({ pressed }) => [styles.kpi, ativo && styles.kpiAtivo, pressed && styles.pressionado]}
     >
-      <Text style={[styles.kpiValor, alerta && { color: colors.alerta }]} numberOfLines={1}>
+      <Text style={[styles.kpiValor, alerta && { color: colors.alertaTexto }]} numberOfLines={1}>
         {valor}
       </Text>
       <Text style={styles.kpiRotulo}>{rotulo}</Text>
@@ -321,7 +321,7 @@ function Linha({ c, denso }: { c: AdminOverviewRow; denso: boolean }) {
       <View style={styles.metricas}>
         <View style={styles.metrica}>
           <Text
-            style={[styles.metricaValor, c.coverageComplete === 0 && { color: colors.alerta }]}
+            style={[styles.metricaValor, c.coverageComplete === 0 && { color: colors.alertaTexto }]}
             numberOfLines={1}
           >
             {c.coverageTotal > 0 ? `${c.coverageComplete}/${c.coverageTotal}` : '·'}
@@ -338,7 +338,7 @@ function Linha({ c, denso }: { c: AdminOverviewRow; denso: boolean }) {
 function Metrica({ valor, rotulo, alerta }: { valor: number; rotulo: string; alerta?: boolean }) {
   return (
     <View style={styles.metrica}>
-      <Text style={[styles.metricaValor, alerta && { color: colors.alerta }]}>{valor}</Text>
+      <Text style={[styles.metricaValor, alerta && { color: colors.alertaTexto }]}>{valor}</Text>
       <Text style={styles.metricaRotulo}>{rotulo}</Text>
     </View>
   );

@@ -68,7 +68,7 @@ export function BiometricGate({ children }: { children: React.ReactNode }) {
       {children}
       {bloqueado && (
         <View style={styles.tampa}>
-          <Heartbeat width={48} height={31} />
+          <Heartbeat color={colors.vivoSobreEscuro} width={48} height={31} />
           <Text style={styles.marca}>IVO</Text>
           <Text style={styles.frase}>Toque para desbloquear com biometria</Text>
           <Pressable
@@ -109,5 +109,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   pressionado: { opacity: 0.7 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
 });

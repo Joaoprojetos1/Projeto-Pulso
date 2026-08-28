@@ -179,7 +179,7 @@ export default function Socios() {
                   style={({ pressed }) => [styles.botao, salvando && styles.botaoOff, pressed && styles.pressionado]}
                 >
                   {salvando ? (
-                    <ActivityIndicator color="#06231A" />
+                    <ActivityIndicator color="#FFFFFF" />
                   ) : (
                     <Text style={styles.botaoTexto}>Confirmar</Text>
                   )}
@@ -204,7 +204,7 @@ export default function Socios() {
                 onSubmitEditing={adicionar}
               />
               <Pressable onPress={adicionar} style={({ pressed }) => [styles.addBtn, pressed && styles.pressionado]}>
-                <Ionicons name="add" size={22} color="#06231A" />
+                <Ionicons name="add" size={22} color="#FFFFFF" />
               </Pressable>
             </View>
             {socios.map((s) => (
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
 
   botao: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   botaoOff: { opacity: 0.6 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#FFFFFF' },
   pressionado: { opacity: 0.85 },
 
   addLinha: { flexDirection: 'row', gap: 8, alignItems: 'center' },

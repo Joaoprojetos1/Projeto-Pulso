@@ -209,6 +209,6 @@ const styles = StyleSheet.create({
 
   botao: { backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 6 },
   botaoOff: { opacity: 0.6 },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 16, color: '#FFFFFF' },
   pressionado: { opacity: 0.85 },
 });

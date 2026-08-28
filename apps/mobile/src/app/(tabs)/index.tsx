@@ -236,7 +236,8 @@ export default function Dashboard() {
 
   // diagnóstico do momento (o servidor manda pronto; o app só desenha)
   const diag = dashboard.diagnosis ?? null;
-  const diagCor = diag ? severityColor[STAGE_SEV[diag.stage] ?? 'ok'] : colors.vivo;
+  const sevEscuro: Record<Severity, string> = { ok: colors.vivoSobreEscuro, warn: colors.alerta, critical: '#F0A196' }; // cartão de caixa é escuro
+  const diagCor = diag ? sevEscuro[STAGE_SEV[diag.stage] ?? 'ok'] : colors.vivoSobreEscuro;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -381,7 +382,7 @@ export default function Dashboard() {
                       <Text
                         style={[
                           styles.segMercado,
-                          { color: s.market.favorable ? colors.okEscuro : colors.alerta },
+                          { color: s.market.favorable ? colors.okEscuro : colors.alertaTexto },
                         ]}
                         numberOfLines={2}
                       >
@@ -596,7 +597,7 @@ function Chip({
         <Text style={styles.chipValor}>{valor}</Text>
       )}
       {!semDado && tend && (
-        <Text style={[styles.chipTend, { color: tend.bom ? colors.okEscuro : colors.alerta }]}>
+        <Text style={[styles.chipTend, { color: tend.bom ? colors.okEscuro : colors.alertaTexto }]}>
           {tend.seta} {tend.pct}% vs mês passado
         </Text>
       )}
@@ -667,7 +668,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  configurarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  configurarTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
 
   topo: {
     flexDirection: 'row',
@@ -695,7 +696,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  seloTexto: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
+  seloTexto: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alertaTexto },
 
   offline: {
     alignSelf: 'flex-start',
@@ -726,7 +727,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 11,
     letterSpacing: 1.2,
-    color: colors.papel,
+    color: colors.mata, // texto escuro sobre o chip colorido (AA em ok/atenção/crítico)
     textTransform: 'uppercase',
   },
   diagTend: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.3 },
@@ -775,7 +776,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     color: colors.rotuloSobreMata,
   },
-  cashOk: { fontFamily: fonts.corpoForte, color: colors.vivo },
+  cashOk: { fontFamily: fonts.corpoForte, color: colors.vivoSobreEscuro },
   cashRuim: { fontFamily: fonts.corpoForte, color: '#F0A196' },
   cashTopo: {
     flexDirection: 'row',
@@ -887,7 +888,7 @@ const styles = StyleSheet.create({
   segCardLabel: { fontFamily: fonts.corpoForte, fontSize: 12, color: colors.tinta },
   segCardValor: { fontFamily: fonts.display, fontSize: 20, color: colors.mata, fontVariant: ['tabular-nums'] },
   segCardHint: { fontFamily: fonts.corpo, fontSize: 11, lineHeight: 15, color: colors.cinza },
-  segCardDeclarado: { color: colors.alerta },
+  segCardDeclarado: { color: colors.alertaTexto },
   segMercado: { fontFamily: fonts.corpoMedio, fontSize: 10.5, lineHeight: 14, marginTop: 4 },
   segPrompt: {
     marginHorizontal: 16,
@@ -943,7 +944,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   passoBolinhaFeita: { backgroundColor: colors.vivo, borderColor: colors.vivo },
-  passoCheck: { fontFamily: fonts.corpoForte, fontSize: 11, color: '#06231A' },
+  passoCheck: { fontFamily: fonts.corpoForte, fontSize: 11, color: '#FFFFFF' },
   passoLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
   // concluído: apenas esmaecido (o check verde já sinaliza), sem risco de "cancelado"
   passoLabelFeito: { color: colors.cinza },

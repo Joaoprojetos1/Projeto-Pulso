@@ -280,5 +280,5 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: space.section,
   },
-  erroTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.critico },
+  erroTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.criticoTexto },
 });

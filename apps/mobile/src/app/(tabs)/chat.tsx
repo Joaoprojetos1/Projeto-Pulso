@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 10,
     letterSpacing: 0.2,
-    color: colors.critico,
+    color: colors.criticoTexto,
     marginTop: 3,
   },
   msgVoce: {

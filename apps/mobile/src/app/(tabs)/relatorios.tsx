@@ -190,7 +190,7 @@ export default function Relatorios() {
               style={({ pressed }) => [styles.docBtn, pressed && styles.pressionado]}
               onPress={() => relatorioRef.current?.gerar()}
             >
-              <Ionicons name="download-outline" size={20} color="#06231A" />
+              <Ionicons name="download-outline" size={20} color="#FFFFFF" />
               <Text style={styles.docBtnTexto}>Baixar relatório em PDF</Text>
             </Pressable>
             <Text style={styles.docNota}>
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   graficoVazioTexto: { fontFamily: fonts.corpo, fontSize: 13, color: colors.cinza },
 
   docBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.vivo, borderRadius: 14, paddingVertical: 15 },
-  docBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#06231A' },
+  docBtnTexto: { fontFamily: fonts.displayMedio, fontSize: 15.5, color: '#FFFFFF' },
   docBtnSec: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 14, paddingVertical: 14, marginTop: 14 },
   docBtnSecTexto: { fontFamily: fonts.displayMedio, fontSize: 14.5, color: colors.mata },
   docNota: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 19, color: colors.cinza, marginTop: 8 },
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   devolutiva: { fontFamily: fonts.corpo, fontSize: 14, lineHeight: 21, color: colors.tinta },
   link: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.mata },
   botao: { backgroundColor: colors.vivo, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#06231A' },
+  botaoTexto: { fontFamily: fonts.displayMedio, fontSize: 15, color: '#FFFFFF' },
 
   rec: { backgroundColor: colors.branco, borderWidth: 1, borderColor: colors.linha, borderRadius: 12, padding: 14, gap: 6 },
   recTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },

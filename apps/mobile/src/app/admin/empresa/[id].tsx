@@ -338,7 +338,7 @@ export default function EmpresaDossie() {
                 <Text style={styles.covRotulo}>completos</Text>
               </View>
               <View style={styles.covNum}>
-                <Text style={[styles.covValor, { color: colors.alerta }]}>{d.coverage.partial}</Text>
+                <Text style={[styles.covValor, { color: colors.alertaTexto }]}>{d.coverage.partial}</Text>
                 <Text style={styles.covRotulo}>parciais</Text>
               </View>
               <View style={styles.covNum}>
@@ -683,7 +683,7 @@ function AcaoConfirmavel({
         disabled={ocupado}
         style={({ pressed }) => [styles.acao, pressed && styles.pressionado]}
       >
-        <Text style={[styles.acaoTexto, perigo && { color: colors.critico }]}>{rotulo}</Text>
+        <Text style={[styles.acaoTexto, perigo && { color: colors.criticoTexto }]}>{rotulo}</Text>
         <Ionicons name="chevron-forward" size={16} color={perigo ? colors.critico : colors.mata} />
       </Pressable>
     );
@@ -741,14 +741,14 @@ const styles = StyleSheet.create({
   covFalta: { gap: 4, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight },
   covFaltaTitulo: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.cinza },
   covFaltaItem: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  covFaltaBullet: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.alerta },
+  covFaltaBullet: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.alertaTexto },
   covFaltaTexto: { flex: 1, fontFamily: fonts.corpo, fontSize: 13.5, color: colors.tinta },
 
   aviso: { backgroundColor: '#F0FBF6', borderWidth: 1, borderColor: colors.vivo, borderRadius: 12, padding: 12 },
   avisoTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.okEscuro },
 
   nome: { fontFamily: fonts.display, fontSize: 20, color: colors.tinta, letterSpacing: -0.4 },
-  demoTag: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alerta },
+  demoTag: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 1, color: colors.alertaTexto },
   contato: { fontFamily: fonts.corpo, fontSize: 13.5, color: colors.tinta },
   contatoLinha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   waBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#25D366', borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
 
   // segmento
   segCobertura: { fontFamily: fonts.corpoMedio, fontSize: 12.5, color: colors.okEscuro, marginTop: space.tight, borderTopWidth: 1, borderTopColor: colors.linha, paddingTop: space.tight },
-  segAviso: { fontFamily: fonts.corpo, fontSize: 12, lineHeight: 17, color: colors.alerta, marginTop: 2, marginBottom: 4 },
+  segAviso: { fontFamily: fonts.corpo, fontSize: 12, lineHeight: 17, color: colors.alertaTexto, marginTop: 2, marginBottom: 4 },
   gestaoTopo: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
   gestaoNota: { fontFamily: fonts.display, fontSize: 30, color: colors.tinta, fontVariant: ['tabular-nums'] },
   gestaoDe: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.cinza },
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
 
   perigoTexto: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.cinza },
   excluirBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: 'rgba(216,80,63,0.4)', borderRadius: 12, paddingVertical: 12, marginTop: 4 },
-  excluirTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.critico },
+  excluirTexto: { fontFamily: fonts.corpoForte, fontSize: 14, color: colors.criticoTexto },
 
   confirmaLinha: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: space.tight },
   confirmaPergunta: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
