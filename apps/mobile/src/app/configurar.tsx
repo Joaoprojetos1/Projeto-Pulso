@@ -45,6 +45,7 @@ export default function Configurar() {
   const [salvando, setSalvando] = useState(false);
   const [etapa, setEtapa] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
+  const [erros, setErros] = useState<{ caixa?: string; custo?: string }>({});
 
   // roda as mensagens de etapa enquanto salva (a cada ~3,5s, sem passar da última)
   useEffect(() => {
@@ -83,12 +84,38 @@ export default function Configurar() {
     void prefill();
   }, [prefill]);
 
-  const custoValido = custoCents != null && custoCents >= 0;
-  const pode = token != null && caixaCents != null && custoValido && !salvando;
+  const custoValido = custoCents != null && custoCents > 0;
+
+  /**
+   * Validação POR CAMPO. Nunca botão morto em silêncio: se falta algo, a
+   * mensagem aparece no campo culpado. E um valor absurdamente baixo (menos de
+   * R$ 100 de custo fixo no mês) não é bloqueado — é APONTADO, porque quase
+   * sempre é um zero que faltou.
+   */
+  function erroCaixa(cents: number | null): string | undefined {
+    if (cents == null) return 'Informe quanto você tem em caixa hoje.';
+    return undefined;
+  }
+  function erroCusto(cents: number | null): string | undefined {
+    if (cents == null) return 'Informe o seu custo fixo do mês.';
+    if (cents <= 0) return 'O custo fixo do mês precisa ser maior que zero.';
+    return undefined;
+  }
+  const avisoCusto =
+    custoCents != null && custoCents > 0 && custoCents < 10_000
+      ? `Isso é ${brl(custoCents)} no mês inteiro. Confira se não faltou um zero.`
+      : null;
 
   async function calcular() {
-    if (!token || caixaCents == null || custoCents == null || custoCents < 0) {
-      setErro('Preencha os dois valores para o Ivo calcular.');
+    const eCaixa = erroCaixa(caixaCents);
+    const eCusto = erroCusto(custoCents);
+    if (eCaixa || eCusto) {
+      setErros({ caixa: eCaixa, custo: eCusto });
+      return;
+    }
+    setErros({});
+    if (!token || caixaCents == null || custoCents == null) {
+      setErro('Sua sessão expirou. Saia e entre de novo.');
       return;
     }
     setSalvando(true);
@@ -139,19 +166,39 @@ export default function Configurar() {
             <Text style={styles.label}>QUANTO VOCÊ TEM EM CAIXA HOJE</Text>
             <MoneyInput
               valueCents={caixaInicial}
-              onChangeCents={setCaixaCents}
+              onChangeCents={(c) => {
+                setCaixaCents(c);
+                if (erros.caixa) setErros((e) => ({ ...e, caixa: undefined }));
+              }}
+              aoSairDoCampo={(c) => setErros((e) => ({ ...e, caixa: erroCaixa(c) }))}
+              erro={!!erros.caixa}
               permiteNegativo
               placeholder="R$ 21.300,00"
             />
-            <Text style={styles.ajuda}>O que está em conta agora, somando tudo.</Text>
+            {erros.caixa ? (
+              <Text style={styles.erroCampo}>{erros.caixa}</Text>
+            ) : (
+              <Text style={styles.ajuda}>O que está em conta agora, somando tudo.</Text>
+            )}
 
             <Text style={[styles.label, { marginTop: space.group }]}>CUSTO FIXO POR MÊS</Text>
             <MoneyInput
               valueCents={custoInicial}
-              onChangeCents={setCustoCents}
+              onChangeCents={(c) => {
+                setCustoCents(c);
+                if (erros.custo) setErros((e) => ({ ...e, custo: undefined }));
+              }}
+              aoSairDoCampo={(c) => setErros((e) => ({ ...e, custo: erroCusto(c) }))}
+              erro={!!erros.custo}
               placeholder="R$ 34.200,00"
             />
-            <Text style={styles.ajuda}>Aluguel, equipe, impostos — o que sai todo mês.</Text>
+            {erros.custo ? (
+              <Text style={styles.erroCampo}>{erros.custo}</Text>
+            ) : avisoCusto ? (
+              <Text style={styles.avisoCampo}>{avisoCusto}</Text>
+            ) : (
+              <Text style={styles.ajuda}>Aluguel, equipe, impostos — o que sai todo mês.</Text>
+            )}
 
             <View style={styles.contasNota}>
               <Ionicons name="receipt-outline" size={18} color={colors.okEscuro} />
@@ -166,8 +213,8 @@ export default function Configurar() {
 
             <Pressable
               onPress={calcular}
-              disabled={!pode}
-              style={({ pressed }) => [styles.botao, (pressed || !pode) && styles.botaoOff]}
+              disabled={salvando}
+              style={({ pressed }) => [styles.botao, (pressed || salvando) && styles.botaoOff]}
             >
               {salvando ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
@@ -236,6 +283,8 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   ajuda: { fontFamily: fonts.corpo, fontSize: 12.5, color: colors.cinza, marginTop: space.tight },
+  erroCampo: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.criticoTexto, marginTop: space.tight },
+  avisoCampo: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.alertaTexto, marginTop: space.tight },
   contasNota: {
     flexDirection: 'row',
     alignItems: 'center',

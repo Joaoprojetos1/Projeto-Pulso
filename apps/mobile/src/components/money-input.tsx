@@ -62,6 +62,10 @@ export interface MoneyInputProps {
   onChangeCents: (cents: number | null) => void;
   placeholder?: string;
   permiteNegativo?: boolean;
+  /** pinta a borda de erro (a mensagem fica com a tela, junto do campo). */
+  erro?: boolean;
+  /** chamado ao sair do campo, com o valor já normalizado — para validar no blur. */
+  aoSairDoCampo?: (cents: number | null) => void;
   style?: StyleProp<TextStyle>;
 }
 
@@ -70,6 +74,8 @@ export function MoneyInput({
   onChangeCents,
   placeholder = 'R$ 0,00',
   permiteNegativo = false,
+  erro = false,
+  aoSairDoCampo,
   style,
 }: MoneyInputProps) {
   const [texto, setTexto] = useState(() =>
@@ -93,11 +99,12 @@ export function MoneyInput({
   function aoSair() {
     const cents = textoParaCents(texto, permiteNegativo);
     setTexto(cents == null ? '' : centsParaTexto(cents, permiteNegativo));
+    aoSairDoCampo?.(cents);
   }
 
   return (
     <TextInput
-      style={[styles.input, style]}
+      style={[styles.input, erro ? styles.inputErro : null, style]}
       value={texto}
       onChangeText={aoDigitar}
       onBlur={aoSair}
@@ -122,4 +129,5 @@ const styles = StyleSheet.create({
     color: colors.tinta,
     fontVariant: ['tabular-nums'],
   },
+  inputErro: { borderColor: colors.critico, borderWidth: 1.5 },
 });
