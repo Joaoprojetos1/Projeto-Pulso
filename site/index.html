@@ -213,9 +213,6 @@
   /* herói: a tela real do app numa moldura discreta */
   .hero-shot { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: rise .8s .12s cubic-bezier(.2,.7,.2,1) both; }
   .hero-shot .phone { width: min(420px, 100%); flex: 0 0 auto; }
-  /* a captura do painel é mais curta (436×430): a moldura acompanha.
-     Especificidade maior que `.phone .screen`, que vem depois no arquivo. */
-  .hero-shot .phone .screen { aspect-ratio: 436 / 430; }
   .hero-shot-cap { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; color: var(--muted); }
   @media (max-width: 900px) { .hero-shot { align-items: flex-start; } }
 
@@ -450,9 +447,11 @@
     width: 300px; flex: 0 0 300px; border-radius: 16px; background: #FFFFFF; padding: 7px;
     border: 1px solid var(--line); position: relative;
   }
-  .phone .screen { border-radius: 10px; overflow: hidden; aspect-ratio: 436 / 526; position: relative; display: block; background: #F5F4F2; }
+  /* A moldura NÃO impõe proporção: ela se ajusta à altura da captura. Foi assim
+     que sumiu o recorte torto — cada tela tem a altura que tem. */
+  .phone .screen { border-radius: 10px; overflow: hidden; position: relative; display: block; background: #F5F4F2; }
     /* (o CSS das telas desenhadas a mao foi removido: agora sao capturas reais)
-  .phone .shot { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; background: #F5F4F2; }
+  .phone .shot { display: block; width: 100%; height: auto; background: #F5F4F2; }
 
   /* ---------- Planos ---------- */
   .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: stretch; }
@@ -561,7 +560,7 @@
       <figure class="hero-shot">
         <div class="phone">
           <div class="screen">
-            <img class="shot" src="img/app-painel.png" width="436" height="430" fetchpriority="high" decoding="async"
+            <img class="shot" src="img/app-painel.png" width="437" height="422" fetchpriority="high" decoding="async"
                  alt="Painel do Ivo mostrando o caixa projetado para 30 dias, de onde vem o saldo e até quando o dinheiro dura." />
           </div>
         </div>
@@ -629,7 +628,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-alerta.png" width="436" height="526" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-alerta.png" width="437" height="430" loading="lazy" decoding="async"
                    alt="Tela do Ivo: aviso 'Você está recebendo mais devagar', com o quadro 'de onde vem esse número' listando recebimento médio, atraso dos clientes e ciclo de caixa." />
             </div>
           </div>
@@ -639,7 +638,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-ia.png" width="436" height="526" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-ia.png" width="437" height="390" loading="lazy" decoding="async"
                    alt="Tela do Ivo IA: perguntas como 'Quando meu caixa zera?', 'Quem me deve?' e 'Dá pra pagar as contas do mês?'." />
             </div>
           </div>
@@ -649,7 +648,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-escada.png" width="436" height="526" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-escada.png" width="437" height="490" loading="lazy" decoding="async"
                    alt="Tela do Ivo: 'De onde vem esse número' — o saldo de hoje, o que entra a receber, o que sai a pagar e o custo fixo, degrau por degrau." />
             </div>
           </div>
