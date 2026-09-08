@@ -42,7 +42,11 @@
     --line-2:  rgba(55, 55, 63, .07);
     --pulse:   var(--vivo);
     --pulse-ink: #0F7A69;      /* igual ao acento: já legível sobre papel */
-    --shadow:  0 1px 2px rgba(42,42,49,.05), 0 12px 32px -12px rgba(42,42,49,.18);
+    /* ELEVAÇÃO É BORDA, NUNCA SOMBRA. Superfície se separa por aresta nítida —
+       papel sobre papel. `--shadow` fica declarada só porque várias regras a
+       consomem; mudar aqui apaga a sombra do site inteiro de uma vez. */
+    --shadow:  none;
+    --raio:    12px;           /* raio ÚNICO: botão, card, input, chip */
     /* Duas familias no site inteiro: Manrope (titulos) e Figtree (corpo, rotulos
        e numeros com tabular-nums). Sem terceira familia. */
     --f-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
@@ -61,7 +65,7 @@
       --line-2:  rgba(236, 235, 239, .07);
       --pulse: #3FBFA6;
       --pulse-ink: #3FBFA6;
-      --shadow:  0 1px 2px rgba(0,0,0,.28), 0 18px 44px -16px rgba(0,0,0,.55);
+      --shadow:  none;
     }
   }
   /* o toggle do leitor vence a preferência do sistema, nos dois sentidos */
@@ -69,13 +73,13 @@
     --bg: var(--papel); --surface:#FFFFFF; --surface-2:#FBFAF9; --ink:var(--tinta);
     --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12);
     --line-2:rgba(55,55,63,.07); --pulse:#0F7A69; --pulse-ink:#0F7A69;
-    --shadow:0 1px 2px rgba(42,42,49,.05),0 12px 32px -12px rgba(42,42,49,.18);
+    --shadow:none;
   }
   :root[data-theme="dark"] {
     --bg:var(--mata); --surface:#3E3E47; --surface-2:#2E2E36; --ink:#ECEBEF;
     --muted:#A6A6AE; --heading:#F4F4F6; --line:rgba(236,235,239,.13);
     --line-2:rgba(236,235,239,.07); --pulse:#3FBFA6; --pulse-ink:#3FBFA6;
-    --shadow:0 1px 2px rgba(0,0,0,.28),0 18px 44px -16px rgba(0,0,0,.55);
+    --shadow:none;
   }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -98,9 +102,11 @@
 
   .wrap { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: clamp(18px, 5vw, 24px); }
 
+  /* Tracking negativo é a voz do display: quanto maior o corpo, mais fechado.
+     Título grande com tracking solto é o que faz uma página parecer template. */
   h1, h2, h3 { font-family: var(--f-display); color: var(--heading); margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
-  h1 { font-size: clamp(2.35rem, 6vw, 4.1rem); font-weight: 700; line-height: 1.04; }
-  h2 { font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 600; line-height: 1.12; }
+  h1 { font-size: clamp(2.35rem, 6vw, 4.1rem); font-weight: 700; line-height: 1.02; letter-spacing: -0.045em; }
+  h2 { font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.032em; }
   h3 { font-size: 1.12rem; font-weight: 600; letter-spacing: -0.01em; }
   p { margin: 0; }
   a { color: inherit; }
@@ -122,16 +128,19 @@
   .btn {
     display: inline-flex; align-items: center; gap: .5em;
     font-family: var(--f-display); font-weight: 600; font-size: .98rem;
-    padding: .82em 1.35em; border-radius: 999px; border: 1px solid transparent;
-    cursor: pointer; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    padding: .82em 1.35em; border-radius: var(--raio); border: 1px solid transparent;
+    cursor: pointer; text-decoration: none; transition: background .18s ease, border-color .18s ease, color .18s ease;
   }
-  .btn-primary { background: var(--vivo); color: #06231A; box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--vivo) 70%, transparent); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--vivo) 75%, transparent); }
+  /* O verde preenchido é EXCLUSIVO do botão de ação — é o único sinal cromático
+     da página. Sem brilho embaixo, sem levantar no hover: a resposta é a cor
+     escurecer, não o botão flutuar. */
+  .btn-primary { background: var(--vivo); color: #FFFFFF; }
+  .btn-primary:hover { background: color-mix(in srgb, var(--vivo) 86%, #000); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
   .btn-ghost:hover { border-color: var(--pulse-ink); color: var(--pulse-ink); }
   /* CTA da demonstração: verde-tinta, de destaque, distinto do primário sólido */
   .btn-demo { background: color-mix(in srgb, var(--vivo) 12%, transparent); color: var(--pulse-ink); border-color: color-mix(in srgb, var(--vivo) 45%, transparent); }
-  .btn-demo:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--vivo) 18%, transparent); border-color: var(--pulse-ink); }
+  .btn-demo:hover { background: color-mix(in srgb, var(--vivo) 18%, transparent); border-color: var(--pulse-ink); }
   .btn-arrow { transition: transform .18s ease; }
   .btn:hover .btn-arrow { transform: translateX(3px); }
   :focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; border-radius: 4px; }
@@ -201,7 +210,16 @@
   .hero-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); letter-spacing: .02em; }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-  /* cartão de alerta (o herói) */
+  /* herói: a tela real do app numa moldura discreta */
+  .hero-shot { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: rise .8s .12s cubic-bezier(.2,.7,.2,1) both; }
+  .hero-shot .phone { width: min(420px, 100%); flex: 0 0 auto; }
+  /* a captura do painel é mais curta (436×430): a moldura acompanha.
+     Especificidade maior que `.phone .screen`, que vem depois no arquivo. */
+  .hero-shot .phone .screen { aspect-ratio: 436 / 430; }
+  .hero-shot-cap { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; color: var(--muted); }
+  @media (max-width: 900px) { .hero-shot { align-items: flex-start; } }
+
+  /* cartão de alerta (herói antigo — mantido para o modo escuro/outras páginas) */
   .alert-card {
     position: relative; background: var(--surface); border: 1px solid var(--line);
     border-radius: 18px; padding: 26px 26px 22px; box-shadow: var(--shadow);
@@ -331,27 +349,27 @@
   .wa-float {
     position: fixed; right: clamp(16px, 4vw, 26px); bottom: clamp(16px, 4vw, 26px); z-index: 50;
     display: inline-flex; align-items: center; gap: 0; overflow: hidden;
-    height: 58px; width: 58px; padding: 0 14px; border-radius: 999px;
-    background: #25D366; color: #FFFFFF; text-decoration: none;
-    box-shadow: 0 10px 26px -8px rgba(37,211,102,.6), 0 2px 6px rgba(0,0,0,.2);
-    transition: width .28s cubic-bezier(.2,.7,.2,1), transform .18s ease, box-shadow .18s ease;
-    animation: wapop .5s .8s both;
+    height: 56px; width: 56px; padding: 0 15px; border-radius: var(--raio);
+    /* NÃO usa o verde do WhatsApp: uma segunda cor cromática preenchida rouba a
+       atenção do único botão de ação da página e é o que faz a página parecer
+       template. Fica no escuro da marca; quem identifica é o ícone. */
+    background: var(--mata); color: #FFFFFF; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.14);
+    transition: width .28s cubic-bezier(.2,.7,.2,1), background .18s ease;
   }
   .wa-float svg { flex: 0 0 auto; }
   .wa-float .wa-tip {
     font-family: var(--f-display); font-weight: 600; font-size: .92rem; white-space: nowrap;
     max-width: 0; opacity: 0; margin-left: 0; transition: max-width .28s ease, opacity .2s ease, margin-left .28s ease;
   }
-  .wa-float:hover { width: 264px; transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(37,211,102,.7), 0 2px 6px rgba(0,0,0,.24); }
+  .wa-float:hover { width: 258px; background: #2E2E36; }
   .wa-float:hover .wa-tip { max-width: 200px; opacity: 1; margin-left: 10px; }
   .wa-float:focus-visible { outline: 3px solid var(--vivo); outline-offset: 3px; }
-  @keyframes wapop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (max-width: 600px) {
-    /* no celular fica só o círculo, pra não cobrir conteúdo */
-    .wa-float:hover { width: 58px; transform: none; }
+    /* no celular fica só o quadrado, pra não cobrir conteúdo */
+    .wa-float:hover { width: 56px; }
     .wa-float:hover .wa-tip { max-width: 0; opacity: 0; margin-left: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .wa-float { animation: none; } }
 
   .draft-tag { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--alerta); border: 1px dashed color-mix(in srgb, var(--alerta) 55%, transparent); padding: .2em .5em; border-radius: 6px; }
 
@@ -423,64 +441,18 @@
     .phone-fig:nth-child(2) { transform: none; }
   }
 
+  /* A moldura é só uma aresta: quem carrega o peso visual é a TELA REAL do app
+     (capturada do produto rodando, em site/img/). Nada aqui é desenhado à mão —
+     mockup desenhado envelhece sozinho e passa a mentir sobre o produto. */
+  /* A moldura segue a PROPORÇÃO DA CAPTURA (436×526) — nada de recorte torto
+     nem de moldura de celular fingindo um aparelho. */
   .phone {
-    width: 264px; flex: 0 0 264px; border-radius: 40px; background: #17171B; padding: 9px;
-    box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 34px 60px -30px rgba(0,0,0,.5); position: relative;
+    width: 300px; flex: 0 0 300px; border-radius: 16px; background: #FFFFFF; padding: 7px;
+    border: 1px solid var(--line); position: relative;
   }
-  .phone::before { content: ""; position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 84px; height: 20px; background: #17171B; border-radius: 0 0 13px 13px; z-index: 4; }
-  .phone .screen { border-radius: 32px; overflow: hidden; height: 548px; position: relative; display: flex; flex-direction: column; background: #F5F4F2; color: #2A2A31; font-size: 13px; }
-  /* fixamos as cores dentro do celular: é um retrato do app (que é claro), não muda no modo escuro */
-
-  /* tela de bloqueio + notificação chegando */
-  .phone .scr-lock { background: linear-gradient(160deg, #2A2A31 0%, #37373F 55%, #45454F 100%); align-items: center; padding: 44px 16px 0; }
-  .lock-hh { font-family: var(--f-display); font-weight: 300; font-size: 3.4rem; color: #F5F4F2; letter-spacing: -0.02em; line-height: 1; }
-  .lock-date { font-family: var(--f-body); font-size: .82rem; color: rgba(245,244,242,.72); margin-top: 4px; }
-  .notif { margin-top: 40px; width: 100%; background: rgba(250,250,251,.92); backdrop-filter: blur(6px); border-radius: 16px; padding: 13px 14px; box-shadow: 0 12px 26px -14px rgba(0,0,0,.5); }
-  .notif-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .notif-app { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: .64rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #0F7A69; }
-  .notif-ago { font-family: var(--f-mono); font-size: .6rem; color: #838993; }
-  .notif-title { font-family: var(--f-display); font-weight: 600; font-size: .98rem; line-height: 1.22; color: #2A2A31; }
-  .notif-body { font-size: .8rem; line-height: 1.4; color: #5b5b64; margin-top: 4px; }
-
-  /* telas internas do app */
-  .scr-app { padding: 14px 12px; gap: 0; overflow: hidden; }
-  .app-top { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 10px; }
-  .app-avatar { width: 28px; height: 28px; border-radius: 50%; background: #37373F; color: #0F7A69; font-family: var(--f-display); font-weight: 600; font-size: .82rem; display: flex; align-items: center; justify-content: center; }
-  .app-seal { align-self: flex-start; background: #FDF3E3; color: #E39A26; font-family: var(--f-mono); font-size: .52rem; letter-spacing: .08em; padding: 3px 7px; border-radius: 6px; margin-bottom: 10px; }
-  .cash-card { background: #37373F; border-radius: 16px; padding: 14px; color: #F5F4F2; }
-  .cash-card .cc-k { font-family: var(--f-mono); font-size: .56rem; letter-spacing: .12em; color: rgba(245,244,242,.6); }
-  .cash-card .cc-v { font-family: var(--f-display); font-weight: 700; font-size: 1.85rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 2px 0; }
-  .cash-card .cc-d { font-size: .74rem; color: rgba(245,244,242,.82); }
-  .cash-card .cc-d b { color: #F0A196; font-weight: 600; }
-  .cash-card .cc-line { width: 100%; height: 40px; display: block; margin-top: 8px; }
-  .cash-card .cc-legend { display: flex; justify-content: space-between; padding: 0 2px; margin-top: 3px; }
-  .cash-card .cc-legend span { font-family: var(--f-mono); font-size: .5rem; letter-spacing: .04em; color: rgba(245,244,242,.55); }
-  .cash-card .cc-risk { display: inline-flex; align-items: center; gap: 5px; font-family: var(--f-mono); font-size: .56rem; color: #F0A196; margin-top: 8px; }
-  .cash-card .cc-risk::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #F0A196; }
-  .app-chips { display: flex; gap: 6px; margin-top: 12px; }
-  .app-chip { flex: 1; background: #FFFFFF; border: 1px solid rgba(55,55,63,.12); border-radius: 10px; padding: 7px 8px; }
-  .app-chip .k { font-family: var(--f-mono); font-size: .48rem; letter-spacing: .05em; color: #838993; }
-  .app-chip .v { font-family: var(--f-display); font-weight: 600; font-size: .84rem; color: #2A2A31; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .app-chip .v.ok { color: #0F7A69; }
-  .app-secttl { font-family: var(--f-display); font-weight: 600; font-size: .92rem; color: #2A2A31; margin: 14px 2px 8px; }
-  .app-alert { display: flex; gap: 8px; background: #FFFFFF; border: 1px solid rgba(55,55,63,.12); border-radius: 12px; padding: 10px; margin-bottom: 7px; }
-  .app-alert .bar { width: 5px; border-radius: 3px; flex: 0 0 auto; }
-  .app-alert .bar.crit { background: #D8503F; }
-  .app-alert .bar.warn { background: #E39A26; }
-  .app-alert .at { font-family: var(--f-display); font-weight: 600; font-size: .78rem; color: #2A2A31; line-height: 1.25; }
-
-  /* tela "de onde vem o número" */
-  .scr-audit { padding: 18px 15px; overflow: hidden; }
-  .aud-badge { align-self: flex-start; background: rgba(216,80,63,.1); color: #D8503F; font-family: var(--f-mono); font-size: .58rem; letter-spacing: .12em; padding: 4px 9px; border-radius: 7px; margin-bottom: 11px; }
-  .aud-title { font-family: var(--f-display); font-weight: 600; font-size: 1.18rem; line-height: 1.22; color: #2A2A31; letter-spacing: -0.02em; }
-  .aud-body { font-size: .8rem; line-height: 1.45; color: #5b5b64; margin-top: 7px; }
-  .aud-card { background: #FFFFFF; border: 1px solid rgba(55,55,63,.12); border-radius: 14px; padding: 13px; margin-top: 15px; }
-  .aud-k { font-family: var(--f-mono); font-size: .56rem; letter-spacing: .12em; color: #838993; margin-bottom: 4px; }
-  .aud-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(55,55,63,.08); }
-  .aud-row:last-of-type { border-bottom: 0; }
-  .aud-row .rk { font-size: .76rem; color: #838993; }
-  .aud-row .rv { font-family: var(--f-display); font-weight: 600; font-size: .8rem; color: #2A2A31; font-variant-numeric: tabular-nums; }
-  .aud-note { font-size: .7rem; line-height: 1.4; color: #838993; margin-top: 10px; }
+  .phone .screen { border-radius: 10px; overflow: hidden; aspect-ratio: 436 / 526; position: relative; display: block; background: #F5F4F2; }
+    /* (o CSS das telas desenhadas a mao foi removido: agora sao capturas reais)
+  .phone .shot { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; background: #F5F4F2; }
 
   /* ---------- Planos ---------- */
   .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: stretch; }
@@ -503,27 +475,20 @@
   .sec + .sec { border-top: 1px solid var(--line); }
   .sec:nth-of-type(even) { background: var(--surface-2); }
 
-  /* glow verde suave nas pontas do hero (sutil, nao neon) */
-  .hero::before {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(58% 48% at 0% 0%, color-mix(in srgb, var(--vivo) 13%, transparent), transparent 60%),
-      radial-gradient(55% 50% at 100% 100%, color-mix(in srgb, var(--vivo) 12%, transparent), transparent 62%);
-  }
+  /* Sem gradiente no herói: o fundo é papel liso e quem carrega o peso visual é
+     a tela do produto ao lado. */
   .hero .wrap { position: relative; z-index: 1; }
 
   /* numero de destaque inline (ex.: os 46 dias no "ponto cego") */
   .num-hl { font-family: var(--f-display); font-weight: 700; color: var(--pulse-ink); font-variant-numeric: tabular-nums; }
 
-  /* mais vida: passos e planos sobem de leve no hover */
-  .step { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-  .step:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--vivo) 40%, var(--line)); }
-  .plan { transition: transform .2s ease, box-shadow .2s ease; }
-  .plan:hover { transform: translateY(-4px); }
-  /* destaque sem levantar o card (mantem os botoes alinhados na base): so realce */
-  @media (min-width: 861px) {
-    .plan.destaque { box-shadow: 0 22px 48px -26px color-mix(in srgb, var(--vivo) 55%, transparent); }
-  }
+  /* Resposta ao hover é a ARESTA, não o card levitar. */
+  .step { transition: border-color .18s ease; }
+  .step:hover { border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
+  .plan { transition: border-color .2s ease; }
+  .plan:hover { border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
+  /* o plano em destaque se diferencia por borda mais forte, não por sombra */
+  .plan.destaque { border-color: var(--vivo); border-width: 1.5px; }
 
   /* FAQ centralizado (resolve o vazio a direita) */
   #faq .sec-head { max-width: none; text-align: center; align-items: center; margin-inline: auto; }
@@ -591,25 +556,17 @@
         <p class="hero-note">Simulação na hora, de graça · veja quando o seu caixa pode apertar</p>
       </div>
 
-      <div class="alert-card" role="img" aria-label="Exemplo de alerta do Ivo: seu caixa pode zerar em 29 de julho.">
-        <div class="alert-top">
-          <span class="chip chip-crit"><span class="dot"></span>Alerta · Caixa</span>
-          <span class="alert-time">hoje, 08:14</span>
+      <!-- HERÓI: a tela real do produto. Nada de mockup desenhado — o que o
+           visitante vê aqui é exatamente o que ele encontra ao entrar. -->
+      <figure class="hero-shot">
+        <div class="phone">
+          <div class="screen">
+            <img class="shot" src="img/app-painel.png" width="436" height="430" fetchpriority="high" decoding="async"
+                 alt="Painel do Ivo mostrando o caixa projetado para 30 dias, de onde vem o saldo e até quando o dinheiro dura." />
+          </div>
         </div>
-        <div class="alert-headline">Seu caixa pode zerar em <b>29 de julho</b>.</div>
-        <p class="alert-sub">No ritmo de hoje, faltam cerca de R$ 8.400 pra fechar o mês. Ainda dá tempo de ajustar. Por isso o aviso chega agora.</p>
-        <div class="pulse-wrap">
-          <svg class="pulse-svg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true">
-            <path class="pulse-base" pathLength="1" d="M0,30 H150 L168,30 L180,16 L192,30 H235 L270,30 L286,30 L300,6 L314,50 L328,30 L360,30 H470 L488,30 L500,20 L512,40 L524,30 H600"/>
-            <path class="pulse-scan" pathLength="1" d="M0,30 H150 L168,30 L180,16 L192,30 H235 L270,30 L286,30 L300,6 L314,50 L328,30 L360,30 H470 L488,30 L500,20 L512,40 L524,30 H600"/>
-          </svg>
-        </div>
-        <div class="alert-figures">
-          <div class="figure"><div class="flabel">Caixa hoje</div><div class="fval" data-countup="21300" data-prefix="R$ ">R$ 21.300</div></div>
-          <div class="figure"><div class="flabel">Projeção 30d</div><div class="fval" data-countup="8400" data-prefix="−R$ ">−R$ 8.400</div></div>
-          <div class="figure"><div class="flabel">Recebe em</div><div class="fval" data-countup="46" data-suffix=" dias">46 dias</div></div>
-        </div>
-      </div>
+        <figcaption class="hero-shot-cap">O painel do Ivo, com dados de demonstração.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -668,79 +625,35 @@
       </div>
 
       <div class="phones reveal">
-        <!-- 1. tela de bloqueio: o aviso chegando -->
+        <!-- Telas REAIS do app rodando (site/img/). Ao mudar o app, recapturar. -->
         <figure class="phone-fig">
           <div class="phone">
-            <div class="screen scr-lock">
-              <div class="lock-hh">08:14</div>
-              <div class="lock-date">terça, 21 de julho</div>
-              <div class="notif">
-                <div class="notif-head">
-                  <span class="notif-app">
-                    <svg width="34" height="16" viewBox="-8 -20 292 136" aria-hidden="true"><rect width="20" height="100" fill="#2A2A31"/><path d="M52 46 L86 88 L134 -8" fill="none" stroke="#0F7A69" stroke-width="20"/><circle cx="210" cy="50" r="40" fill="none" stroke="#2A2A31" stroke-width="20"/></svg> IVO
-                  </span>
-                  <span class="notif-ago">agora</span>
-                </div>
-                <div class="notif-title">Seu caixa pode zerar em 29 de julho</div>
-                <div class="notif-body">No ritmo de hoje, faltam ~R$ 8.400 pra fechar o mês. Ainda dá tempo de ajustar.</div>
-              </div>
+            <div class="screen">
+              <img class="shot" src="img/app-alerta.png" width="436" height="526" loading="lazy" decoding="async"
+                   alt="Tela do Ivo: aviso 'Você está recebendo mais devagar', com o quadro 'de onde vem esse número' listando recebimento médio, atraso dos clientes e ciclo de caixa." />
             </div>
           </div>
-          <figcaption class="phone-cap">O aviso chega <b>antes</b>, no WhatsApp e no app.</figcaption>
+          <figcaption class="phone-cap">O aviso chega <b>antes</b>, em português claro.</figcaption>
         </figure>
 
-        <!-- 2. dashboard: a projeção de caixa -->
         <figure class="phone-fig">
           <div class="phone">
-            <div class="screen scr-app">
-              <div class="app-top">
-                <svg width="58" height="27" viewBox="-8 -20 292 136" aria-hidden="true"><rect width="20" height="100" fill="#37373F"/><path d="M52 46 L86 88 L134 -8" fill="none" stroke="#0F7A69" stroke-width="20"/><circle cx="210" cy="50" r="40" fill="none" stroke="#37373F" stroke-width="20"/></svg>
-                <span class="app-avatar">A</span>
-              </div>
-              <span class="app-seal">DEMONSTRAÇÃO · DADOS FICTÍCIOS</span>
-              <div class="cash-card">
-                <div class="cc-k">CAIXA PROJETADO · 30 DIAS</div>
-                <div class="cc-v">−R$ 8.400</div>
-                <div class="cc-d">Risco de zerar em <b>29 de julho</b> · hoje: R$ 21.300</div>
-                <svg class="cc-line" viewBox="0 0 236 40" preserveAspectRatio="none" aria-hidden="true">
-                  <path d="M2,9 L60,14 L118,22 L176,32 L234,37" fill="none" stroke="#D8503F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="176" cy="32" r="3.4" fill="#F0A196"/>
-                </svg>
-                <div class="cc-legend"><span>hoje</span><span>+30d</span><span>+60d</span><span>+90d</span></div>
-                <div class="cc-risk">ponto de risco: 29 de julho</div>
-              </div>
-              <div class="app-chips">
-                <div class="app-chip"><div class="k">DINHEIRO PRESO</div><div class="v">46 dias</div></div>
-                <div class="app-chip"><div class="k">O QUE SOBRA</div><div class="v">75%</div></div>
-                <div class="app-chip"><div class="k">FATUROU/MÊS</div><div class="v">R$ 66,8 mil</div></div>
-              </div>
-              <div class="app-secttl">O que pede sua atenção</div>
-              <div class="app-alert"><span class="bar crit"></span><span class="at">Seu caixa pode zerar em 29 de julho</span></div>
-              <div class="app-alert"><span class="bar warn"></span><span class="at">Você vende mais, mas o dinheiro demora a chegar</span></div>
+            <div class="screen">
+              <img class="shot" src="img/app-ia.png" width="436" height="526" loading="lazy" decoding="async"
+                   alt="Tela do Ivo IA: perguntas como 'Quando meu caixa zera?', 'Quem me deve?' e 'Dá pra pagar as contas do mês?'." />
             </div>
           </div>
-          <figcaption class="phone-cap">A projeção do seu caixa, refeita <b>todo dia</b>.</figcaption>
+          <figcaption class="phone-cap">Pergunte em português. Ele responde com <b>os seus números</b>.</figcaption>
         </figure>
 
-        <!-- 3. de onde vem o número (a regra de ouro na tela) -->
         <figure class="phone-fig">
           <div class="phone">
-            <div class="screen scr-audit">
-              <span class="aud-badge">CRÍTICO</span>
-              <div class="aud-title">Seu caixa pode zerar em 29 de julho</div>
-              <div class="aud-body">No ritmo de hoje, o dinheiro em conta acaba em 29 de julho. Ainda dá tempo de agir.</div>
-              <div class="aud-card">
-                <div class="aud-k">DE ONDE VEM ESSE NÚMERO</div>
-                <div class="aud-row"><span class="rk">Saldo hoje</span><span class="rv">R$ 21.300</span></div>
-                <div class="aud-row"><span class="rk">Atraso médio</span><span class="rv">12 dias</span></div>
-                <div class="aud-row"><span class="rk">Recebimento</span><span class="rv">46 dias</span></div>
-                <div class="aud-row"><span class="rk">Custo fixo / mês</span><span class="rv">R$ 34.200</span></div>
-                <div class="aud-row"><span class="rk">Zera em</span><span class="rv">29 de julho</span></div>
-                <div class="aud-note">Estes são os números exatos que o motor usou. Nada é estimado por IA.</div>
-              </div>
+            <div class="screen">
+              <img class="shot" src="img/app-escada.png" width="436" height="526" loading="lazy" decoding="async"
+                   alt="Tela do Ivo: 'De onde vem esse número' — o saldo de hoje, o que entra a receber, o que sai a pagar e o custo fixo, degrau por degrau." />
             </div>
           </div>
-          <figcaption class="phone-cap">Todo alerta mostra <b>de onde veio</b> o número.</figcaption>
+          <figcaption class="phone-cap">Todo número mostra <b>de onde veio</b>, em partes.</figcaption>
         </figure>
       </div>
     </div>
