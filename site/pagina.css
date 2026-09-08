@@ -79,11 +79,15 @@ li { margin: 0.3rem 0; }
 .btn {
   display: inline-flex; align-items: center; gap: .5em; font-family: var(--f-display);
   font-weight: 600; font-size: .98rem; padding: .82em 1.35em; border-radius: 12px;
+  /* mesmo feedback de toque do index: o botão responde ao clique */
+  --saida: cubic-bezier(.2, .7, .2, 1);
   border: 1px solid transparent; cursor: pointer; text-decoration: none;
-  transition: background .18s ease, border-color .18s ease;
+  transition: background .18s ease, border-color .18s ease, transform 160ms var(--saida);
 }
+.btn:active { transform: scale(.97); }
 .btn-primary { background: var(--vivo); color: #FFFFFF; }
-.btn-primary:hover { transform: translateY(-2px); }
+/* hover escurece a cor; o botão não levita (elevação aqui é borda, não sombra) */
+.btn-primary:hover { background: color-mix(in srgb, var(--vivo) 86%, #000); }
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--pulse-ink); color: var(--pulse-ink); }
 :focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; border-radius: 4px; }

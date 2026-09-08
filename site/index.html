@@ -47,6 +47,9 @@
        consomem; mudar aqui apaga a sombra do site inteiro de uma vez. */
     --shadow:  none;
     --raio:    12px;           /* raio ÚNICO: botão, card, input, chip */
+    /* Curva única de saída do site. Toda animação nova usa esta — é o que faz o
+       movimento parecer de uma peça só, e não de três bibliotecas diferentes. */
+    --saida:   cubic-bezier(.2, .7, .2, 1);
     /* Duas familias no site inteiro: Manrope (titulos) e Figtree (corpo, rotulos
        e numeros com tabular-nums). Sem terceira familia. */
     --f-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
@@ -83,6 +86,8 @@
   }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  /* permite animar altura até `auto` (FAQ). Ignorado por quem não suporta. */
+  :root { interpolate-size: allow-keywords; }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 80px; }
   body {
@@ -95,9 +100,19 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+  /* Quem pede menos movimento recebe movimento DISCRETO, não ausência dele: o
+     feedback de toque e a resposta do envio continuam existindo (são função,
+     não enfeite); o que sai é o deslocamento e a entrada em cascata. */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    * { animation: none !important; transition: none !important; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 120ms !important;
+    }
+    .reveal, .reveal.is-in, .reveal.stagger.is-in > * { transform: none !important; }
+    .btn:active { transform: none; }
   }
 
   .wrap { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: clamp(18px, 5vw, 24px); }
@@ -129,8 +144,13 @@
     display: inline-flex; align-items: center; gap: .5em;
     font-family: var(--f-display); font-weight: 600; font-size: .98rem;
     padding: .82em 1.35em; border-radius: var(--raio); border: 1px solid transparent;
-    cursor: pointer; text-decoration: none; transition: background .18s ease, border-color .18s ease, color .18s ease;
+    cursor: pointer; text-decoration: none;
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform 160ms var(--saida);
   }
+  /* FEEDBACK: o botão precisa responder ao toque. É o movimento que mais falta
+     numa página — sem ele o clique parece não ter sido ouvido. Sutil (.97), e
+     rápido o bastante para não atrasar a ação. */
+  .btn:active { transform: scale(.97); }
   /* O verde preenchido é EXCLUSIVO do botão de ação — é o único sinal cromático
      da página. Sem brilho embaixo, sem levantar no hover: a resposta é a cor
      escurecer, não o botão flutuar. */
@@ -191,6 +211,14 @@
     text-decoration: none; padding: 15px 6px; min-height: 44px; display: flex; align-items: center;
     border-bottom: 1px solid var(--line-2);
   }
+  /* Os links entram em cascata de 40ms em vez de aparecerem todos de uma vez.
+     É decoração: nunca segura o toque (o link já é clicável no primeiro quadro). */
+  .mobile-menu.open a.m-link { animation: risein 260ms var(--saida) both; }
+  .mobile-menu.open a.m-link:nth-child(1) { animation-delay: 40ms; }
+  .mobile-menu.open a.m-link:nth-child(2) { animation-delay: 80ms; }
+  .mobile-menu.open a.m-link:nth-child(3) { animation-delay: 120ms; }
+  .mobile-menu.open a.m-link:nth-child(4) { animation-delay: 160ms; }
+  .mobile-menu.open a.m-link:nth-child(5) { animation-delay: 200ms; }
   .mobile-menu a.m-link:active { color: var(--pulse-ink); }
   .mobile-menu .btn { margin-top: 18px; justify-content: center; min-height: 44px; }
 
@@ -232,8 +260,10 @@
     display: inline-flex; align-items: center; gap: .5em; padding: .35em .7em; border-radius: 999px;
   }
   .chip-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
-  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: blink 1.6s ease-in-out infinite; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  /* O ponto de severidade NÃO pisca. Movimento perpétuo sobre informação que a
+     pessoa está lendo é ruído, e é o clichê que faz uma página parecer gerada.
+     A cor já carrega o sinal. */
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .alert-time { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); }
   .alert-headline { font-family: var(--f-display); font-weight: 600; font-size: 1.5rem; line-height: 1.2; color: var(--heading); letter-spacing: -0.02em; }
   .alert-headline b { color: var(--critico); font-weight: 600; }
@@ -246,10 +276,9 @@
   .pulse-wrap { width: 100%; }
   .pulse-svg { width: 100%; height: 56px; display: block; }
   .pulse-base { fill: none; stroke: var(--vivo); stroke-width: 2; opacity: .28; stroke-linecap: round; stroke-linejoin: round; }
-  .pulse-scan { fill: none; stroke: var(--vivo); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: .10 .90; stroke-dashoffset: 0; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--vivo) 70%, transparent));
-    animation: sweep 3.1s linear infinite; }
-  @keyframes sweep { to { stroke-dashoffset: -1; } }
+  /* O traço que corria pelo ECG saiu: era decoração rodando para sempre, e o
+     próprio app abandonou a metáfora do batimento. Fica só o traçado parado. */
+  .pulse-scan { display: none; }
 
   /* ---------- Seções ---------- */
   .sec { padding-block: clamp(3.5rem, 8vw, 6rem); }
@@ -276,15 +305,17 @@
   /* vigia (monitor) */
   .watch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 2.6rem; }
   @media (max-width: 720px) { .watch-grid { grid-template-columns: 1fr; } }
-  .signal { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 20px 26px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-  .signal:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
-  /* barra de severidade na lateral esquerda, por tipo de sinal */
+  /* Hover responde na ARESTA, não levitando: card que sobe é a linguagem de
+     sombra que este sistema não usa. */
+  .signal { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 20px 26px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; transition: border-color .18s ease; }
+  .signal:hover { border-color: color-mix(in srgb, var(--vivo) 45%, var(--line)); }
+  /* barra de severidade na lateral esquerda, por tipo de sinal (parada: a cor
+     já é o sinal; pulsar para sempre só disputa a leitura) */
   .signal::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--line); }
-  .signal.sig-crit::before { background: var(--critico); animation: barbreath 2s ease-in-out infinite; }
+  .signal.sig-crit::before { background: var(--critico); }
   .signal.sig-warn::before { background: var(--alerta); }
   .signal.sig-ok::before { background: var(--vivo); }
   .signal.sig-ok { background: color-mix(in srgb, var(--vivo) 6%, var(--surface-2)); }
-  @keyframes barbreath { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
   .signal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .signal .sk { display: flex; flex-direction: column; gap: 2px; font-family: var(--f-display); font-weight: 600; font-size: .98rem; color: var(--ink); letter-spacing: -0.01em; }
   .signal .sk-tech { font-family: var(--f-mono); font-size: .58rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
@@ -293,7 +324,7 @@
   .sev-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
   .sev-warn { color: var(--alerta); background: color-mix(in srgb, var(--alerta) 15%, transparent); }
   .sev-ok { color: var(--pulse-ink); background: color-mix(in srgb, var(--vivo) 14%, transparent); }
-  .sev .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.6s ease-in-out infinite; }
+  .sev .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
   .watch-foot { margin-top: 1.6rem; font-family: var(--f-mono); font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
   .watch-foot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--critico); }
 
@@ -317,6 +348,15 @@
   .lista-form .btn { width: 100%; justify-content: center; margin-top: .2rem; }
   .lista-msg-ok { color: var(--pulse-ink); }
   .lista-msg-erro { color: var(--critico); }
+  /* INDICAÇÃO DE ESTADO: enquanto envia, o botão fica ocupado e a seta respira.
+     A animação existe SÓ durante o envio — some quando termina. */
+  .btn[aria-busy="true"] { opacity: .72; cursor: progress; }
+  .btn[aria-busy="true"] .btn-arrow { animation: respira 900ms ease-in-out infinite; }
+  @keyframes respira { 0%,100% { transform: translateX(0); opacity: 1; } 50% { transform: translateX(4px); opacity: .55; } }
+  /* DELIGHT (o único da página): a resposta do envio entra em vez de trocar de
+     texto no lugar. É raro e é o momento em que a pessoa espera algo. */
+  .cta-note.entrou { animation: nota-entra 280ms var(--saida) both; }
+  @keyframes nota-entra { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
 
   /* rodapé "de site grande": faixa escura própria, em colunas */
   .site-foot { background: var(--mata); color: #D8DAE0; padding-block: clamp(2.6rem, 6vw, 4rem) 26px; margin-top: clamp(3rem, 7vw, 5rem); }
@@ -388,6 +428,16 @@
   .faq-item summary .plus::before, .faq-item summary .plus::after { content: ""; position: absolute; inset: 50% 2px auto 2px; height: 2px; background: var(--pulse-ink); border-radius: 2px; transform: translateY(-50%); }
   .faq-item summary .plus::after { transform: translateY(-50%) rotate(90deg); transition: transform .2s ease; }
   .faq-item[open] summary .plus::after { transform: translateY(-50%) rotate(0deg); }
+  /* EVITAR MUDANÇA BRUSCA: a resposta cresce em vez de aparecer de estalo. O
+     `interpolate-size` é o que permite animar até `height:auto` sem medir nada
+     em JS; onde o navegador não suporta, a resposta simplesmente abre na hora —
+     degrada para o comportamento de hoje, sem quebrar. */
+  .faq-item::details-content {
+    height: 0; opacity: 0; overflow: hidden;
+    transition: height 260ms var(--saida), opacity 180ms ease-out, content-visibility 260ms allow-discrete;
+    transition-behavior: allow-discrete;
+  }
+  .faq-item[open]::details-content { height: auto; opacity: 1; }
   .faq-item .faq-body { padding: 0 22px 20px; color: var(--muted); font-size: .98rem; line-height: 1.6; }
 
   /* ---------- Aparecer ao rolar (só com JS; respeita reduced-motion) ---------- */
@@ -815,7 +865,7 @@
         <input class="lista-input" id="lista-nome" type="text" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome" required />
         <input class="lista-input" id="lista-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
         <input class="lista-input" id="lista-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" aria-label="Seu WhatsApp" maxlength="16" required />
-        <button class="btn btn-primary" type="submit">Quero minha simulação <span class="btn-arrow" aria-hidden="true">→</span></button>
+        <button class="btn btn-primary" id="lista-btn" type="submit">Quero minha simulação <span class="btn-arrow" aria-hidden="true">→</span></button>
       </form>
       <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Sem compromisso. Usamos seu contato só para te enviar a simulação e o aviso de lançamento.</p>
     </div>
@@ -1017,8 +1067,23 @@
     var msg = document.getElementById('lista-msg');
     if (!form || !email || !msg) return;
     ligarMascaraTelefone(tel);
+    var botao = document.getElementById('lista-btn');
     var enviando = false;
-    function mostra(texto, cls) { msg.textContent = texto; msg.className = 'cta-note ' + (cls || ''); }
+    /* Troca o texto E faz a linha entrar: reiniciar a animação exige tirar a
+       classe, forçar o reflow e recolocar — senão o navegador reaproveita a
+       anterior e nada se move na segunda tentativa. */
+    function mostra(texto, cls) {
+      msg.textContent = texto;
+      msg.className = 'cta-note ' + (cls || '');
+      void msg.offsetWidth;
+      msg.classList.add('entrou');
+    }
+    function ocupado(sim) {
+      enviando = sim;
+      if (!botao) return;
+      botao.setAttribute('aria-busy', sim ? 'true' : 'false');
+      botao.disabled = sim;
+    }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (enviando) return;
@@ -1027,7 +1092,7 @@
       if (vNome.length < 2) { mostra('Digite o seu nome.', 'lista-msg-erro'); nome.focus(); return; }
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(vEmail)) { mostra('Confira o e-mail e tente de novo.', 'lista-msg-erro'); email.focus(); return; }
       if (!telefoneValido(tel.value)) { mostra('Confira o WhatsApp com DDD e tente de novo.', 'lista-msg-erro'); tel.focus(); return; }
-      enviando = true;
+      ocupado(true);
       mostra('Enviando...', '');
       fetch(API, {
         method: 'POST',
@@ -1039,7 +1104,7 @@
         mostra('Pronto! A gente te envia a simulação e avisa quando o app abrir.', 'lista-msg-ok');
       }).catch(function () {
         mostra('Não consegui salvar agora. Tente de novo em instantes.', 'lista-msg-erro');
-      }).then(function () { enviando = false; });
+      }).then(function () { ocupado(false); });
     });
   })();
 </script>
