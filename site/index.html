@@ -212,7 +212,9 @@
 
   /* herói: a tela real do app numa moldura discreta */
   .hero-shot { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: rise .8s .12s cubic-bezier(.2,.7,.2,1) both; }
-  .hero-shot .phone { width: min(420px, 100%); flex: 0 0 auto; }
+  .hero-shot .phone { width: min(300px, 100%); flex: 0 0 auto; max-width: 100%; }
+  /* min-width:0 impede que a largura natural da imagem estique a coluna do grid */
+  .hero-copy, .hero-shot { min-width: 0; }
   .hero-shot-cap { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; color: var(--muted); }
   @media (max-width: 900px) { .hero-shot { align-items: flex-start; } }
 
@@ -444,14 +446,16 @@
   /* A moldura segue a PROPORÇÃO DA CAPTURA (436×526) — nada de recorte torto
      nem de moldura de celular fingindo um aparelho. */
   .phone {
-    width: 300px; flex: 0 0 300px; border-radius: 16px; background: #FFFFFF; padding: 7px;
+    width: 252px; flex: 0 0 252px; border-radius: 18px; background: #FFFFFF; padding: 7px;
     border: 1px solid var(--line); position: relative;
   }
   /* A moldura NÃO impõe proporção: ela se ajusta à altura da captura. Foi assim
      que sumiu o recorte torto — cada tela tem a altura que tem. */
   .phone .screen { border-radius: 10px; overflow: hidden; position: relative; display: block; background: #F5F4F2; }
     /* (o CSS das telas desenhadas a mao foi removido: agora sao capturas reais)
-  .phone .shot { display: block; width: 100%; height: auto; background: #F5F4F2; }
+  /* max-width segura a largura NATURAL da captura (780px), que senão estoura a
+     coluna do grid/flex e desmonta o herói. */
+  .phone .shot { display: block; width: 100%; max-width: 100%; height: auto; background: #F5F4F2; }
 
   /* ---------- Planos ---------- */
   .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 2.8rem; max-width: 1040px; align-items: stretch; }
@@ -560,7 +564,7 @@
       <figure class="hero-shot">
         <div class="phone">
           <div class="screen">
-            <img class="shot" src="img/app-painel.png" width="437" height="422" fetchpriority="high" decoding="async"
+            <img class="shot" src="img/app-painel.png" width="780" height="1688" fetchpriority="high" decoding="async"
                  alt="Painel do Ivo mostrando o caixa projetado para 30 dias, de onde vem o saldo e até quando o dinheiro dura." />
           </div>
         </div>
@@ -628,7 +632,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-alerta.png" width="437" height="430" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-alerta.png" width="780" height="1688" loading="lazy" decoding="async"
                    alt="Tela do Ivo: aviso 'Você está recebendo mais devagar', com o quadro 'de onde vem esse número' listando recebimento médio, atraso dos clientes e ciclo de caixa." />
             </div>
           </div>
@@ -638,7 +642,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-ia.png" width="437" height="390" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-ia.png" width="780" height="1688" loading="lazy" decoding="async"
                    alt="Tela do Ivo IA: perguntas como 'Quando meu caixa zera?', 'Quem me deve?' e 'Dá pra pagar as contas do mês?'." />
             </div>
           </div>
@@ -648,7 +652,7 @@
         <figure class="phone-fig">
           <div class="phone">
             <div class="screen">
-              <img class="shot" src="img/app-escada.png" width="437" height="490" loading="lazy" decoding="async"
+              <img class="shot" src="img/app-escada.png" width="780" height="1740" loading="lazy" decoding="async"
                    alt="Tela do Ivo: 'De onde vem esse número' — o saldo de hoje, o que entra a receber, o que sai a pagar e o custo fixo, degrau por degrau." />
             </div>
           </div>

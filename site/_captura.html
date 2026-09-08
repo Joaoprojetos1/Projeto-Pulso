@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex, nofollow" />
+<title>captura</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #F5F4F2; overflow: hidden; }
+  iframe { width: 390px; height: 844px; border: 0; display: block; }
+</style>
+</head>
+<body>
+<!--
+  ARQUIVO DE FERRAMENTA, não faz parte do site. Serve para gerar as capturas de
+  tela do app em site/img/ com o Chrome headless, num viewport de celular de
+  verdade (390x844) e em 2x. Roda o app real dentro do iframe, entra na
+  demonstração e navega até a tela pedida em ?tela=.
+  Use: chrome --headless --screenshot --window-size=390,844
+       --force-device-scale-factor=2 "http://localhost:PORTA/_captura.html?tela=painel"
+-->
+<iframe id="app" src="/app/boas-vindas"></iframe>
+<script>
+  const tela = new URLSearchParams(location.search).get('tela') || 'painel';
+  const frame = document.getElementById('app');
+
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function doc() { return frame.contentDocument; }
+
+  function clicar(texto) {
+    const d = doc();
+    if (!d) return false;
+    const alvos = [...d.querySelectorAll('div,span,button')].filter((e) => (e.textContent || '').trim() === texto);
+    const el = alvos[alvos.length - 1];
+    if (!el) return false;
+    const r = el.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    for (const t of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) {
+      el.dispatchEvent(new frame.contentWindow.MouseEvent(t, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+    }
+    return true;
+  }
+
+  /** O selo de demonstração é informação de tela, não de peça de marketing. */
+  function esconderSelo() {
+    const d = doc();
+    d.querySelectorAll('div,span').forEach((e) => {
+      const t = (e.textContent || '').trim();
+      if (t && /^DEMONSTRA..O\s*·\s*DADOS FICT/i.test(t) && t.length < 40) {
+        e.style.display = 'none';
+        if (e.parentElement && (e.parentElement.textContent || '').trim().length < 40) e.parentElement.style.display = 'none';
+      }
+    });
+  }
+
+  function semScrollbar() {
+    const d = doc();
+    const s = d.createElement('style');
+    s.textContent = '*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}*{scrollbar-width:none!important}';
+    d.head.appendChild(s);
+  }
+
+  /** Rola a área rolável da tela em N pixels. */
+  function rolarPara(px) {
+    const d = doc();
+    let scroller = null;
+    d.querySelectorAll('div').forEach((e) => { if (!scroller && e.scrollHeight > e.clientHeight + 20) scroller = e; });
+    if (scroller) scroller.scrollTop = px;
+  }
+
+  /**
+   * No headless o requestAnimationFrame não avança, e animações como a contagem
+   * do número principal congelam no início ("R$ 0"). Aqui o relógio de animação
+   * é acelerado: cada quadro salta 120ms, então tudo termina instantaneamente e
+   * a captura pega o estado FINAL da tela.
+   */
+  function acelerarAnimacoes() {
+    const w = frame.contentWindow;
+    let t = 0;
+    w.requestAnimationFrame = (cb) => { t += 120; return w.setTimeout(() => cb(t), 0); };
+    w.cancelAnimationFrame = (id) => w.clearTimeout(id);
+  }
+
+  (async () => {
+    await espera(2500);
+    acelerarAnimacoes();
+    frame.contentWindow.localStorage.clear();
+    await espera(500);
+    clicar('Ver o Ivo funcionando');
+    await espera(2500);
+    semScrollbar();
+    esconderSelo();
+
+    if (tela === 'escada') {
+      // Esta tela é mais alta que 844: capturamos com --window-size maior, para
+      // o cartão e a escada aparecerem inteiros, sem corte no meio.
+      clicar('Ver o detalhe da projeção →');
+      await espera(2000);
+    } else if (tela === 'alerta') {
+      clicar('Você está recebendo mais devagar');
+      await espera(2000);
+    } else if (tela === 'ia') {
+      clicar('Ivo IA');
+      await espera(1800);
+      clicar('Quando meu caixa zera?');
+      await espera(2000);
+    }
+
+    await espera(1200);
+    esconderSelo();
+    document.title = 'pronto';
+  })();
+</script>
+</body>
+</html>
