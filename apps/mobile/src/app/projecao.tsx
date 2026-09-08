@@ -16,7 +16,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EscadaCaixa } from '@/components/escada-caixa';
-import { ReguaFolego } from '@/components/regua-folego';
+import { LinhaTempoCaixa } from '@/components/linha-tempo-caixa';
 import type { CashProjectionPoint } from '@/lib/api';
 import { brl, brlInteiro, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
@@ -38,7 +38,6 @@ export default function Projecao() {
   const saldoInputs = (ind?.cash_balance?.inputs ?? {}) as Record<string, unknown>;
   const saldoObservadoEm = typeof saldoInputs.observedOn === 'string' ? saldoInputs.observedOn : null;
 
-  const curvaDiaria = dashboard?.projectionCurve ?? [];
   const composicao = dashboard?.projectionBreakdown ?? null;
 
   return (
@@ -63,8 +62,7 @@ export default function Projecao() {
                 : `Estimativa a partir do saldo de ${brl(saldoHoje)} que você informou.`}
           </Text>
 
-          <ReguaFolego
-            pontos={curvaDiaria}
+          <LinhaTempoCaixa
             zeroInDays={zeroInDays}
             zeroOn={zeroOn}
             saudavel={saudavel}
@@ -83,8 +81,8 @@ export default function Projecao() {
         )}
 
         <Text style={styles.dica}>
-          Cada traço da régua é um dia. A escada abre o mesmo número em partes: o que entra, o que
-          sai e o que o custo fixo consome.
+          A escada abre o mesmo número em partes: o que entra, o que sai e o que o custo fixo
+          consome no período.
         </Text>
       </ScrollView>
     </SafeAreaView>

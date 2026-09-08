@@ -26,7 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
-import { ReguaFolego } from '@/components/regua-folego';
+import { LinhaTempoCaixa } from '@/components/linha-tempo-caixa';
 import { WeeklyCard } from '@/components/weekly-card';
 import type { CashProjectionPoint } from '@/lib/api';
 import { toqueLeve } from '@/lib/haptic';
@@ -164,14 +164,9 @@ export default function Dashboard() {
   const receita = (ind.revenue_current?.value ?? null) as number | null;
   const receitaAnterior = (ind.revenue_previous?.value ?? null) as number | null;
 
-  // curva diária (item 14) quando o servidor manda; senão, os poucos pontos de sempre
-  const curvaDiaria = dashboard.projectionCurve ?? [];
-  const usaDiaria = curvaDiaria.length >= 2;
-  const curva = usaDiaria
-    ? curvaDiaria.map((p) => p.cents)
-    : [saldoHoje, ...(projecao ?? []).map((p) => p.projectedCents)].filter(
-        (v): v is number => typeof v === 'number',
-      );
+  // o painel não desenha mais a projeção (o herói é a linha do tempo); o detalhe
+  // só faz sentido quando há a composição ou os horizontes para mostrar lá
+  const temDetalhe = dashboard.projectionBreakdown != null || (projecao?.length ?? 0) > 0;
 
   const saudavel = !zeroOn;
 
@@ -323,8 +318,7 @@ export default function Dashboard() {
             </Text>
           )}
 
-          <ReguaFolego
-            pontos={curvaDiaria}
+          <LinhaTempoCaixa
             zeroInDays={zeroInDays}
             zeroOn={zeroOn}
             saudavel={saudavel}
@@ -338,7 +332,7 @@ export default function Dashboard() {
               {brl(plannedTotal)}
             </Text>
           )}
-          {curva.length >= 2 && (
+          {temDetalhe && (
             <Pressable
               onPress={() => router.push('/projecao' as Href)}
               style={({ pressed }) => [styles.verDetalhe, pressed && styles.pressionado]}
