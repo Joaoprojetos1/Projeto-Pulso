@@ -138,6 +138,13 @@ export default function Dashboard() {
   const saldoHoje = (ind.cash_balance?.value ?? null) as number | null;
   const zeroOn = projecao?.find((p) => p.zeroOn)?.zeroOn ?? null;
 
+  // data-base do saldo: quando ele foi observado e há quantos dias. Vem PRONTO
+  // do core (inputs do indicador) — o app não calcula idade de dado nenhuma.
+  const saldoInputs = (ind.cash_balance?.inputs ?? {}) as Record<string, unknown>;
+  const saldoObservadoEm = typeof saldoInputs.observedOn === 'string' ? saldoInputs.observedOn : null;
+  const saldoDiasAtras =
+    typeof saldoInputs.stalenessDays === 'number' ? saldoInputs.stalenessDays : null;
+
   // Fase 2: quantas contas previstas o servidor considerou na projeção (o app
   // só mostra o número que vem pronto — "de onde vem esse número").
   const projInputs = (ind.cash_projection?.inputs ?? {}) as Record<string, number | string | null>;
@@ -298,9 +305,22 @@ export default function Dashboard() {
           ) : (
             <Text style={styles.cashValor}>-</Text>
           )}
+          {/* De onde vem o número (pedido do especialista): a projeção é uma
+              ESTIMATIVA e o saldo tem uma data. Dizer as duas coisas é o que
+              torna a imprecisão honesta em vez de escondida. */}
           <Text style={styles.cashDetalhe}>
-            Hoje em caixa: {saldoHoje !== null ? brl(saldoHoje) : '·'}
+            {saldoHoje === null
+              ? 'Ainda sem saldo informado — a projeção fica mais firme quando o extrato entrar.'
+              : saldoObservadoEm
+                ? `Estimativa a partir do saldo de ${brl(saldoHoje)}, informado em ${dataBR(saldoObservadoEm)}.`
+                : `Estimativa a partir do saldo de ${brl(saldoHoje)} que você informou.`}
           </Text>
+          {saldoDiasAtras !== null && saldoDiasAtras >= 7 && (
+            <Text style={styles.cashVelho}>
+              Esse saldo é de {saldoDiasAtras} dias atrás. Envie um extrato novo para a projeção
+              acompanhar.
+            </Text>
+          )}
 
           <BarraFolego zeroInDays={zeroInDays} zeroOn={zeroOn} saudavel={saudavel} cor={diagCor} />
 
@@ -769,7 +789,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     fontVariant: ['tabular-nums'],
   },
-  cashDetalhe: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata },
+  cashDetalhe: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.papelSobreMata },
+  cashVelho: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.alerta, marginTop: 4 },
   cashPrevistas: {
     fontFamily: fonts.mono,
     fontSize: 10,

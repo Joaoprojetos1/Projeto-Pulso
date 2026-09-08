@@ -49,6 +49,7 @@ const SEGMENTOS: { id: string; label: string }[] = [
   { id: 'clinica', label: 'Clínica' },
   { id: 'varejo', label: 'Varejo de roupa' },
   { id: 'restaurante', label: 'Restaurante' },
+  { id: 'geral', label: 'Outro tipo de negócio' },
 ];
 const SEGMENT_LABEL: Record<string, string> = Object.fromEntries(SEGMENTOS.map((s) => [s.id, s.label]));
 

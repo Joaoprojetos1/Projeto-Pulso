@@ -33,7 +33,7 @@ const PARADO = 10; // dias sem dado a partir dos quais a bolinha fica amarela
 type Filtro = 'todos' | 'assinantes' | 'pendentes' | 'sem_dados';
 
 const SEGMENT_LABEL: Record<string, string> = {
-  clinica: 'Clínica', varejo: 'Varejo', restaurante: 'Restaurante',
+  clinica: 'Clínica', varejo: 'Varejo', restaurante: 'Restaurante', geral: 'Outro',
 };
 
 export default function Operacao() {

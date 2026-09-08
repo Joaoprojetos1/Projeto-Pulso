@@ -29,6 +29,8 @@ export type Fonte = 'servidor' | 'demo';
 
 const CHAVE_TOKEN = 'pulso.token';
 const CHAVE_CACHE = 'pulso.cache.dashboard';
+/** Em que passo da esteira do onboarding o dono parou (null = não está no meio). */
+const CHAVE_ONBOARDING = 'pulso.onboarding.passo';
 
 interface PulsoState {
   dashboard: DashboardJson | null;
@@ -55,6 +57,17 @@ interface PulsoState {
   cadastroCompleto: boolean | null;
   /** Marca o cadastro como completo na hora (otimista), ao concluir o onboarding. */
   marcarCadastroCompleto: () => void;
+  /**
+   * Passo da esteira do onboarding onde o dono parou (null = não está no meio
+   * dela). Fica no aparelho: quem fecha o app depois do CNPJ e volta amanhã
+   * retoma de onde parou, em vez de cair direto na tela de planos e pular o
+   * diagnóstico e a demonstração.
+   */
+  onboardingPasso: number | null;
+  /** Guarda o passo atual (o onboarding chama a cada avanço). */
+  salvarOnboardingPasso: (passo: number) => void;
+  /** Esteira concluída: esquece o passo guardado. */
+  concluirOnboarding: () => void;
   /** O dashboard na tela veio do cache local (offline); o refresh ainda não substituiu. */
   mostrandoCache: boolean;
   /** Assinatura do dono logado (null = ainda não carregou / demo). */
@@ -87,6 +100,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   const [cadastroCompleto, setCadastroCompleto] = useState<boolean | null>(null);
   const [mostrandoCache, setMostrandoCache] = useState(false);
   const [assinatura, setAssinatura] = useState<MySubscription | null>(null);
+  const [onboardingPasso, setOnboardingPasso] = useState<number | null>(null);
 
   // ref para o carregar() sempre enxergar o token atual sem recriar a função
   const tokenRef = useRef<string | null>(null);
@@ -107,11 +121,24 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     setCadastroCompleto(null);
     setMostrandoCache(false);
     setAssinatura(null);
-    await AsyncStorage.multiRemove([CHAVE_TOKEN, CHAVE_CACHE]);
+    setOnboardingPasso(null);
+    await AsyncStorage.multiRemove([CHAVE_TOKEN, CHAVE_CACHE, CHAVE_ONBOARDING]);
   }, []);
 
   /** Otimista: ao concluir o cadastro no onboarding, libera as abas na hora. */
   const marcarCadastroCompleto = useCallback(() => setCadastroCompleto(true), []);
+
+  const salvarOnboardingPasso = useCallback((passo: number) => {
+    setOnboardingPasso(passo);
+    void AsyncStorage.setItem(CHAVE_ONBOARDING, String(passo)).catch(() => {
+      // retomar é conforto: se o aparelho não deixar guardar, o fluxo segue igual
+    });
+  }, []);
+
+  const concluirOnboarding = useCallback(() => {
+    setOnboardingPasso(null);
+    void AsyncStorage.removeItem(CHAVE_ONBOARDING).catch(() => {});
+  }, []);
 
   /** Re-consulta a assinatura (o "Já paguei, atualizar" chama isto). */
   const atualizarAssinatura = useCallback(async (): Promise<MySubscription | null> => {
@@ -239,6 +266,15 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
         if (vivo && salvo) {
           tokenRef.current = salvo;
           setToken(salvo);
+          // onde ele parou na esteira (se parou) — lido antes do painel, porque
+          // é isto que decide para onde o gate manda quem ainda não assinou
+          try {
+            const passoSalvo = await AsyncStorage.getItem(CHAVE_ONBOARDING);
+            const n = passoSalvo ? Number(passoSalvo) : NaN;
+            if (vivo && Number.isFinite(n)) setOnboardingPasso(n);
+          } catch {
+            // sem passo guardado: a esteira começa do início
+          }
           // mostra o último dashboard conhecido NA HORA — app financeiro não abre vazio
           try {
             const bruto = await AsyncStorage.getItem(CHAVE_CACHE);
@@ -283,6 +319,9 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       logado,
       cadastroCompleto,
       marcarCadastroCompleto,
+      onboardingPasso,
+      salvarOnboardingPasso,
+      concluirOnboarding,
       mostrandoCache,
       assinatura,
       atualizarAssinatura,
@@ -304,6 +343,9 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
       logado,
       cadastroCompleto,
       marcarCadastroCompleto,
+      onboardingPasso,
+      salvarOnboardingPasso,
+      concluirOnboarding,
       mostrandoCache,
       assinatura,
       atualizarAssinatura,

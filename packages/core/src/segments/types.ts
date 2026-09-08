@@ -16,6 +16,21 @@ import type { AlertFact, Indicator, IndicatorSet, MonthlyOperation } from '../ty
 /** Segmentos com pacote implementado. Empresa fora desta lista roda só o núcleo. */
 export type SegmentId = 'clinica' | 'varejo' | 'restaurante';
 
+/**
+ * Segmento GENÉRICO. A lista que o dono vê é FECHADA (decisão do especialista),
+ * mas com uma saída honesta: quem não é de nenhum dos segmentos com pacote
+ * escolhe este e roda **só o núcleo universal** — caixa, margem, recebimento,
+ * ciclo, os 10 a 12 indicadores que valem para qualquer negócio.
+ *
+ * De propósito NÃO é um `SegmentId`: não existe pacote `geral`, e é isso que
+ * garante que nenhum indicador de setor apareça para quem escolheu genérico.
+ */
+export const GENERIC_NICHE = 'geral';
+export const GENERIC_NICHE_LABEL = 'Outro tipo de negócio';
+
+/** O que pode ser gravado em `companies.niche`: um segmento com pacote ou o genérico. */
+export type Niche = SegmentId | typeof GENERIC_NICHE;
+
 /** Unidade do número operacional que o dono digita no formulário mensal. */
 export type OpsUnit =
   | 'cents' // dinheiro, sempre em centavos inteiros

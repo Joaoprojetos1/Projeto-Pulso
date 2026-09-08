@@ -9,7 +9,7 @@
  * Sem cálculo: é cadastro. NENHUMA conta financeira aqui.
  */
 
-import { isSegmentId } from '@pulso/core';
+import { isKnownNiche } from '@pulso/core';
 import type { FastifyInstance } from 'fastify';
 
 import { companyFromRequest } from '../auth';
@@ -119,7 +119,8 @@ export function registerCompany(app: FastifyInstance, sql: Sql, cnpjDeps: Lookup
       const company = await companyFromRequest(sql, req);
       if (!company) return reply.code(401).send({ error: 'Faça login.' });
 
-      if (req.body.niche != null && !isSegmentId(req.body.niche)) {
+      // lista FECHADA: os segmentos com pacote + o genérico (que roda só o núcleo)
+      if (req.body.niche != null && !isKnownNiche(req.body.niche)) {
         return reply.code(422).send({ error: 'Segmento não suportado.' });
       }
       if (req.body.cnpj != null && !isValidCnpj(req.body.cnpj)) {

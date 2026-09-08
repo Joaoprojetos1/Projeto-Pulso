@@ -76,10 +76,20 @@ const P_DEMO = 6;
 const P_PLANO = 7;
 const P_ARQUIVOS = 8;
 
+/**
+ * Lista FECHADA (decisão do especialista), com uma saída honesta: quem não é de
+ * nenhum dos três escolhe "Outro tipo de negócio" e recebe os indicadores
+ * universais — nunca os de um setor que não é o dele.
+ */
 const SEGMENTOS: Array<{ id: string; label: string; desc: string }> = [
   { id: 'clinica', label: 'Clínica / consultório', desc: 'Saúde, convênios, agenda' },
   { id: 'varejo', label: 'Varejo de roupa', desc: 'Loja, estoque, vendas' },
   { id: 'restaurante', label: 'Restaurante', desc: 'Salão, delivery, insumos' },
+  {
+    id: 'geral',
+    label: 'Outro tipo de negócio',
+    desc: 'Caixa, margem, recebimento e os demais indicadores que valem para qualquer negócio',
+  },
 ];
 
 const FINALIDADES: Array<{
@@ -169,8 +179,27 @@ function cnpjValido(raw: string): boolean {
 }
 
 export default function Onboarding() {
-  const { token, carregar, marcarCadastroCompleto, assinatura, sair } = usePulso();
-  const [passo, setPasso] = useState(P_CNPJ);
+  const {
+    token,
+    carregar,
+    marcarCadastroCompleto,
+    assinatura,
+    sair,
+    onboardingPasso,
+    salvarOnboardingPasso,
+    concluirOnboarding,
+  } = usePulso();
+  // retoma de onde parou (o passo fica guardado no aparelho); começa no CNPJ.
+  const [passo, definirPasso] = useState(() => {
+    const salvo = onboardingPasso ?? P_CNPJ;
+    return salvo >= P_CNPJ && salvo <= P_ARQUIVOS ? salvo : P_CNPJ;
+  });
+
+  /** Avança (ou volta) na esteira guardando o passo, para poder retomar depois. */
+  function setPasso(n: number) {
+    definirPasso(n);
+    salvarOnboardingPasso(n);
+  }
   const testMode = useModoTeste();
   // fallback: quando a consulta pública do CNPJ falha, libera seguir à mão SEM
   // furar a exigência (só aparece com um CNPJ válido já digitado).
@@ -265,6 +294,7 @@ export default function Onboarding() {
   }
 
   function irParaPainel() {
+    concluirOnboarding(); // esteira cumprida: não retomar mais
     void carregar();
     router.replace('/(tabs)');
   }

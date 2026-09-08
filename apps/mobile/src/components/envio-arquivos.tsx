@@ -38,9 +38,9 @@ const TIPOS: Array<{ id: DocType; label: string; hint: string }> = [
   { id: 'inventory', label: 'Relatório de estoque', hint: 'Estoque / giro' },
   { id: 'management', label: 'Relatório gerencial', hint: 'Faturamento, movimento' },
   { id: 'services', label: 'Relatório de serviços', hint: 'Atendimentos / agenda' },
-  { id: 'accounting', label: 'Documento contábil', hint: 'Balanço, DRE, balancete' },
+  { id: 'accounting', label: 'Informações contábeis', hint: 'Balancete, DRE, balanço' },
   { id: 'payroll', label: 'Folha de pagamento', hint: 'Salários e encargos (custo fixo)' },
-  { id: 'other', label: 'Outro', hint: 'O motor avalia se é útil' },
+  { id: 'other', label: 'Outros', hint: 'Para o que não se encaixa nos tipos acima' },
 ];
 
 const TIPO_LABEL: Record<string, string> = Object.fromEntries(TIPOS.map((t) => [t.id, t.label]));

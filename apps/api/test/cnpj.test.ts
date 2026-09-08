@@ -227,4 +227,47 @@ describe('CNPJ — consulta com fallback + cache + rota', () => {
 
     await app.close();
   });
+
+  it('lista fechada de segmentos: aceita o genérico, recusa o que está fora', async () => {
+    const app = buildApp(sql, { cnpjLookup: { fetcher: makeFetcher(true) } });
+    await app.ready();
+
+    const signup = await app.inject({
+      method: 'POST',
+      url: '/auth/signup',
+      payload: {
+        email: 'generico@cnpj.teste',
+        password: 'senha-forte-123',
+        businessName: 'Negócio de Outro Tipo',
+        phone: '(11) 99999-6666',
+      },
+    });
+    const auth = { authorization: `Bearer ${signup.json().token as string}` };
+
+    // genérico: grava (a empresa passa a rodar só o núcleo universal)
+    const ok = await app.inject({
+      method: 'PATCH',
+      url: '/me/company',
+      headers: auth,
+      payload: { niche: 'geral', cnpj: '11.444.777/0001-61' },
+    });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json().company.niche).toBe('geral');
+
+    // o painel dessa empresa não traz segmento nenhum (nada de setor vaza)
+    const dash = await app.inject({ method: 'GET', url: '/me/dashboard', headers: auth });
+    expect(dash.statusCode).toBe(200);
+    expect(dash.json().dashboard?.segment ?? null).toBeNull();
+
+    // fora da lista: 422
+    const fora = await app.inject({
+      method: 'PATCH',
+      url: '/me/company',
+      headers: auth,
+      payload: { niche: 'padaria' },
+    });
+    expect(fora.statusCode).toBe(422);
+
+    await app.close();
+  });
 });

@@ -13,6 +13,8 @@ export const SEGMENT_LABEL: Record<string, string> = {
   clinica: 'Clínica',
   varejo: 'Varejo de roupa',
   restaurante: 'Restaurante',
+  // genérico: sem pacote de setor, roda só o núcleo universal
+  geral: 'Outro tipo de negócio',
 };
 
 /** Rótulo curto de cada indicador de segmento (linguagem de dono). */

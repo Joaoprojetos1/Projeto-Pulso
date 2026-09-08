@@ -6,17 +6,23 @@ import { usePulso } from '@/lib/pulso-context';
 import { colors, fonts } from '@/theme';
 
 export default function TabsLayout() {
-  const { ehAdmin, assinatura, fonte, logado, cadastroCompleto } = usePulso();
+  const { ehAdmin, assinatura, fonte, logado, cadastroCompleto, onboardingPasso } = usePulso();
 
   // O reset de navegação por logout vive no AuthGate (raiz). Aqui fica só o gate
-  // da assinatura: quem está logado e PENDENTE não usa as abas — cai na tela
-  // de planos. Fail-open: só bloqueia com 'pendente' explícito (erro, carregando,
-  // ativa e demonstração passam, para nunca trancar quem já é ativo).
+  // da assinatura: quem está logado e PENDENTE não usa as abas. Fail-open: só
+  // bloqueia com 'pendente' explícito (erro, carregando, ativa e demonstração
+  // passam, para nunca trancar quem já é ativo).
+  //
+  // PARA ONDE ele vai: quem parou no MEIO da esteira volta para o onboarding e
+  // retoma de onde estava (senão pularia o diagnóstico e a demonstração e cairia
+  // direto no preço, que é o contrário do combinado). Quem já percorreu tudo cai
+  // na tela de planos.
   useEffect(() => {
     if (logado && fonte === 'servidor' && assinatura?.status === 'pendente') {
-      router.replace('/assinar' as Href);
+      const noMeioDaEsteira = onboardingPasso != null && onboardingPasso < 8;
+      router.replace((noMeioDaEsteira ? '/onboarding' : '/assinar') as Href);
     }
-  }, [logado, fonte, assinatura?.status]);
+  }, [logado, fonte, assinatura?.status, onboardingPasso]);
 
   // TRANCA DO ONBOARDING OBRIGATÓRIO (Bloco 1): sem o cadastro da empresa (CNPJ +
   // segmento) o dono não usa as abas — vai para o onboarding. Ponto único de

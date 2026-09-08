@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { computeAll } from '../indicators';
 import { evaluate } from '../rules';
 import { op, snapshot } from '../testkit';
-import { getSegment, listSegments, segmentCoverage, segmentRules } from './index';
+import { GENERIC_NICHE, getSegment, isKnownNiche, listSegments, nicheLabel, segmentCoverage, segmentRules } from './index';
 
 // Atalhos de leitura
 const ind = (snap: Parameters<typeof computeAll>[0]) => computeAll(snap);
@@ -29,6 +29,29 @@ describe('composição núcleo + segmento', () => {
   it('os 3 segmentos estão registrados', () => {
     expect(listSegments().map((s) => s.id).sort()).toEqual(['clinica', 'restaurante', 'varejo']);
     expect(getSegment('padaria')).toBeNull();
+  });
+
+  it('lista fechada: aceita os 3 pacotes e o genérico, recusa o resto', () => {
+    for (const n of ['clinica', 'varejo', 'restaurante', GENERIC_NICHE]) {
+      expect(isKnownNiche(n)).toBe(true);
+    }
+    expect(isKnownNiche('padaria')).toBe(false);
+    expect(isKnownNiche(null)).toBe(false);
+    expect(isKnownNiche('')).toBe(false);
+  });
+
+  it('genérico não é pacote: tem rótulo, mas roda só o núcleo', () => {
+    expect(nicheLabel(GENERIC_NICHE)).toBe('Outro tipo de negócio');
+    expect(nicheLabel('clinica')).toBe('Clínica');
+    expect(nicheLabel('padaria')).toBeNull();
+    // nenhum indicador, campo ou regra de setor vaza para quem escolheu o genérico
+    expect(getSegment(GENERIC_NICHE)).toBeNull();
+    expect(segmentRules(GENERIC_NICHE)).toEqual([]);
+    expect(segmentCoverage(GENERIC_NICHE, new Set())).toEqual([]);
+    const set = ind(snapshot({ asOf: '2026-06-30', niche: GENERIC_NICHE }));
+    expect(Object.keys(set).some((k) => k.startsWith('clinica_') || k.startsWith('varejo_') || k.startsWith('restaurante_'))).toBe(false);
+    expect(set.cash_projection).toBeDefined();
+    expect(set.contribution_margin).toBeDefined();
   });
 });
 

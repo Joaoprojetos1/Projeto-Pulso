@@ -130,7 +130,7 @@ export function registerAdmin(
             planId: { type: 'string', minLength: 1, maxLength: 40 },
             subscriptionStatus: { enum: ['pendente', 'ativa', 'cancelada'] },
             // trocar o SEGMENTO muda os indicadores calculados (o front avisa disso)
-            niche: { enum: ['clinica', 'varejo', 'restaurante'] },
+            niche: { enum: ['clinica', 'varejo', 'restaurante', 'geral'] },
           },
         },
       },

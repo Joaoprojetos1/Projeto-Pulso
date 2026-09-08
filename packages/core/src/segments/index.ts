@@ -10,7 +10,15 @@ import type { CompanySnapshot, Indicator, IndicatorSet } from '../types';
 import { clinica } from './clinica';
 import { restaurante } from './restaurante';
 import { varejo } from './varejo';
-import type { SegmentField, SegmentId, SegmentPackage, SegmentRule } from './types';
+import {
+  GENERIC_NICHE,
+  GENERIC_NICHE_LABEL,
+  type Niche,
+  type SegmentField,
+  type SegmentId,
+  type SegmentPackage,
+  type SegmentRule,
+} from './types';
 
 export * from './types';
 export { clinica, CLINICA_THRESHOLDS } from './clinica';
@@ -22,6 +30,21 @@ export const SEGMENTS: Record<SegmentId, SegmentPackage> = { clinica, varejo, re
 
 export function isSegmentId(niche: string | undefined | null): niche is SegmentId {
   return niche === 'clinica' || niche === 'varejo' || niche === 'restaurante';
+}
+
+/**
+ * Aceito no cadastro da empresa: um segmento com pacote OU o genérico. A lista
+ * é fechada — nada fora daqui entra em `companies.niche`. O genérico não tem
+ * pacote, então `getSegment` devolve null e a empresa roda só o núcleo.
+ */
+export function isKnownNiche(niche: string | undefined | null): niche is Niche {
+  return isSegmentId(niche) || niche === GENERIC_NICHE;
+}
+
+/** Rótulo do que o dono escolheu, inclusive o genérico (que não tem pacote). */
+export function nicheLabel(niche: string | undefined | null): string | null {
+  if (niche === GENERIC_NICHE) return GENERIC_NICHE_LABEL;
+  return getSegment(niche)?.label ?? null;
 }
 
 /** O pacote do segmento da empresa, ou null (só núcleo). */
