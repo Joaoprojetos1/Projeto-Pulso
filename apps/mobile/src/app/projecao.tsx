@@ -1,10 +1,13 @@
 /**
- * Detalhe da projeção de caixa: o gráfico completo (com scrubbing — arrastar o
- * dedo mostra data e valor de cada dia) e a leitura de risco. É o "ver o detalhe"
- * que saiu do painel: lá o herói virou a barra de fôlego; aqui fica o instrumento.
+ * Detalhe da projeção de caixa. É a leitura de UM MINUTO (o painel dá a de um
+ * segundo): o cartão com o número, a régua dos 90 dias em tamanho maior e a
+ * ESCADA — de onde vem esse número, degrau por degrau.
  *
- * App burro: só desenha a curva que o servidor já calculou. Nenhum número nasce
- * aqui — a curva, os horizontes e a data de risco vêm do snapshot.
+ * O gráfico de linha com scrubbing saiu daqui de propósito: ele mostrava QUE o
+ * caixa cai; a escada mostra POR QUE, que é sobre o que o dono consegue agir.
+ *
+ * App burro: só desenha o que o servidor já calculou. Nenhum número nasce aqui —
+ * a curva, os horizontes, a data de risco e a composição vêm do snapshot.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -12,7 +15,8 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PulseLine } from '@/components/pulse-line';
+import { EscadaCaixa } from '@/components/escada-caixa';
+import { ReguaFolego } from '@/components/regua-folego';
 import type { CashProjectionPoint } from '@/lib/api';
 import { brl, brlInteiro, dataBR } from '@/lib/format';
 import { usePulso } from '@/lib/pulso-context';
@@ -28,14 +32,14 @@ export default function Projecao() {
   const saudavel = !zeroOn;
   const p30 = projecao?.find((p) => p.horizonDays === 30) ?? null;
 
+  const projInputs = (ind?.cash_projection?.inputs ?? {}) as Record<string, unknown>;
+  const zeroInDays = typeof projInputs.zeroInDays === 'number' ? projInputs.zeroInDays : null;
+
+  const saldoInputs = (ind?.cash_balance?.inputs ?? {}) as Record<string, unknown>;
+  const saldoObservadoEm = typeof saldoInputs.observedOn === 'string' ? saldoInputs.observedOn : null;
+
   const curvaDiaria = dashboard?.projectionCurve ?? [];
-  const usaDiaria = curvaDiaria.length >= 2;
-  const curva = usaDiaria
-    ? curvaDiaria.map((p) => p.cents)
-    : [saldoHoje, ...(projecao ?? []).map((p) => p.projectedCents)].filter(
-        (v): v is number => typeof v === 'number',
-      );
-  const curvaDatas = usaDiaria ? curvaDiaria.map((p) => p.day) : undefined;
+  const composicao = dashboard?.projectionBreakdown ?? null;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -51,39 +55,37 @@ export default function Projecao() {
         <View style={styles.cartao}>
           <Text style={styles.rotulo}>CAIXA PROJETADO · 30 DIAS</Text>
           <Text style={styles.valor}>{p30 ? brlInteiro(p30.projectedCents) : '·'}</Text>
-          <Text style={styles.detalhe}>Hoje em caixa: {saldoHoje !== null ? brl(saldoHoje) : '·'}</Text>
+          <Text style={styles.detalhe}>
+            {saldoHoje === null
+              ? 'Ainda sem saldo informado.'
+              : saldoObservadoEm
+                ? `Estimativa a partir do saldo de ${brl(saldoHoje)}, informado em ${dataBR(saldoObservadoEm)}.`
+                : `Estimativa a partir do saldo de ${brl(saldoHoje)} que você informou.`}
+          </Text>
 
-          {curva.length >= 2 ? (
-            <>
-              <PulseLine
-                points={curva}
-                dates={curvaDatas}
-                height={130}
-                color={saudavel ? colors.vivoSobreEscuro : '#F0A196'}
-              />
-              <View style={styles.legenda}>
-                {['hoje', ...(projecao ?? []).map((p) => `+${p.horizonDays}d`)]
-                  .slice(0, curva.length)
-                  .map((r) => (
-                    <Text key={r} style={styles.legendaTexto}>
-                      {r}
-                    </Text>
-                  ))}
-              </View>
-            </>
-          ) : (
-            <Text style={styles.semDados}>Ainda não há projeção para desenhar.</Text>
-          )}
-
-          {!saudavel && zeroOn && (
-            <View style={styles.pontoRisco}>
-              <View style={styles.pontoRiscoBolha} />
-              <Text style={styles.pontoRiscoTexto}>ponto de risco: {dataBR(zeroOn)}</Text>
-            </View>
-          )}
+          <ReguaFolego
+            pontos={curvaDiaria}
+            zeroInDays={zeroInDays}
+            zeroOn={zeroOn}
+            saudavel={saudavel}
+            cor={saudavel ? colors.vivoSobreEscuro : '#F0A196'}
+          />
         </View>
 
-        <Text style={styles.dica}>Arraste o dedo pela linha para ver a data e o valor de cada dia.</Text>
+        {composicao ? (
+          <View style={styles.folha}>
+            <EscadaCaixa dados={composicao} />
+          </View>
+        ) : (
+          <Text style={styles.semDados}>
+            Ainda não dá para abrir a composição: falta o saldo do caixa para o motor projetar.
+          </Text>
+        )}
+
+        <Text style={styles.dica}>
+          Cada traço da régua é um dia. A escada abre o mesmo número em partes: o que entra, o que
+          sai e o que o custo fixo consome.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -109,12 +111,15 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     fontVariant: ['tabular-nums'],
   },
-  detalhe: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata, marginBottom: 4 },
-  legenda: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6, marginTop: 2 },
-  legendaTexto: { fontFamily: fonts.mono, fontSize: 9, letterSpacing: 0.5, color: colors.rotuloSobreMata },
-  semDados: { fontFamily: fonts.corpo, fontSize: 13, color: colors.papelSobreMata, marginTop: space.tight },
-  pontoRisco: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.tight },
-  pontoRiscoBolha: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F0A196' },
-  pontoRiscoTexto: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 0.4, color: '#F0A196' },
-  dica: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.cinza, textAlign: 'center' },
+  detalhe: { fontFamily: fonts.corpo, fontSize: 13, lineHeight: 19, color: colors.papelSobreMata, marginBottom: 4 },
+  folha: {
+    backgroundColor: colors.branco,
+    borderWidth: 1,
+    borderColor: colors.linha,
+    borderRadius: 18,
+    padding: 18,
+    marginTop: space.tight,
+  },
+  semDados: { fontFamily: fonts.corpo, fontSize: 13.5, lineHeight: 20, color: colors.cinza, marginTop: space.item },
+  dica: { fontFamily: fonts.corpo, fontSize: 12.5, lineHeight: 18, color: colors.cinza, textAlign: 'center', marginTop: space.tight },
 });

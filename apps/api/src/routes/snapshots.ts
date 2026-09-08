@@ -1,6 +1,7 @@
 import {
   addDays,
   allowedClaims,
+  cashProjectionBreakdown,
   claimEvidenceFromSnapshot,
   compareToMarket,
   computeAll,
@@ -272,6 +273,12 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
       ]
     : [];
 
+  // COMPOSIÇÃO da projeção de 30 dias (a "escada"): de onde vem o número — o que
+  // entra de recebíveis, o que sai de contas e custo fixo, o que as previstas
+  // mexem. Calculada no core (breakdown.ts) e conferida por teste contra a
+  // própria projeção; o app só desenha os degraus que chegam prontos.
+  const projectionBreakdown = cashProjectionBreakdown(snapCurva, 30);
+
   // MOTOR LÊ O CADASTRO (item 3.2): os sistemas declarados entram como contexto.
   // Quando o dono DECLARA não ter um sistema (formato 'none'), os indicadores que
   // dependem daquele dado nascem "não calculáveis POR DECLARAÇÃO", com o motivo —
@@ -355,8 +362,10 @@ export async function buildDashboard(sql: Sql, company: CompanyRow) {
     diagnosis: snapshot.diagnosis ?? null,
     // resumo da semana (null quando não há snapshot anterior de >= 5 dias)
     weeklySummary: snapshot.weekly_summary ?? null,
-    // curva diária da projeção, para o gráfico interativo (scrubbing) do app
+    // curva diária da projeção, para a régua dos 90 dias no painel
     projectionCurve,
+    // composição da projeção de 30 dias (a escada do "por que o caixa cai")
+    projectionBreakdown,
     // o que ainda não dá para avaliar e o que fazer (informação faltante)
     recommendations: recRows.map((r) => ({
       claimType: r.claim_type,

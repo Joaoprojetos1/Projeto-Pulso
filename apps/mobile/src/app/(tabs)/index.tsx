@@ -26,6 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountUpMoney } from '@/components/count-up-money';
 import { PulsoLogo } from '@/components/logo';
+import { ReguaFolego } from '@/components/regua-folego';
 import { WeeklyCard } from '@/components/weekly-card';
 import type { CashProjectionPoint } from '@/lib/api';
 import { toqueLeve } from '@/lib/haptic';
@@ -322,7 +323,13 @@ export default function Dashboard() {
             </Text>
           )}
 
-          <BarraFolego zeroInDays={zeroInDays} zeroOn={zeroOn} saudavel={saudavel} cor={diagCor} />
+          <ReguaFolego
+            pontos={curvaDiaria}
+            zeroInDays={zeroInDays}
+            zeroOn={zeroOn}
+            saudavel={saudavel}
+            cor={diagCor}
+          />
 
           {plannedCount > 0 && (
             <Text style={styles.cashPrevistas}>
@@ -540,44 +547,6 @@ function PrimeirosPassos({ passos }: { passos: Passo[] }) {
           ))}
         </View>
       )}
-    </View>
-  );
-}
-
-/**
- * Barra de fôlego (autonomia do caixa). É o herói de leitura do painel: numa
- * ponta "hoje", na outra a data de risco, preenchida na cor de severidade, com a
- * frase por cima em linguagem de dono. Não cria número: os dias de autonomia
- * (zeroInDays) e a data (zeroOn) vêm calculados do core no snapshot.
- */
-function BarraFolego({
-  zeroInDays,
-  zeroOn,
-  saudavel,
-  cor,
-}: {
-  zeroInDays: number | null;
-  zeroOn: string | null;
-  saudavel: boolean;
-  cor: string;
-}) {
-  const HORIZONTE = 90; // janela da projeção; só define a escala visual da barra
-  const prop = saudavel || zeroInDays === null ? 1 : Math.max(0.06, Math.min(zeroInDays / HORIZONTE, 1));
-  const frase =
-    saudavel || zeroOn === null
-      ? 'Seu caixa está saudável. Sem risco à vista nos próximos 90 dias.'
-      : `Seu caixa aguenta até ${dataBR(zeroOn)}${zeroInDays !== null ? `, ${dias(zeroInDays)}` : ''}.`;
-  const fim = saudavel || zeroOn === null ? '+90 dias' : dataBR(zeroOn);
-  return (
-    <View style={styles.folego}>
-      <Text style={styles.folegoFrase}>{frase}</Text>
-      <View style={styles.folegoTrilha}>
-        <View style={[styles.folegoCheia, { width: `${prop * 100}%`, backgroundColor: cor }]} />
-      </View>
-      <View style={styles.folegoPontas}>
-        <Text style={styles.folegoPonta}>hoje</Text>
-        <Text style={styles.folegoPonta}>{fim}</Text>
-      </View>
     </View>
   );
 }
@@ -807,12 +776,7 @@ const styles = StyleSheet.create({
   cashTend: { fontFamily: fonts.corpoMedio, fontSize: 11 },
 
   // barra de fôlego (autonomia): meio grupo de respiro acima do texto do caixa
-  folego: { marginTop: space.tight, gap: space.tight },
-  folegoFrase: { fontFamily: fonts.corpoForte, fontSize: 14, lineHeight: 20, color: colors.papel },
-  folegoTrilha: { height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.14)', overflow: 'hidden' },
-  folegoCheia: { height: '100%', borderRadius: 6 },
-  folegoPontas: { flexDirection: 'row', justifyContent: 'space-between' },
-  folegoPonta: { fontFamily: fonts.mono, fontSize: 9.5, letterSpacing: 0.4, color: colors.rotuloSobreMata },
+  // a régua do fôlego mora em components/regua-folego.tsx (estilos próprios)
   verDetalhe: { marginTop: space.tight, alignSelf: 'flex-start' },
   verDetalheTexto: { fontFamily: fonts.corpoMedio, fontSize: 13, color: colors.papelSobreMata },
   momentoLinha: {

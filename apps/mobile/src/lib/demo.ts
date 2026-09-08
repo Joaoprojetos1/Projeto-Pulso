@@ -13,6 +13,39 @@
 
 import type { DashboardJson } from './api';
 
+/**
+ * Curva diária FICTÍCIA do exemplo, para a régua do fôlego aparecer na
+ * demonstração como aparece de verdade. Ancorada nos mesmos números do resto
+ * deste arquivo (4.800.000 hoje → 6.100.000 em 30d → 7.400.000 em 60d →
+ * 8.800.000 em 90d), com o vaivém de quem paga contas no começo do mês.
+ *
+ * NÃO é cálculo de produto: é a construção de um dado de mentira, rotulado como
+ * demonstração na tela. Na conta real, a curva vem pronta do motor.
+ */
+function curvaExemplo(): { day: string; cents: number }[] {
+  const ancoras = [
+    { dia: 0, cents: 4_800_000 },
+    { dia: 30, cents: 6_100_000 },
+    { dia: 60, cents: 7_400_000 },
+    { dia: 90, cents: 8_800_000 },
+  ];
+  const base = new Date('2026-07-15T12:00:00Z');
+  const pontos: { day: string; cents: number }[] = [];
+  for (let d = 0; d <= 90; d++) {
+    const fim = ancoras.find((a) => a.dia >= d) ?? ancoras[ancoras.length - 1]!;
+    const ini = [...ancoras].reverse().find((a) => a.dia <= d) ?? ancoras[0]!;
+    const span = fim.dia - ini.dia;
+    const t = span === 0 ? 0 : (d - ini.dia) / span;
+    const reta = ini.cents + (fim.cents - ini.cents) * t;
+    // vaivém do mês: cai perto do dia 5 (contas) e sobe perto do 20 (recebimentos)
+    const diaDoMes = (15 + d) % 30;
+    const onda = diaDoMes < 8 ? -420_000 * (1 - diaDoMes / 8) : diaDoMes > 18 ? 260_000 : 0;
+    const data = new Date(base.getTime() + d * 86_400_000);
+    pontos.push({ day: data.toISOString().slice(0, 10), cents: Math.round(reta + onda) });
+  }
+  return pontos;
+}
+
 export const DEMO_DASHBOARD: DashboardJson = {
   company: { id: 'demo', name: 'Horizonte Comércio', niche: 'comercio' },
   snapshot: {
@@ -99,6 +132,18 @@ export const DEMO_DASHBOARD: DashboardJson = {
       body: 'A projeção segue positiva e subindo nos próximos 90 dias. Só fique de olho no prazo de recebimento, que subiu no último mês.',
       modelVersion: 'demo',
     },
+  },
+  // régua do fôlego (painel) e escada (detalhe) — os dois desenhos do exemplo
+  projectionCurve: curvaExemplo(),
+  projectionBreakdown: {
+    horizonDays: 30,
+    openingCents: 4_800_000,
+    steps: [
+      { key: 'a_receber', deltaCents: 3_800_000, count: 12 },
+      { key: 'a_pagar', deltaCents: -300_000, count: 3 },
+      { key: 'custo_fixo', deltaCents: -2_200_000, count: 0 },
+    ],
+    endingCents: 6_100_000, // fecha com o "caixa projetado · 30 dias" do exemplo
   },
   alerts: [
     {

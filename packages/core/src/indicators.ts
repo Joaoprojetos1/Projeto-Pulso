@@ -455,6 +455,25 @@ export interface CashProjection {
   zeroOn: IsoDate | null;
 }
 
+/**
+ * Atraso médio real dos recebimentos: quanto o cliente atrasa ALÉM do prometido,
+ * ponderado por valor. Se não dá para medir, zero (conservador — não inventa).
+ *
+ * Extraído para ser fonte única: a projeção e a composição dela (breakdown.ts)
+ * precisam usar exatamente o mesmo atraso, senão as duas telas discordariam.
+ */
+export function averageLatenessDays(snap: CompanySnapshot): number {
+  const settledR = snap.entries.filter((e) => e.kind === 'receivable' && e.settledOn);
+  const avg =
+    weightedAvg(
+      settledR.map((e) => ({
+        value: daysBetween(e.dueOn, e.settledOn as IsoDate),
+        weight: e.amountCents,
+      })),
+    ) ?? 0;
+  return Math.max(0, Math.round(avg));
+}
+
 export function projectCash(
   snap: CompanySnapshot,
   horizons: number[] = [30, 60, 90],
@@ -482,17 +501,7 @@ export function projectCash(
 
   const open = snap.entries.filter((e) => e.settledOn === null);
 
-  // Atraso médio real: quanto o cliente atrasa além do prometido.
-  // Se não dá pra medir, assume zero (conservador para o lado do "não invente").
-  const settledR = snap.entries.filter((e) => e.kind === 'receivable' && e.settledOn);
-  const avgLateness =
-    weightedAvg(
-      settledR.map((e) => ({
-        value: daysBetween(e.dueOn, e.settledOn as IsoDate),
-        weight: e.amountCents,
-      })),
-    ) ?? 0;
-  const latenessDays = Math.max(0, Math.round(avgLateness));
+  const latenessDays = averageLatenessDays(snap);
 
   // Constrói a curva dia a dia até o maior horizonte.
   const maxH = Math.max(...horizons);

@@ -128,9 +128,25 @@ export interface DashboardJson {
   diagnosis?: DiagnosisJson | null;
   /** Resumo da semana (null quando não há snapshot anterior de >= 5 dias). */
   weeklySummary?: WeeklySummaryJson | null;
-  /** Curva diária da projeção (um ponto por dia) para o gráfico interativo. */
+  /** Curva diária da projeção (um ponto por dia) — a régua dos 90 dias. */
   projectionCurve?: { day: string; cents: number }[];
+  /** Composição da projeção de 30 dias — a escada do "por que o caixa cai". */
+  projectionBreakdown?: CashBreakdownJson | null;
   alerts: AlertJson[];
+}
+
+/** Um degrau da escada. `deltaCents` positivo entra, negativo sai. */
+export interface CashStepJson {
+  key: 'a_receber' | 'a_pagar' | 'custo_fixo' | 'previstas';
+  deltaCents: number;
+  count: number;
+}
+
+export interface CashBreakdownJson {
+  horizonDays: number;
+  openingCents: number;
+  steps: CashStepJson[];
+  endingCents: number;
 }
 
 function apiBase(): string {

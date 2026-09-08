@@ -7,6 +7,7 @@
 export * from './types';
 export * from './dates';
 export * from './indicators';
+export * from './breakdown';
 export * from './planned';
 export * from './diagnosis';
 export * from './rules';
