@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   extractionModelFromProvider,
+  mascararCpf,
   textoParaData,
   textoParaMes,
   validateExtraction,
@@ -153,6 +154,25 @@ describe('validateExtraction (relatórios: números do mês)', () => {
     );
     expect(items).toHaveLength(0);
     expect(issues[0]).toContain('segmento');
+  });
+});
+
+// -----------------------------------------------------------------
+// LGPD: o CPF não sai da nossa máquina, mas o valor sobrevive intacto
+// -----------------------------------------------------------------
+
+describe('mascararCpf', () => {
+  it('tira o CPF escrito e a sequência crua de 11 dígitos', () => {
+    expect(mascararCpf('Maria Silva 123.456.789-01 Salário 3.500,00')).toBe(
+      'Maria Silva [CPF] Salário 3.500,00',
+    );
+    expect(mascararCpf('CPF 12345678901 ok')).toBe('CPF [CPF] ok');
+  });
+
+  it('NÃO toca em dinheiro, CNPJ nem em número com decimal', () => {
+    expect(mascararCpf('Total 1.234.567,89')).toBe('Total 1.234.567,89');
+    expect(mascararCpf('CNPJ 12.345.678/0001-90')).toBe('CNPJ 12.345.678/0001-90');
+    expect(mascararCpf('Valor 12345678901,55')).toBe('Valor 12345678901,55');
   });
 });
 

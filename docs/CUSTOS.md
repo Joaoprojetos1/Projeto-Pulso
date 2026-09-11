@@ -23,19 +23,35 @@
   Render (~US$ 6/mês o menor).
 
 ## 6.2 Tokens de IA — calculado do código
-Preços em `prices.ts` (estimativa Anthropic × câmbio ~R$ 5,50/US$):
-- **Opus 4.8** (alerta/diagnóstico): R$ 0,0825 / 1k tokens de entrada · R$ 0,4125 / 1k de saída.
-- **Sonnet 4.6** (conversa): R$ 0,0165 / 1k entrada · R$ 0,0825 / 1k saída.
-- **Haiku 4.5** (opção barata): R$ 0,0055 / 1k entrada · R$ 0,0275 / 1k saída.
+
+> **REVISADO EM 11/09/2026.** A tabela de preços do código dizia que o Opus custa
+> US$ 15/75 por 1M de tokens — o **triplo** do preço real (US$ 5/25). Os números
+> abaixo substituem os da versão de agosto, que superestimavam o custo em 3×.
+> Junto, os modelos padrão subiram para a geração 5 (mesma qualidade ou melhor,
+> preço igual ou menor).
+
+Preços em `prices.ts` (tabela da Anthropic × câmbio ~R$ 5,50/US$):
+
+| Modelo | Onde é usado | Entrada (1k tokens) | Saída (1k tokens) |
+|---|---|---|---|
+| **Opus 5** | alerta e diagnóstico | R$ 0,0275 | R$ 0,1375 |
+| **Sonnet 5** | conversa e leitura de arquivo | R$ 0,011 | R$ 0,055 |
+| Haiku 4.5 | opção mais barata (não usada) | R$ 0,0055 | R$ 0,0275 |
 
 Custo por operação (estimativa de tamanho real):
-- **1 alerta** (Opus, ~1,5k entrada + 0,15k saída) ≈ **R$ 0,18**.
-- **1 diagnóstico** (Opus) ≈ **R$ 0,18**.
-- **1 mensagem de conversa** (Sonnet, ~6k entrada + 0,3k saída) ≈ **R$ 0,12**.
+- **1 alerta** (Opus 5, ~1,5k entrada + 0,15k saída) ≈ **R$ 0,06**.
+- **1 mensagem de conversa** (Sonnet 5, ~6k entrada + 0,3k saída) ≈ **R$ 0,08**.
+- **1 arquivo lido** (Sonnet 5, ~10k entrada + 0,5k saída) ≈ **R$ 0,14**.
 
-Por **empresa ativa/mês** (recálculos + resumo semanal + ~15 conversas) ≈ **R$ 1–3**.
-A **100 empresas** ≈ **R$ 100–300/mês**. Dá para cortar bem trocando a conversa
-para **Haiku** (≈ 1/3 do custo) — só mexer em `PULSO_CHAT_MODEL`.
+Por **empresa ativa/mês** (recálculos + resumo semanal + ~15 conversas + alguns
+arquivos) ≈ **R$ 1,50–2,50**. A **100 empresas** ≈ **R$ 150–250/mês** — algo em
+torno de **1% a 2% da receita** dessas 100 assinaturas. Se um dia apertar, a
+conversa cai para **Haiku** (metade do custo) mexendo só em `PULSO_CHAT_MODEL`,
+sem publicar nada.
+
+O número REAL (não estimado) está em **/admin → economia**: a API grava tokens e
+modelo de cada chamada em `ai_usage` e a tela calcula o custo médio por
+interação. Com uso de verdade, é esse número que vale — não esta estimativa.
 
 ## 6.3 Lojas — Apple/Google ✅ (já verificado)
 - **Apple Developer:** US$ 99/ano. **Google Play:** US$ 25 (pagamento único).

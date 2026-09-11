@@ -360,6 +360,25 @@ export function extractionModelFromProvider(provider: TextProvider): ExtractionM
 const MAX_TEXT_CHARS = 60_000;
 
 /**
+ * Tira CPF do texto ANTES de ele sair daqui (LGPD).
+ *
+ * A extração é o único ponto do produto em que o conteúdo de um arquivo do
+ * cliente chega ao modelo — e a folha de pagamento vem cheia de CPF. Nenhum CPF
+ * é necessário para transcrever um valor, então ele não sai da nossa máquina:
+ * o código mascara antes de montar o prompt.
+ *
+ * Cobre o CPF escrito (000.000.000-00) e a sequência crua de 11 dígitos. NÃO
+ * toca em valor de dinheiro: no Brasil valor tem vírgula decimal, e a regra
+ * exige que os 11 dígitos estejam isolados (sem vírgula/dígito colado).
+ * CNPJ fica: é da empresa, não é dado pessoal, e serve de contexto.
+ */
+export function mascararCpf(texto: string): string {
+  return texto
+    .replace(/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g, '[CPF]')
+    .replace(/(^|[^\d,.\-/])\d{11}(?![\d,.\-/])/g, '$1[CPF]');
+}
+
+/**
  * Converte o arquivo em texto — TRABALHO DO CÓDIGO. PDF pelo extrator de texto;
  * o resto (CSV/HTML/XLSX) pela leitura de planilha, achatada em linhas. A IA
  * nunca recebe o binário, só este texto.
@@ -373,7 +392,7 @@ export async function fileToText(buf: Buffer): Promise<string> {
     const { rows } = readSpreadsheetRows(buf);
     texto = rows.map((r) => r.join('\t')).join('\n');
   }
-  texto = texto.trim();
+  texto = mascararCpf(texto.trim());
   if (!texto) throw new ParseError('Não consegui ler o conteúdo do arquivo.');
   return texto.length > MAX_TEXT_CHARS ? texto.slice(0, MAX_TEXT_CHARS) : texto;
 }
