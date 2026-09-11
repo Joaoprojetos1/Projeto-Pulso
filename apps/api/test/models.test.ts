@@ -15,8 +15,8 @@ describe('modelo de IA por superfície', () => {
     vi.stubEnv('PULSO_CHAT_MODEL', undefined);
     vi.resetModules();
     const { ALERT_MODEL, CHAT_MODEL } = await import('../src/ai/models');
-    expect(ALERT_MODEL).toBe('claude-opus-4-8');
-    expect(CHAT_MODEL).toBe('claude-sonnet-4-6');
+    expect(ALERT_MODEL).toBe('claude-opus-5');
+    expect(CHAT_MODEL).toBe('claude-sonnet-5');
   });
 
   it('cada superfície troca de modelo pela sua própria variável', async () => {
