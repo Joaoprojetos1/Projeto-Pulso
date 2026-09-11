@@ -266,7 +266,14 @@ export default function Conta() {
 
         {/* grupo: avisos, segurança, privacidade */}
         <View style={styles.grupo}>
-          <Linha icon="notifications-outline" label="Avisos no WhatsApp" sub="Em breve" />
+          {/* item 2.11: a tela do opt-in existe; ela é que diz se o canal já está
+              no ar (o servidor responde `available`), então aqui é só a porta. */}
+          <Linha
+            icon="notifications-outline"
+            label="Avisos no WhatsApp"
+            sub="Receber avisos e falar com o Ivo por mensagem"
+            onPress={demo ? undefined : () => router.push('/whatsapp' as Href)}
+          />
           <Linha
             icon="finger-print-outline"
             label="Proteger com biometria"

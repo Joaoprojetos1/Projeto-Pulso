@@ -112,6 +112,19 @@ describe('opt-in do dono (/me/whatsapp)', () => {
     expect(res.json()).toMatchObject({ linked: true, phone: P1 });
   });
 
+  it('diz se o CANAL está de pé, para o app não prometer o que não entrega', async () => {
+    // este app tem número configurado (fakeSender)
+    const comCanal = await app.inject({ method: 'GET', url: '/me/whatsapp', headers: bearer(TOKEN) });
+    expect(comCanal.json().available).toBe(true);
+
+    // sem credenciais da Meta, o canal está desligado: a tela do app mostra "em breve"
+    const semCanal = buildApp(sql, { chatModel: null });
+    await semCanal.ready();
+    const res = await semCanal.inject({ method: 'GET', url: '/me/whatsapp', headers: bearer(TOKEN) });
+    expect(res.json().available).toBe(false);
+    await semCanal.close();
+  });
+
   it('recusa número curto demais (422)', async () => {
     // passa no schema (>= 8 chars) mas normaliza para menos de 12 dígitos
     const res = await app.inject({

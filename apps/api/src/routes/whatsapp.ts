@@ -154,6 +154,11 @@ export function registerWhatsApp(
   );
 
   // Estado do vínculo do dono logado.
+  //
+  // `available` diz se o CANAL está de pé (número oficial configurado no
+  // ambiente). O app usa isso para não prometer o que não entrega: sem canal,
+  // mostra "em breve" em vez de um campo que liga o dono a lugar nenhum. No dia
+  // em que as credenciais entrarem no servidor, a tela se abre sozinha.
   app.get('/me/whatsapp', async (req, reply) => {
     const company = await companyFromRequest(sql, req);
     if (!company) return reply.code(401).send({ error: 'Faça login.' });
@@ -162,6 +167,7 @@ export function registerWhatsApp(
       FROM whatsapp_contacts WHERE company_id = ${company.id}
       ORDER BY opted_in_at DESC LIMIT 1`;
     return {
+      available: sender !== null,
       linked: Boolean(row),
       phone: (row?.phone as string | undefined) ?? null,
       optedInAt: (row?.opted_in_at as string | undefined) ?? null,
