@@ -7,9 +7,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   extractionModelFromProvider,
+  textoParaData,
+  textoParaMes,
   validateExtraction,
+  type ExtractionContext,
   type ExtractionModel,
 } from '../src/ai/extract';
+import { segmentFields } from '@pulso/core';
 import type { TextProvider } from '../src/ai/provider';
 import { buildApp } from '../src/app';
 import { createSql, type Sql } from '../src/db';
@@ -51,6 +55,107 @@ describe('validateExtraction (folha)', () => {
   });
 });
 
+// -----------------------------------------------------------------
+// O código entendendo data e mês escritos "como vier" (BR, ISO, por extenso)
+// -----------------------------------------------------------------
+
+describe('textoParaData / textoParaMes', () => {
+  it('lê data em formato brasileiro, ISO e com ano de 2 dígitos', () => {
+    expect(textoParaData('12/09/2026')).toBe('2026-09-12');
+    expect(textoParaData('2026-09-12')).toBe('2026-09-12');
+    expect(textoParaData('1.9.26')).toBe('2026-09-01');
+    expect(textoParaData('31/02/2026')).toBeNull(); // não existe
+    expect(textoParaData('ontem')).toBeNull();
+  });
+
+  it('lê mês numérico, ISO e por extenso', () => {
+    expect(textoParaMes('08/2026')).toBe('2026-08');
+    expect(textoParaMes('2026-8')).toBe('2026-08');
+    expect(textoParaMes('agosto/2026')).toBe('2026-08');
+    expect(textoParaMes('AGO-26')).toBe('2026-08');
+    expect(textoParaMes('período')).toBeNull();
+  });
+});
+
+// -----------------------------------------------------------------
+// O fiscal do código nas formas novas: maquininha (data) e números do mês (campo)
+// -----------------------------------------------------------------
+
+const CTX_VAREJO: ExtractionContext = { fields: segmentFields('varejo'), today: '2026-09-11' };
+
+describe('validateExtraction (maquininha: a receber previsto)', () => {
+  it('aceita o crédito com data e valor, devolvendo a data em ISO', () => {
+    const { items, issues } = validateExtraction(
+      'card_acquirer',
+      [{ label: 'Crédito à vista', valueText: '1.250,00', dateText: '20/09/2026' }],
+      { today: '2026-09-11' },
+    );
+    expect(items).toEqual([{ label: 'Crédito à vista', amountCents: 125000, dueOn: '2026-09-20' }]);
+    expect(issues).toHaveLength(0);
+  });
+
+  it('descarta item sem data, com data ilegível e com data fora da faixa', () => {
+    const { items, issues } = validateExtraction(
+      'card_acquirer',
+      [
+        { label: 'Sem data', valueText: '100,00' },
+        { label: 'Data torta', valueText: '100,00', dateText: 'semana que vem' },
+        { label: 'Longe demais', valueText: '100,00', dateText: '01/01/2030' },
+        { label: 'Antigo demais', valueText: '100,00', dateText: '01/01/2020' },
+      ],
+      { today: '2026-09-11' },
+    );
+    expect(items).toHaveLength(0);
+    expect(issues).toHaveLength(4);
+  });
+});
+
+describe('validateExtraction (relatórios: números do mês)', () => {
+  it('só aceita campo que existe no segmento, e converte pela unidade do campo', () => {
+    const { items, issues } = validateExtraction(
+      'management',
+      [
+        { label: 'Faturamento', valueText: '85.000,00', field: 'receita_bruta', monthText: '08/2026' },
+        { label: 'Vendas no mês', valueText: '320', field: 'atendimentos', monthText: 'agosto/2026' },
+        { label: 'Lucro do sócio', valueText: '10.000,00', field: 'inventado_qualquer', monthText: '08/2026' },
+      ],
+      CTX_VAREJO,
+    );
+    // dinheiro vira centavos; contagem vira número inteiro (nunca centavos)
+    expect(items).toEqual([
+      { label: 'Faturamento', amountCents: 8500000, field: 'receita_bruta', unit: 'cents', month: '2026-08' },
+      { label: 'Vendas no mês', quantity: 320, field: 'atendimentos', unit: 'count', month: '2026-08' },
+    ]);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toContain('Lucro do sócio');
+  });
+
+  it('descarta mês no futuro e campo repetido no mesmo mês', () => {
+    const { items, issues } = validateExtraction(
+      'accounting',
+      [
+        { label: 'Receita', valueText: '10.000,00', field: 'receita_bruta', monthText: '08/2026' },
+        { label: 'Receita (de novo)', valueText: '11.000,00', field: 'receita_bruta', monthText: '08/2026' },
+        { label: 'Receita do mês que vem', valueText: '12.000,00', field: 'receita_bruta', monthText: '12/2026' },
+      ],
+      CTX_VAREJO,
+    );
+    expect(items).toHaveLength(1);
+    expect(items[0]!.amountCents).toBe(1000000); // valeu o primeiro
+    expect(issues).toHaveLength(2);
+  });
+
+  it('sem segmento definido, não transcreve nada e diz por quê', () => {
+    const { items, issues } = validateExtraction(
+      'management',
+      [{ label: 'Faturamento', valueText: '1.000,00', field: 'receita_bruta', monthText: '08/2026' }],
+      { fields: [], today: '2026-09-11' },
+    );
+    expect(items).toHaveLength(0);
+    expect(issues[0]).toContain('segmento');
+  });
+});
+
 describe('extractionModelFromProvider', () => {
   it('transcreve via structured output e o código valida', async () => {
     const fakeProvider: TextProvider = {
@@ -78,9 +183,29 @@ const PORT = 5498;
 // não aceita bytes WIN1252 no caminho). O temp do Windows usa nome curto sem acento.
 const DATA_DIR = path.join(tmpdir(), 'pulso-pgdata-extract-test');
 
-// modelo de extração DUBLÊ: devolve a transcrição fixa (o teste não chama IA real)
+// modelo de extração DUBLÊ: devolve a transcrição fixa por tipo (não chama IA real)
 const fakeExtraction: ExtractionModel = {
-  async extract() {
+  async extract(docType) {
+    if (docType === 'card_acquirer') {
+      return {
+        items: [
+          { label: 'Crédito à vista', valueText: '1.500,00', dateText: '20/09/2026' },
+          { label: 'Parcela 2/3', valueText: '800,00', dateText: '05/10/2026' },
+          { label: 'Já creditado', valueText: '300,00', dateText: '01/01/2019' }, // fora da faixa
+        ],
+        modelVersion: 'fake-extract-1',
+      };
+    }
+    if (docType === 'management') {
+      return {
+        items: [
+          { label: 'Faturamento bruto', valueText: '85.000,00', field: 'receita_bruta', monthText: '08/2026' },
+          { label: 'Nº de vendas', valueText: '320', field: 'atendimentos', monthText: '08/2026' },
+          { label: 'Meta do gerente', valueText: '90.000,00', field: 'meta_inventada', monthText: '08/2026' },
+        ],
+        modelVersion: 'fake-extract-1',
+      };
+    }
     return {
       items: [
         { label: 'Salários', valueText: '3.500,00' },
@@ -205,6 +330,138 @@ describe('POST /me/import (folha extraível)', () => {
     expect(itens).toHaveLength(1);
     const [c] = await sql`SELECT declared_fixed_cost_cents FROM companies WHERE id = (SELECT company_id FROM users WHERE email = 'dono@clinica.com')`;
     expect(Number(c!.declared_fixed_cost_cents)).toBe(400000);
+  });
+});
+
+// -----------------------------------------------------------------
+// Maquininha: a agenda de recebíveis vira conta PREVISTA a receber
+// -----------------------------------------------------------------
+
+describe('POST /me/import (maquininha)', () => {
+  const agendaCsv = Buffer.from(
+    'Data prevista;Descricao;Valor liquido\n20/09/2026;Credito a vista;1.500,00\n',
+    'utf8',
+  ).toString('base64');
+
+  it('lê a agenda, descarta o que está fora da faixa e só entra na confirmação', async () => {
+    const up = await app.inject({
+      method: 'POST',
+      url: '/me/import',
+      headers: auth(),
+      payload: { filename: 'agenda-cielo.csv', contentBase64: agendaCsv, docType: 'card_acquirer' },
+    });
+    expect(up.statusCode).toBe(201);
+    const imp = up.json().import;
+    expect(imp.status).toBe('extracted');
+    expect(imp.proposal.shape).toBe('receivables');
+    // o crédito de 2019 foi descartado pelo código, com aviso
+    expect(imp.proposal.items).toEqual([
+      { label: 'Crédito à vista', amountCents: 150000, dueOn: '2026-09-20' },
+      { label: 'Parcela 2/3', amountCents: 80000, dueOn: '2026-10-05' },
+    ]);
+    expect(imp.proposal.issues.length).toBe(1);
+
+    // nada entrou no motor ainda
+    const antes = await sql`SELECT count(*)::int AS n FROM planned_entries`;
+    expect(antes[0]!.n).toBe(0);
+
+    const conf = await app.inject({
+      method: 'POST',
+      url: `/me/imports/${imp.id}/confirm`,
+      headers: auth(),
+      payload: {
+        items: [
+          { label: 'Crédito à vista', amountCents: 150000, dueOn: '2026-09-20' },
+          { label: 'Parcela 2/3', amountCents: 80000, dueOn: '2026-10-05' },
+        ],
+      },
+    });
+    expect(conf.statusCode).toBe(200);
+
+    const previstas = await sql`
+      SELECT amount_cents, due_on::text AS due_on, kind, counterparty, status
+      FROM planned_entries ORDER BY due_on`;
+    expect(previstas).toHaveLength(2);
+    expect(previstas[0]!.kind).toBe('receivable');
+    expect(previstas[0]!.counterparty).toBe('Maquininha');
+    expect(previstas[0]!.status).toBe('prevista');
+    expect(Number(previstas[0]!.amount_cents)).toBe(150000);
+  });
+
+  it('confirmar de novo o mesmo arquivo é recusado (não duplica a agenda)', async () => {
+    const [imp] = await sql`SELECT id FROM imports WHERE doc_type = 'card_acquirer' ORDER BY imported_at DESC LIMIT 1`;
+    const res = await app.inject({
+      method: 'POST',
+      url: `/me/imports/${imp!.id}/confirm`,
+      headers: auth(),
+      payload: { items: [{ label: 'Crédito à vista', amountCents: 150000, dueOn: '2026-09-20' }] },
+    });
+    expect(res.statusCode).toBe(409);
+    const previstas = await sql`SELECT count(*)::int AS n FROM planned_entries`;
+    expect(previstas[0]!.n).toBe(2);
+  });
+});
+
+// -----------------------------------------------------------------
+// Relatório gerencial: os números do MÊS do segmento, sem digitação
+// -----------------------------------------------------------------
+
+describe('POST /me/import (relatório gerencial → números do mês)', () => {
+  const gerencialCsv = Buffer.from('Indicador;Valor\nFaturamento;85.000,00\nVendas;320\n', 'utf8').toString('base64');
+
+  it('no segmento genérico (sem campos próprios), o arquivo fica "recebido"', async () => {
+    await sql`UPDATE companies SET niche = 'geral'`;
+    const res = await app.inject({
+      method: 'POST',
+      url: '/me/import',
+      headers: auth(),
+      payload: { filename: 'gerencial-sem-segmento.csv', contentBase64: gerencialCsv, docType: 'management' },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().import.status).toBe('received');
+  });
+
+  it('com segmento, transcreve só os campos do segmento e grava na confirmação', async () => {
+    await sql`UPDATE companies SET niche = 'varejo'`;
+    const outro = Buffer.from('Indicador;Valor\nFaturamento;85.000,00\nVendas;320\nMeta;90.000,00\n', 'utf8').toString('base64');
+    const up = await app.inject({
+      method: 'POST',
+      url: '/me/import',
+      headers: auth(),
+      payload: { filename: 'gerencial-agosto.csv', contentBase64: outro, docType: 'management' },
+    });
+    expect(up.statusCode).toBe(201);
+    const imp = up.json().import;
+    expect(imp.proposal.shape).toBe('ops');
+    // "Meta do gerente" não é campo do varejo: descartada com aviso
+    expect(imp.proposal.items).toEqual([
+      { label: 'Faturamento bruto', amountCents: 8500000, field: 'receita_bruta', unit: 'cents', month: '2026-08' },
+      { label: 'Nº de vendas', quantity: 320, field: 'atendimentos', unit: 'count', month: '2026-08' },
+    ]);
+    expect(imp.proposal.issues.length).toBe(1);
+
+    const conf = await app.inject({
+      method: 'POST',
+      url: `/me/imports/${imp.id}/confirm`,
+      headers: auth(),
+      payload: {
+        items: [
+          { label: 'Faturamento bruto', amountCents: 8500000, field: 'receita_bruta', month: '2026-08' },
+          { label: 'Nº de vendas', quantity: 320, field: 'atendimentos', month: '2026-08' },
+          { label: 'Campo forjado pelo cliente', amountCents: 999, field: 'nao_existe', month: '2026-08' },
+        ],
+      },
+    });
+    expect(conf.statusCode).toBe(200);
+
+    // gravou nos números do mês, pela unidade certa, e ignorou o campo forjado
+    const ops = await sql`
+      SELECT field, value_num, to_char(ref_month, 'YYYY-MM') AS mes
+      FROM monthly_operations ORDER BY field`;
+    expect(ops.map((o) => [o.field, Number(o.value_num), o.mes])).toEqual([
+      ['atendimentos', 320, '2026-08'],
+      ['receita_bruta', 8500000, '2026-08'],
+    ]);
   });
 });
 

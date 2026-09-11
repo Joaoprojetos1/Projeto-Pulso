@@ -4,13 +4,18 @@
  *
  * Reusado no ONBOARDING (tela /enviar) e na ABA DADOS — a mesma experiência nos
  * dois lugares (itens 2.5/2.6). O app é burro: pega os bytes e manda com o tipo;
- * quem LÊ é o servidor. Hoje o leitor cobre o extrato bancário; os demais tipos
- * ficam "recebidos" até o leitor existir.
+ * quem LÊ é o servidor.
+ *
+ * O servidor devolve a leitura de três FORMAS, e o cartão de confirmação se
+ * adapta a cada uma: custo fixo (folha, só rótulo e valor), recebimentos da
+ * maquininha (cada linha tem a DATA em que cai) e números do mês dos relatórios
+ * (cada linha tem o MÊS e pode ser quantidade em vez de dinheiro). Tipo sem
+ * leitor continua "recebido".
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   confirmExtraction,
@@ -30,7 +35,25 @@ import { colors, fonts } from '@/theme';
 /** Frase por tipo extraível: o que a IA leu e o que o valor vira no motor. */
 const EXTRAI_FRASE: Record<string, { leu: string; vira: string }> = {
   payroll: { leu: 'Li da sua folha de pagamento', vira: 'Ao confirmar, isto vira seu custo fixo mensal.' },
+  card_acquirer: {
+    leu: 'Li da sua maquininha',
+    vira: 'Ao confirmar, estes recebimentos entram na sua projeção de caixa nas datas previstas.',
+  },
+  management: { leu: 'Li do seu relatório gerencial', vira: 'Ao confirmar, estes números do mês entram nos seus indicadores.' },
+  services: { leu: 'Li do seu relatório de serviços', vira: 'Ao confirmar, estes números do mês entram nos seus indicadores.' },
+  inventory: { leu: 'Li do seu relatório de estoque', vira: 'Ao confirmar, estes números do mês entram nos seus indicadores.' },
+  accounting: { leu: 'Li das suas informações contábeis', vira: 'Ao confirmar, estes números do mês entram nos seus indicadores.' },
 };
+
+const MES_NOME = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+/** "2026-08" → "agosto de 2026" (o dono lê mês por nome, não por número). */
+function mesPorExtenso(mes: string | undefined): string | null {
+  if (!mes) return null;
+  const [ano, m] = mes.split('-');
+  const nome = MES_NOME[Number(m) - 1];
+  return nome && ano ? `${nome} de ${ano}` : null;
+}
 
 const TIPOS: Array<{ id: DocType; label: string; hint: string }> = [
   { id: 'bank_statement', label: 'Extrato bancário', hint: 'Lido automaticamente (PDF, OFX, CSV ou Excel)' },
@@ -287,17 +310,30 @@ function CartaoConfirmacao({
   };
   const [itens, setItens] = useState<ExtractedItemJson[]>(item.proposal?.items ?? []);
   const [enviando, setEnviando] = useState(false);
+  const forma = item.proposal?.shape ?? 'fixed_cost';
+  // o total só faz sentido quando tudo é dinheiro da mesma natureza; nos números
+  // do mês cada linha tem unidade própria (reais, quantidade, horas).
+  const mostraTotal = forma !== 'ops';
   const total = itens.reduce((s, i) => s + (i.amountCents || 0), 0);
 
-  function ajustar(idx: number, cents: number | null) {
-    setItens((lista) => lista.map((it, j) => (j === idx ? { ...it, amountCents: cents ?? 0 } : it)));
+  const valorDe = (i: ExtractedItemJson) => (i.unit && i.unit !== 'cents' ? (i.quantity ?? 0) : (i.amountCents ?? 0));
+
+  function ajustar(idx: number, valor: number | null) {
+    setItens((lista) =>
+      lista.map((it, j) => {
+        if (j !== idx) return it;
+        return it.unit && it.unit !== 'cents'
+          ? { ...it, quantity: valor ?? 0 }
+          : { ...it, amountCents: valor ?? 0 };
+      }),
+    );
   }
 
   async function confirmar() {
     if (enviando) return;
     setEnviando(true);
     try {
-      await onConfirmar(itens.filter((i) => i.amountCents > 0));
+      await onConfirmar(itens.filter((i) => valorDe(i) > 0));
     } catch {
       setEnviando(false); // deixa tentar de novo; em sucesso o card some (recarregar)
     }
@@ -313,26 +349,51 @@ function CartaoConfirmacao({
       <Text style={styles.cartaoSub}>Confira e ajuste se precisar. Nada entra no seu caixa antes de você confirmar.</Text>
 
       <View style={styles.linhas}>
-        {itens.map((it, idx) => (
-          <View key={idx} style={styles.linha}>
-            <Text style={styles.linhaLabel} numberOfLines={2}>{it.label}</Text>
-            <MoneyInput
-              valueCents={it.amountCents}
-              onChangeCents={(c) => ajustar(idx, c)}
-              style={styles.linhaInput}
-            />
-          </View>
-        ))}
+        {itens.map((it, idx) => {
+          // a linha diz a que mês (números do mês) ou a que data (maquininha) o
+          // valor pertence — sem isso o dono confirma no escuro
+          const contexto = it.dueOn
+            ? `cai em ${dataBR(it.dueOn)}`
+            : mesPorExtenso(it.month)
+              ? `${mesPorExtenso(it.month)}`
+              : null;
+          const ehQuantidade = !!it.unit && it.unit !== 'cents';
+          return (
+            <View key={idx} style={styles.linha}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.linhaLabel} numberOfLines={2}>{it.label}</Text>
+                {contexto ? <Text style={styles.linhaContexto}>{contexto}</Text> : null}
+              </View>
+              {ehQuantidade ? (
+                <TextInput
+                  value={String(it.quantity ?? 0)}
+                  onChangeText={(t) => ajustar(idx, Number(t.replace(/\D/g, '')) || 0)}
+                  keyboardType="number-pad"
+                  style={[styles.linhaInput, styles.linhaInputNumero]}
+                  accessibilityLabel={`${it.label}, ${it.unit === 'hours' ? 'horas' : 'quantidade'}`}
+                />
+              ) : (
+                <MoneyInput
+                  valueCents={it.amountCents ?? 0}
+                  onChangeCents={(c) => ajustar(idx, c)}
+                  style={styles.linhaInput}
+                />
+              )}
+            </View>
+          );
+        })}
       </View>
 
       {item.proposal?.issues && item.proposal.issues.length > 0 ? (
         <Text style={styles.avisos}>{item.proposal.issues.join(' ')}</Text>
       ) : null}
 
-      <View style={styles.totalLinha}>
-        <Text style={styles.totalRotulo}>Total</Text>
-        <Text style={styles.totalValor}>{brl(total)}</Text>
-      </View>
+      {mostraTotal ? (
+        <View style={styles.totalLinha}>
+          <Text style={styles.totalRotulo}>Total</Text>
+          <Text style={styles.totalValor}>{brl(total)}</Text>
+        </View>
+      ) : null}
       <Text style={styles.cartaoVira}>{frase.vira}</Text>
 
       <Pressable
@@ -392,8 +453,10 @@ const styles = StyleSheet.create({
   cartaoSub: { fontFamily: fonts.corpo, fontSize: 13, color: colors.tinta, marginTop: 6, lineHeight: 19 },
   linhas: { gap: 10, marginTop: 14 },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  linhaLabel: { flex: 1, fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
+  linhaLabel: { fontFamily: fonts.corpoMedio, fontSize: 13.5, color: colors.tinta },
+  linhaContexto: { fontFamily: fonts.corpo, fontSize: 11.5, color: colors.cinza, marginTop: 2 },
   linhaInput: { flex: 1.1, fontSize: 16, paddingVertical: 10 },
+  linhaInputNumero: { fontFamily: fonts.corpoMedio, color: colors.tinta, textAlign: 'right' },
   avisos: { fontFamily: fonts.corpo, fontSize: 12, color: colors.alertaTexto, marginTop: 10, lineHeight: 17 },
   totalLinha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#CDEBDD' },
   totalRotulo: { fontFamily: fonts.corpoMedio, fontSize: 14, color: colors.tinta },

@@ -658,16 +658,38 @@ export type DocType =
 
 export type ImportStatus = 'processed' | 'received' | 'error' | 'extracted' | 'confirmed';
 
-/** Um valor TRANSCRITO pela IA e já validado pelo código (rótulo + centavos). */
+/**
+ * O que a transcrição de cada tipo produz — e para onde o número vai quando o
+ * dono confirma. Quem decide é o servidor; o app só usa para escrever a tela.
+ *   fixed_cost  (folha)      → custo fixo
+ *   receivables (maquininha) → a receber previsto (tem DATA)
+ *   ops         (relatórios) → números do mês do segmento (tem CAMPO e MÊS)
+ */
+export type ExtractionShape = 'fixed_cost' | 'receivables' | 'ops';
+
+/**
+ * Um valor TRANSCRITO pela IA e já validado pelo código. Dinheiro vem em
+ * `amountCents`; contagem/horas em `quantity` (nunca os dois).
+ */
 export interface ExtractedItemJson {
   label: string;
-  amountCents: number;
+  amountCents?: number;
+  quantity?: number;
+  /** ops: campo do segmento que este número preenche */
+  field?: string;
+  /** ops: mês de referência (YYYY-MM) */
+  month?: string;
+  /** ops: unidade do campo (dinheiro, contagem ou horas) */
+  unit?: 'cents' | 'count' | 'hours';
+  /** receivables: data prevista do crédito (YYYY-MM-DD) */
+  dueOn?: string;
 }
 
 /** Proposta de extração pendente de confirmação do dono (ex.: folha → custo fixo). */
 export interface ExtractionProposalJson {
   items: ExtractedItemJson[];
   issues: string[];
+  shape?: ExtractionShape | null;
 }
 
 export interface ImportResult {
@@ -1540,4 +1562,48 @@ export interface AdminHealth {
 
 export function fetchAdminHealth(token: string): Promise<AdminHealth> {
   return adminGet<AdminHealth>(token, '/admin/health');
+}
+
+// ---------------------------------------------------------------
+// WhatsApp: o opt-in do dono (item 2.11)
+// ---------------------------------------------------------------
+
+export interface WhatsAppStatusJson {
+  /** o canal está de pé no servidor (número oficial configurado)? */
+  available: boolean;
+  linked: boolean;
+  phone: string | null;
+  optedInAt: string | null;
+}
+
+export async function fetchMyWhatsApp(token: string): Promise<WhatsAppStatusJson> {
+  const res = await fetchWithWake(`${apiBase()}/me/whatsapp`, { headers: authHeader(token) });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} no WhatsApp`);
+  return (await res.json()) as WhatsAppStatusJson;
+}
+
+/** Liga este número à conta (opt-in). O telefone vai só com dígitos, com o 55. */
+export async function linkMyWhatsApp(token: string, phone: string): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/whatsapp`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify({ phone }),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? 'Informe um número de WhatsApp válido com DDD.');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao ligar o WhatsApp`);
+}
+
+/** Desliga o WhatsApp da conta (opt-out). */
+export async function unlinkMyWhatsApp(token: string): Promise<void> {
+  const res = await fetchWithWake(`${apiBase()}/me/whatsapp`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  });
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (!res.ok) throw new Error(`HTTP ${res.status} ao desligar o WhatsApp`);
 }

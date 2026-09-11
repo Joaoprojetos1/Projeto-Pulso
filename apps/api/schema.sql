@@ -11,7 +11,7 @@ CREATE TABLE companies (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name          TEXT NOT NULL,
   cnpj          TEXT,
-  niche         TEXT NOT NULL DEFAULT 'clinica',   -- nicho único no MVP
+  niche         TEXT NOT NULL DEFAULT 'geral',     -- genérico até o dono escolher (ver 0030)
   -- Custo fixo mensal declarado no onboarding, quando não dá pra inferir
   declared_fixed_cost_cents BIGINT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
