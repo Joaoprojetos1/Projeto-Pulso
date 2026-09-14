@@ -68,7 +68,7 @@ function emailValido(txt: string): boolean {
 type ErrosCampo = { negocio?: string; telefone?: string; email?: string; senha?: string };
 
 export default function Login() {
-  const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
+  const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, fonte } = usePulso();
   const [modo, setModo] = useState<Modo>('boas-vindas');
   const [negocio, setNegocio] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -156,13 +156,22 @@ export default function Login() {
    * na primeira versão.
    */
   useEffect(() => {
-    if (restaurando || logado) return;
+    if (restaurando) return;
     if (typeof window === 'undefined' || !window.location) return;
     if (new URLSearchParams(window.location.search).get('demo') !== '1') return;
+    if (fonte === 'demo') return; // já está na demonstração
+    // QUEM JÁ ESTÁ LOGADO TAMBÉM VÊ A DEMONSTRAÇÃO, e isso é de propósito: esta
+    // porta é a vitrine do site. Um assinante que abrisse a capa e tocasse em
+    // "Experimentar" veria os PRÓPRIOS números embaixo de uma legenda dizendo
+    // "dados fictícios" — foi o que aconteceu no primeiro teste em produção.
+    // `entrarDemo` só troca o estado em memória: o token guardado continua
+    // intacto, então a sessão dele segue de pé no aplicativo de verdade.
     entrarDemo();
     router.replace('/(tabs)');
+    // `fonte` na lista: se o carregamento do servidor terminar depois e
+    // sobrescrever a demonstração, este efeito a traz de volta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restaurando, logado]);
+  }, [restaurando, fonte]);
 
   if (restaurando) {
     return (
