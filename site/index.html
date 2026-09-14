@@ -409,8 +409,9 @@
   .prob-grid .prose { margin-top: .2rem; }
 
   /* pra quem é */
-  .quem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 2.4rem; }
-  @media (max-width: 820px) { .quem-grid { grid-template-columns: 1fr; } }
+  .quem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 2.4rem; }
+  @media (max-width: 1040px) { .quem-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .quem-grid { grid-template-columns: 1fr; } }
   .qc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--raio); padding: 24px; transition: border-color .18s ease; }
   .qc:hover { border-color: color-mix(in srgb, var(--pulse) 45%, var(--line)); }
   .qc h3 { font-family: var(--f-serif); font-weight: 300; font-size: 1.6rem; color: var(--heading); }
@@ -908,9 +909,16 @@
           <h3>Restaurante</h3>
           <p>O iFood repassa em 30 dias. O açougue cobra na entrega. E a taxa da plataforma come a margem sem você ver.</p>
         </div>
+        <!-- O QUARTO CARTÃO EXISTE PARA NÃO FECHAR A PORTA: a regra do projeto é
+             falar com qualquer dono de pequeno negócio, e o motor tem um segmento
+             genérico que roda o núcleo universal para quem não é dos três. -->
+        <div class="qc">
+          <h3>Qualquer outro negócio</h3>
+          <p>Salão, oficina, escritório, prestador de serviço. O caixa aperta pelo mesmo motivo em todo lugar: você recebe depois e paga antes.</p>
+        </div>
       </div>
 
-      <p class="quem-foot reveal">O Ivo nasceu para clínicas, lojas de roupa e restaurantes. Se você já tem diretor financeiro e controller, ele não é pra você. Ele é pra quem toca o negócio sozinho.</p>
+      <p class="quem-foot reveal">Os indicadores de setor existem hoje para clínicas, lojas de roupa e restaurantes. Todo o resto roda o que vale para qualquer negócio: caixa, projeção, prazos e margem. Agora, se você já tem diretor financeiro e controller, o Ivo não é pra você. Ele é pra quem toca o negócio sozinho.</p>
     </div>
   </section>
 
@@ -946,7 +954,7 @@
   <section class="sec" id="conselheiro">
     <div class="wrap">
       <div class="sec-head reveal">
-        <span class="eyebrow">Não é dashboard</span>
+        <span class="eyebrow">Depois do número</span>
         <h2>Ele não só avisa. Ele diz o que fazer.</h2>
         <p class="prose">Dashboard mostra número. O Ivo mostra o próximo passo.</p>
       </div>
