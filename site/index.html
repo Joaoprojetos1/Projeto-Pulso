@@ -408,6 +408,26 @@
   @media (max-width: 820px) { .prob-grid { grid-template-columns: 1fr; } }
   .prob-grid .prose { margin-top: .2rem; }
 
+  /* pra quem é */
+  .quem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 2.4rem; }
+  @media (max-width: 820px) { .quem-grid { grid-template-columns: 1fr; } }
+  .qc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--raio); padding: 24px; transition: border-color .18s ease; }
+  .qc:hover { border-color: color-mix(in srgb, var(--pulse) 45%, var(--line)); }
+  .qc h3 { font-family: var(--f-serif); font-weight: 300; font-size: 1.6rem; color: var(--heading); }
+  .qc p { color: var(--muted); font-size: .98rem; line-height: 1.55; margin-top: .5rem; }
+  .quem-foot { color: var(--ink); font-size: 1.02rem; line-height: 1.6; max-width: 62ch; margin-top: 2rem; }
+
+  /* conselheiro: o aviso de exemplo, em balão */
+  .conselho { margin: 2.4rem 0 0; max-width: 62ch; }
+  .conselho-balao {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px 18px 18px 4px; padding: 22px 24px;
+  }
+  .conselho-balao p { color: var(--ink); font-size: clamp(1.05rem, 1.7vw, 1.22rem); line-height: 1.55; }
+  .conselho figcaption { font-family: var(--f-rotulo); font-size: .8rem; color: var(--muted); margin-top: .7rem; }
+  .conselho-apoio { margin-top: 1.8rem; max-width: 62ch; }
+  .conselho-apoio b { color: var(--ink); font-weight: 600; }
+
   /* TRÊS NÚMEROS, não uma lista de parágrafos. O valor vem na serifada grande —
      é a mesma voz das afirmações da página — e a explicação fica embaixo, miúda.
      Sem cartão e sem borda em volta: o que separa uma coluna da outra é o
@@ -768,10 +788,10 @@
     </a>
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="#como">Como funciona</a>
-      <a class="navlink" href="#vigia">O que ele monitora</a>
+      <a class="navlink" href="#quem">Pra quem é</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
-      <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
+      <a class="btn btn-primary" href="#topo" data-demo>Ver o Ivo funcionando</a>
     </nav>
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
       <span class="ham" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -783,10 +803,10 @@
   <div class="backdrop"></div>
   <nav class="sheet" aria-label="Menu">
     <a class="m-link" href="#como">Como funciona</a>
-    <a class="m-link" href="#vigia">O que ele monitora</a>
+    <a class="m-link" href="#quem">Pra quem é</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
-    <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
+    <a class="btn btn-primary" href="#topo" data-demo>Ver o Ivo funcionando</a>
   </nav>
 </div>
 
@@ -799,11 +819,12 @@
         <span class="eyebrow">Feito para o dono, não para o contador</span>
         <!-- as linhas são spans para poderem entrar uma depois da outra -->
         <h1><span class="l">Saiba que o caixa vai apertar.</span><span class="l"><span class="accent">Antes</span> de apertar.</span></h1>
-        <p class="lead">O Ivo acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho, com data e valor. Você reage a tempo, não depois do susto.</p>
+        <p class="lead">Seu contador te conta o que aconteceu. O Ivo te avisa o que vai acontecer: data, valor e o que fazer, no seu WhatsApp, antes de o extrato te dar o susto.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona <span class="btn-arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-primary" href="#topo" data-demo>Ver o Ivo funcionando <span class="btn-arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost" href="#como">Como funciona</a>
         </div>
-        <p class="hero-note">É o Ivo de verdade, com dados de exemplo · sem cadastro, sem instalar nada</p>
+        <p class="hero-note">É o app de verdade, com dados de exemplo. Sem cadastro, sem cartão, sem ligação de vendedor.</p>
       </div>
 
       <!-- HERÓI: a tela real do produto. Nada de mockup desenhado — o que o
@@ -838,30 +859,58 @@
       <div class="prob-grid">
         <div class="sec-head reveal">
           <span class="eyebrow">Onde o aperto começa</span>
-          <h2>Você toca o seu negócio. Quem cuida do caixa?</h2>
+          <h2>Empresa não quebra por falta de lucro. Quebra por falta de caixa.</h2>
         </div>
-        <p class="prose reveal">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde, pelo susto no extrato.</p>
+        <p class="prose reveal">Você vende, fatura, o movimento está bom. E um dia o dinheiro não está na conta. Não é má gestão. É que ninguém estava olhando o caixa todo dia: você estava tocando o negócio, e o <strong>contador olha o mês que já passou</strong>.</p>
       </div>
 
       <!-- O QUE ERA UMA LISTA DE TEXTO VIROU TRÊS NÚMEROS. O dado é a coisa
            mais concreta desta seção e estava escondido no meio da frase. -->
       <div class="prob-nums reveal stagger">
         <div class="pn">
-          <span class="pn-v"><b data-countto="46">46</b> dias</span>
-          <span class="pn-k">até o cliente pagar</span>
-          <p>É o intervalo médio entre vender e o dinheiro cair. Nele, as contas continuam chegando.</p>
+          <span class="pn-v"><b data-countto="60">60</b> dias</span>
+          <span class="pn-k">até o dinheiro cair</span>
+          <p>Você vende hoje e recebe daqui a 30, 45, 60 dias. Nesse intervalo, as contas não esperam.</p>
         </div>
         <div class="pn">
-          <span class="pn-v">Todo dia 5</span>
-          <span class="pn-k">as contas chegam</span>
-          <p>Aluguel, equipe e impostos não esperam o seu dinheiro entrar.</p>
+          <span class="pn-v">Dia fixo</span>
+          <span class="pn-k">o boleto não negocia</span>
+          <p>Aluguel, folha e imposto vencem em dia certo. O cliente paga quando quer.</p>
         </div>
         <div class="pn">
-          <span class="pn-v">No susto</span>
-          <span class="pn-k">é quando você descobre</span>
-          <p>Sem alguém olhando todo dia, o aperto só aparece no extrato — tarde demais.</p>
+          <span class="pn-v">Tarde demais</span>
+          <span class="pn-k">quando o susto chega</span>
+          <p>Tarde para negociar prazo, tarde para antecipar, tarde para cortar.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- PRA QUEM É — qualifica o visitante antes de falar de produto, e diz
+       abertamente para quem o Ivo NÃO serve. -->
+  <section class="sec" id="quem">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Pra quem é</span>
+        <h2>Você se reconhece em algum destes?</h2>
+      </div>
+
+      <div class="quem-grid reveal stagger">
+        <div class="qc">
+          <h3>Clínica</h3>
+          <p>O convênio paga em 60 dias. A folha vence no dia 5. E a glosa você só descobre quando o dinheiro não vem.</p>
+        </div>
+        <div class="qc">
+          <h3>Loja de roupa</h3>
+          <p>O cliente compra em 6x. O fornecedor da coleção nova cobra à vista. O estoque parado é dinheiro parado.</p>
+        </div>
+        <div class="qc">
+          <h3>Restaurante</h3>
+          <p>O iFood repassa em 30 dias. O açougue cobra na entrega. E a taxa da plataforma come a margem sem você ver.</p>
+        </div>
+      </div>
+
+      <p class="quem-foot reveal">O Ivo nasceu para clínicas, lojas de roupa e restaurantes. Se você já tem diretor financeiro e controller, ele não é pra você. Ele é pra quem toca o negócio sozinho.</p>
     </div>
   </section>
 
@@ -889,6 +938,29 @@
           <p>No WhatsApp e no app, em português, com data e valor. Só te chama quando realmente importa.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- O CONSELHEIRO — a diferença que o produto realmente tem: não para no
+       número, diz o próximo passo. -->
+  <section class="sec" id="conselheiro">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Não é dashboard</span>
+        <h2>Ele não só avisa. Ele diz o que fazer.</h2>
+        <p class="prose">Dashboard mostra número. O Ivo mostra o próximo passo.</p>
+      </div>
+
+      <figure class="conselho reveal">
+        <div class="conselho-balao">
+          <p>Seu caixa zera em 18 de setembro. Antecipe os R$ 28 mil que o convênio te deve, ou negocie 30 dias com seu maior fornecedor. Só o segundo já empurra o risco para novembro.</p>
+        </div>
+        <!-- rotulado como exemplo de propósito: número em página de venda sem
+             essa marca passa a impressão de caso real de cliente -->
+        <figcaption>Exemplo de aviso, com dados fictícios.</figcaption>
+      </figure>
+
+      <p class="prose conselho-apoio reveal">Pergunte em português: <b>"Dá pra pagar as contas do mês?"</b>, <b>"Quem me deve?"</b>, <b>"Quando meu caixa zera?"</b>. Ele responde com os seus números, não com opinião.</p>
     </div>
   </section>
 
@@ -949,11 +1021,11 @@
       <div class="watch-grid reveal stagger">
         <div class="signal sig-crit">
           <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span></div>
-          <p>Seu caixa pode zerar em menos de 60 dias.</p>
+          <p>Seu caixa pode zerar em menos de 60 dias. Com a data.</p>
         </div>
         <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Cresce, mas o caixa aperta<span class="sk-tech">efeito tesoura</span></span></div>
-          <p>Você vende mais, mas o dinheiro está demorando mais a chegar.</p>
+          <div class="signal-top"><span class="sk">Vende mais, sobra menos<span class="sk-tech">efeito tesoura</span></span></div>
+          <p>Você está financiando seus clientes sem perceber. Cresce o faturamento, some o dinheiro.</p>
         </div>
         <div class="signal sig-warn">
           <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span></div>
@@ -961,7 +1033,7 @@
         </div>
         <div class="signal sig-ok">
           <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span></div>
-          <p>Quando está tudo bem, o Ivo fica quieto. Sem aviso, é bom sinal.</p>
+          <p>Quando está tudo bem, o Ivo fica quieto. Silêncio é bom sinal.</p>
         </div>
       </div>
 
@@ -986,13 +1058,17 @@
       <div class="safe-grid reveal stagger">
         <div class="safe-card">
           <span class="sk">LGPD</span>
-          <h3>Nada é compartilhado</h3>
-          <p>Seguimos a Lei Geral de Proteção de Dados. Seus dados servem só para calcular os seus indicadores. Não vendemos, não repassamos e não usamos para treinar inteligência artificial.</p>
+          <!-- O título da copy era "Nada é compartilhado". Não dá: quando o dono
+               envia um arquivo, o TEXTO dele passa por um leitor de IA (está em
+               docs/SEGURANCA.md). O que é verdade, e continua forte, é que o
+               dado não é mercadoria e não vira treino de modelo. -->
+          <h3>Seus dados não são mercadoria</h3>
+          <p>Seguimos a Lei Geral de Proteção de Dados. Seus números servem só para calcular os seus indicadores: não vendemos, não repassamos e não usamos para treinar inteligência artificial. Quando você envia um arquivo, ele passa por um leitor para ser transcrito, e o conteúdo não fica guardado.</p>
         </div>
         <div class="safe-card">
           <span class="sk">Protegido</span>
-          <h3>Criptografado e somente-leitura</h3>
-          <p>Seus dados trafegam criptografados e ficam em servidor seguro. Conexões de dados são somente-leitura: o Ivo lê para calcular, nunca movimenta o seu dinheiro.</p>
+          <h3>O Ivo lê. Nunca movimenta.</h3>
+          <p>Seus dados trafegam criptografados e ficam em servidor seguro. O Ivo só lê o que você envia: nunca acessa a sua conta e nunca move um centavo.</p>
         </div>
         <div class="safe-card">
           <span class="sk">De onde vem</span>
@@ -1000,8 +1076,12 @@
           <p>Cada número é calculado e conferido; a inteligência artificial nunca inventa um valor. Todo alerta mostra as contas que o motor usou, e você sempre vê de onde veio aquele número.</p>
         </div>
       </div>
-      <!-- TODO(prova social): trocar/complementar por depoimento real ou numero de negocios atendidos quando houver. Nao inventar. -->
-      <p class="plans-note" style="margin-top:1.8rem;">Cada fórmula é conferida por um especialista em finanças de pequenas empresas.</p>
+      <!-- TODO(credibilidade): a copy pede "conferida por [Marco Túlio Alves],
+           consultor financeiro com [X] anos e [N] empresas atendidas em Belo
+           Horizonte", com foto. Falta o X, o N e o OK do próprio Marco para o
+           nome e a imagem aparecerem numa página pública. Enquanto não vier,
+           fica a frase sem os números: dado de prova social não se inventa. -->
+      <p class="plans-note" style="margin-top:1.8rem;">Cada fórmula é conferida por um consultor financeiro de Belo Horizonte, especialista em finanças de pequenas empresas.</p>
     </div>
   </section>
 
@@ -1010,19 +1090,19 @@
     <div class="wrap">
       <div class="sec-head reveal">
         <span class="eyebrow">Quanto custa</span>
-        <h2>Um preço justo pra dormir tranquilo.</h2>
+        <h2>Menos que um almoço por semana pra nunca mais ser pego de surpresa.</h2>
       </div>
       <div class="plans-grid reveal stagger">
         <div class="plan">
           <span class="p-name">Essencial</span>
           <div class="p-price"><span data-preco="essencial">R$ 97</span><small> /mês</small></div>
           <ul>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitor de caixa, todo dia</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Monitor de caixa</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Avisos no WhatsApp e no app</li>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Projeção de caixa 30/60/90 dias</li>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Alertas do que pede atenção</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Projeção de caixa 30, 60 e 90 dias</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>30 conversas com o Ivo IA por mês</li>
           </ul>
-          <a class="btn btn-ghost" href="#topo" data-demo>Veja como funciona</a>
+          <a class="btn btn-ghost" href="checkout.html?plano=essencial">Começar</a>
         </div>
         <div class="plan destaque">
           <span class="p-tag">Mais escolhido</span>
@@ -1031,22 +1111,26 @@
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Essencial</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Contas a pagar e a receber</li>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparação mês a mês</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>100 conversas com o Ivo IA por mês</li>
           </ul>
-          <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
+          <a class="btn btn-primary" href="checkout.html?plano=crescimento">Começar</a>
         </div>
         <div class="plan">
           <span class="p-name">Pro</span>
           <div class="p-price"><span data-preco="pro">R$ 197</span><small> /mês</small></div>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo do Crescimento</li>
-            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os indicadores do motor</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Indicadores do seu segmento</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Relatório mensal pronto pra apresentar</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>300 conversas com o Ivo IA por mês</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Suporte prioritário</li>
           </ul>
-          <a class="btn btn-ghost" href="#topo" data-demo>Veja como funciona</a>
+          <a class="btn btn-ghost" href="checkout.html?plano=pro">Começar</a>
         </div>
       </div>
-      <p class="plans-note">Sem fidelidade. A assinatura acontece no site, sem comissão de loja. <a href="checkout.html" style="color:var(--pulse-ink);font-weight:600;text-decoration:none;">Quero assinar →</a></p>
+      <p class="plans-note">Sem fidelidade. Cancele quando quiser. A assinatura acontece no site, sem comissão de loja.</p>
+      <p class="plans-note" style="margin-top:.6rem;">Quer ver antes de decidir? <a href="#topo" data-demo style="color:var(--pulse-ink);font-weight:600;text-decoration:none;">Ver o Ivo funcionando →</a></p>
     </div>
   </section>
 
@@ -1068,11 +1152,31 @@
         </details>
         <details class="faq-item">
           <summary>Meus dados ficam seguros? <span class="plus" aria-hidden="true"></span></summary>
-          <div class="faq-body">Sim. Seus números são usados só para calcular os seus indicadores. Nada é compartilhado, vendido ou usado para treinar IA. Você controla o que conecta e pode sair quando quiser.</div>
+          <div class="faq-body">Sim. Seus números são usados só para calcular os seus indicadores: não são vendidos, não são repassados e não treinam inteligência artificial. Os arquivos que você envia passam por um leitor para serem transcritos, e o conteúdo não fica guardado. Você pode sair quando quiser.</div>
         </details>
         <details class="faq-item">
           <summary>A inteligência artificial pode errar um valor? <span class="plus" aria-hidden="true"></span></summary>
           <div class="faq-body">Não nos números. Cada número é calculado e conferido, fórmula por fórmula. A IA só transforma o resultado numa frase clara. Ela nunca inventa um valor no aviso sobre o seu dinheiro.</div>
+        </details>
+        <details class="faq-item">
+          <summary>E se eu não uso sistema nenhum, só o extrato? <span class="plus" aria-hidden="true"></span></summary>
+          <div class="faq-body">Funciona. O extrato bancário é a porta principal e sozinho já dá a projeção de caixa, o prazo de recebimento e os alertas. Relatório de maquininha, estoque ou contábil entram depois, se você tiver, e deixam a leitura mais fina.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Funciona pro meu segmento? <span class="plus" aria-hidden="true"></span></summary>
+          <div class="faq-body">O Ivo nasceu para <strong>clínicas, lojas de roupa e restaurantes</strong>, e para esses três ele tem indicadores próprios do setor. Qualquer outro negócio roda o núcleo universal: caixa, projeção, prazos, margem e ponto de equilíbrio.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Quanto tempo leva pra começar? <span class="plus" aria-hidden="true"></span></summary>
+          <div class="faq-body">O cadastro é pelo CNPJ e leva alguns minutos. A partir do primeiro extrato enviado, você já vê a projeção. Não há instalação na sua máquina nem troca do sistema que você usa.</div>
+        </details>
+        <details class="faq-item">
+          <summary>E se eu parar de mandar os arquivos? <span class="plus" aria-hidden="true"></span></summary>
+          <div class="faq-body">O Ivo continua mostrando o último retrato, com a data em que ele foi feito, e avisa que o número está envelhecendo. Ele nunca finge que sabe do dia de hoje quando não sabe.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Posso cancelar quando quiser? <span class="plus" aria-hidden="true"></span></summary>
+          <div class="faq-body">Pode. Sem fidelidade e sem multa. A assinatura é mensal e acontece aqui no site, não dentro do aplicativo, então não há comissão de loja no meio.</div>
         </details>
         <details class="faq-item">
           <summary>Preciso instalar alguma coisa? <span class="plus" aria-hidden="true"></span></summary>
@@ -1132,7 +1236,7 @@
           <li><a href="#como">Como funciona</a></li>
           <li><a href="#vigia">O que ele monitora</a></li>
           <li><a href="#planos">Planos</a></li>
-          <li><a href="#topo" data-demo>Veja como funciona</a></li>
+          <li><a href="#topo" data-demo>Ver o Ivo funcionando</a></li>
         </ul>
       </nav>
 
@@ -1149,7 +1253,7 @@
         <h4>Contato</h4>
         <ul>
           <li><a href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Ivo." target="_blank" rel="noopener">Fale no WhatsApp</a></li>
-          <li><a href="#topo" data-demo>Veja como funciona</a></li>
+          <li><a href="#topo" data-demo>Ver o Ivo funcionando</a></li>
         </ul>
       </nav>
     </div>
