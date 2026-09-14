@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex" />
+<!-- FONTE do site/og.png (card de compartilhamento). Para regerar: servir o site local e
+     chrome --headless=new --window-size=1200,630 --screenshot=og.png .../_og.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,16..72,200..400;1,16..72,200..400&family=Figtree:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    width: 1200px; height: 630px; background: #121216; color: #EDEDF1;
+    font-family: 'Figtree', system-ui, sans-serif; overflow: hidden;
+    display: grid; grid-template-columns: 1.25fr .75fr; align-items: center;
+    padding: 0 74px; gap: 40px;
+  }
+  .eyebrow {
+    font-family: 'Roboto Mono', monospace; font-size: 15px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .18em; color: #3FBFA6;
+    display: inline-flex; align-items: center; gap: 11px; margin-bottom: 26px;
+  }
+  .eyebrow::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #3FBFA6; }
+  h1 {
+    font-family: 'Newsreader', Georgia, serif; font-weight: 300; color: #FFFFFF;
+    font-size: 74px; line-height: .98; letter-spacing: -0.015em;
+  }
+  h1 em { font-style: italic; }
+  p { color: #9C9CA7; font-size: 23px; line-height: 1.45; margin-top: 26px; max-width: 30ch; }
+  .marca { position: absolute; top: 54px; left: 74px; display: flex; align-items: center; gap: 12px; }
+  .tiles { display: flex; flex-direction: column; gap: 14px; }
+  .tile { border-radius: 26px; padding: 22px 24px; }
+  .t1 { background: #5B4FE0; color: #FFFFFF; }
+  .t2 { background: #8FB6EE; color: #10121A; }
+  .t3 { background: #D98FD4; color: #1B0F1A; }
+  .tk { font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; opacity: .74; }
+  .tv { font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: 38px; line-height: 1.1; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="marca">
+    <svg width="62" height="29" viewBox="-8 -20 292 136" aria-hidden="true">
+      <rect x="0" y="0" width="20" height="100" fill="#FFFFFF"/>
+      <path d="M52 46 L86 88 L134 -8" fill="none" stroke="#3FBFA6" stroke-width="20"/>
+      <circle cx="210" cy="50" r="40" fill="none" stroke="#FFFFFF" stroke-width="20"/>
+    </svg>
+  </div>
+
+  <div>
+    <span class="eyebrow">Para donos de negócio</span>
+    <h1>Saiba que o caixa vai apertar.<br><em>Antes</em> de apertar.</h1>
+    <p>O Ivo avisa em português claro, com data e valor.</p>
+  </div>
+
+  <div class="tiles">
+    <div class="tile t1"><div class="tk">Caixa projetado</div><div class="tv">R$ 61.000</div></div>
+    <div class="tile t2"><div class="tk">Dinheiro preso</div><div class="tv">30 dias</div></div>
+    <div class="tile t3"><div class="tk">O que sobra</div><div class="tv">42%</div></div>
+  </div>
+</body>
+</html>

@@ -6,19 +6,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Assinar o IVO · checkout</title>
 <meta name="description" content="Escolha seu plano do Ivo e garanta seu lugar. Cobrança no site, sem fidelidade." />
-<meta name="theme-color" content="#37373F" />
+<meta name="theme-color" content="#101014" />
 <meta name="robots" content="noindex" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='112'%20fill='%2337373F'/%3E%3Cg%20transform='translate(30,168)%20scale(1.7)'%3E%3Crect%20width='26'%20height='100'%20fill='%23F5F4F2'/%3E%3Cpath%20d='M58%2042%20L94%2086%20L142%20-8'%20fill='none'%20stroke='%233FBFA6'%20stroke-width='26'/%3E%3Ccircle%20cx='216'%20cy='50'%20r='37'%20fill='none'%20stroke='%23F5F4F2'%20stroke-width='26'/%3E%3C/g%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,16..72,200..400;1,16..72,200..400&family=Figtree:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="pagina.css" />
 <style>
   .co-grid { display: grid; grid-template-columns: 1.3fr .9fr; gap: clamp(20px, 4vw, 40px); align-items: start; margin-top: 28px; }
   @media (max-width: 820px) { .co-grid { grid-template-columns: 1fr; } }
 
   /* aviso honesto: pagamento online em finalização */
-  .co-banner { display: flex; gap: 12px; align-items: flex-start; background: #F0FBF6; border: 1px solid color-mix(in srgb, var(--vivo) 45%, transparent); border-radius: 14px; padding: 14px 16px; margin-top: 18px; }
+  /* o fundo SAI do token, não é um verde claro fixo: com a cor fixa, o texto
+     (que segue --ink) virou claro sobre quase-branco no tema escuro — 1,1:1,
+     ilegível. Derivar do --pulse resolve nos dois temas de uma vez. */
+  .co-banner { display: flex; gap: 12px; align-items: flex-start; background: color-mix(in srgb, var(--pulse) 11%, var(--surface)); border: 1px solid color-mix(in srgb, var(--pulse) 42%, transparent); border-radius: 14px; padding: 14px 16px; margin-top: 18px; }
   .co-banner .dot { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%; background: var(--vivo); margin-top: 6px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--vivo) 22%, transparent); }
   .co-banner p { font-size: .92rem; line-height: 1.5; color: var(--ink); }
   .co-banner b { color: var(--pulse-ink); }
@@ -36,7 +39,7 @@
   .co-plan .co-desc { font-size: .84rem; color: var(--muted); margin-top: 2px; }
   .co-plan .co-price { font-family: var(--f-display); font-weight: 700; font-size: 1.15rem; color: var(--heading); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .co-plan .co-price small { font-family: var(--f-body); font-weight: 500; font-size: .78rem; color: var(--muted); }
-  .co-tag { font-family: var(--f-mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: #06231A; background: var(--vivo); padding: 3px 7px; border-radius: 999px; margin-left: 8px; }
+  .co-tag { font-family: var(--f-mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: #06231A; background: var(--pulse); padding: 3px 7px; border-radius: 999px; margin-left: 8px; }
 
   /* resumo do pedido (sticky no desktop) */
   .co-summary { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); position: sticky; top: 88px; }

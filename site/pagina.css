@@ -3,39 +3,44 @@
    Reaproveita os tokens da marca do index.html. Clara e escura.
    Fonte da marca: packages/tokens.
    --------------------------------------------------------------- */
+/* Mesma sala escura do index (14/09/2026): quem sai da capa para a calculadora
+   ou para o checkout não pode cair num site diferente. Os tokens abaixo são os
+   mesmos, na mesma ordem — se mudar lá, muda aqui. */
 :root {
   --mata: #37373f;
-  --vivo: #23c883;
+  --vivo: #0F7A69;   /* o verde do IVO (estava o #23c883 do nome antigo) */
   --papel: #f5f4f2;
   --tinta: #2a2a31;
   --cinza: #838993;
   --alerta: #e39a26;
   --critico: #d8503f;
 
-  --bg: var(--papel);
-  --surface: #ffffff;
-  --surface-2: #fbfaf9;
-  --ink: var(--tinta);
-  --muted: var(--cinza);
-  --heading: var(--mata);
-  --line: rgba(55, 55, 63, 0.12);
-  --line-2: rgba(55, 55, 63, 0.07);
-  --pulse-ink: #0F7A69;      /* igual ao acento: já legível sobre papel */
+  --bg: #121216;
+  --bg-2: #0C0C0F;
+  --surface: #1E1E24;
+  --surface-2: #26262E;
+  --ink: #EDEDF1;
+  --muted: #9C9CA7;
+  --heading: #FFFFFF;
+  --line: rgba(237, 237, 241, 0.14);
+  --line-2: rgba(237, 237, 241, 0.08);
+  /* `--pulse` É USADO PELO WORDMARK (o V é um check com stroke="var(--pulse)").
+     Ele nunca tinha sido declarado aqui: o check ficava sem cor e o logo virava
+     "I O" — defeito que já existia para quem usava o sistema em tema escuro, e
+     que só apareceu para todos quando o escuro virou o padrão. */
+  --pulse: #3FBFA6;
+  --pulse-ink: #3FBFA6;      /* verde da marca SOBRE ESCURO */
   --shadow: none; /* elevacao e borda, nunca sombra */
-  --f-display: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+  --f-serif: 'Newsreader', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --f-display: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-mono: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: var(--mata); --surface: #3e3e47; --surface-2: #2e2e36;
-    --ink: #ecebef; --muted: #a6a6ae; --heading: #f4f4f6;
-    --line: rgba(236, 235, 239, 0.13); --line-2: rgba(236, 235, 239, 0.07);
-    --pulse-ink: #4fe0a3; --shadow: none;
-  }
+:root[data-theme='light'] {
+  --bg: var(--papel); --bg-2:#EFEEEC; --surface:#fff; --surface-2:#fbfaf9; --ink:var(--tinta);
+  --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12);
+  --line-2:rgba(55,55,63,.07); --pulse:#0F7A69; --pulse-ink:#0F7A69;
 }
-:root[data-theme='light'] { --bg: var(--papel); --surface:#fff; --surface-2:#fbfaf9; --ink:var(--tinta); --muted:var(--cinza); --heading:var(--mata); --line:rgba(55,55,63,.12); --line-2:rgba(55,55,63,.07); --pulse-ink:#0F7A69; }
-:root[data-theme='dark'] { --bg:var(--mata); --surface:#3e3e47; --surface-2:#2e2e36; --ink:#ecebef; --muted:#a6a6ae; --heading:#f4f4f6; --line:rgba(236,235,239,.13); --line-2:rgba(236,235,239,.07); --pulse-ink:#4fe0a3; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -47,10 +52,11 @@ body {
 .wrap { width: 100%; max-width: 780px; margin-inline: auto; padding-inline: clamp(18px, 5vw, 24px); }
 .wrap.wide { max-width: 960px; }
 
-h1, h2, h3 { font-family: var(--f-display); color: var(--heading); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
-h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 700; line-height: 1.06; }
-h2 { font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 600; margin-top: 2.2rem; }
-h3 { font-size: 1.06rem; font-weight: 600; margin-top: 1.4rem; }
+/* Mesma voz do index: a afirmação é serifada e leve; interface é sans. */
+h1, h2 { font-family: var(--f-serif); color: var(--heading); margin: 0; font-weight: 300; letter-spacing: -0.014em; text-wrap: balance; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.1rem); line-height: 1.02; }
+h2 { font-size: clamp(1.45rem, 3vw, 1.95rem); line-height: 1.1; margin-top: 2.2rem; }
+h3 { font-family: var(--f-display); color: var(--heading); margin: 0; font-size: 1.04rem; font-weight: 600; letter-spacing: -0.01em; margin-top: 1.4rem; text-wrap: balance; }
 p { margin: 0.7rem 0 0; }
 a { color: var(--pulse-ink); }
 ul { margin: 0.6rem 0 0; padding-left: 1.3rem; }
@@ -85,9 +91,12 @@ li { margin: 0.3rem 0; }
   transition: background .18s ease, border-color .18s ease, transform 160ms var(--saida);
 }
 .btn:active { transform: scale(.97); }
-.btn-primary { background: var(--vivo); color: #FFFFFF; }
-/* hover escurece a cor; o botão não levita (elevação aqui é borda, não sombra) */
-.btn-primary:hover { background: color-mix(in srgb, var(--vivo) 86%, #000); }
+/* A ação primária é o elemento mais claro da página (igual ao index): branco
+   cheio sobre o escuro. O verde fica livre para significar só sinal. */
+.btn-primary { background: #FFFFFF; color: #101014; }
+.btn-primary:hover { background: #DFDFE4; }
+:root[data-theme='light'] .btn-primary { background: var(--mata); color: #FFFFFF; }
+:root[data-theme='light'] .btn-primary:hover { background: #23232A; }
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--pulse-ink); color: var(--pulse-ink); }
 :focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; border-radius: 4px; }
@@ -110,7 +119,7 @@ li { margin: 0.3rem 0; }
 .inp:focus-visible { outline: 3px solid var(--vivo); outline-offset: 2px; }
 .result { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); position: sticky; top: 84px; }
 .result .r-k { font-family: var(--f-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.result .r-v { font-family: var(--f-display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.1rem); letter-spacing: -0.02em; margin-top: 4px; line-height: 1.1; }
+.result .r-v { font-family: var(--f-serif); font-weight: 300; font-size: clamp(1.9rem, 4.4vw, 2.5rem); letter-spacing: -0.015em; margin-top: 4px; line-height: 1.1; }
 .result .r-v.risco { color: var(--critico); }
 .result .r-v.ok { color: var(--pulse-ink); }
 .result .r-sub { color: var(--muted); font-size: .92rem; margin-top: 6px; }
