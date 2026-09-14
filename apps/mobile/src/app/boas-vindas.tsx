@@ -68,7 +68,7 @@ function emailValido(txt: string): boolean {
 type ErrosCampo = { negocio?: string; telefone?: string; email?: string; senha?: string };
 
 export default function Login() {
-  const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando } = usePulso();
+  const { entrar, cadastrar, entrarDemo, carregando, erro, restaurando, logado } = usePulso();
   const [modo, setModo] = useState<Modo>('boas-vindas');
   const [negocio, setNegocio] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -140,6 +140,29 @@ export default function Login() {
     }, 4500);
     return () => clearInterval(t);
   }, [carregando]);
+
+  /**
+   * ENTRADA DIRETA NA DEMONSTRAÇÃO POR URL (`?demo=1`).
+   *
+   * É o que a demo embutida no site usa: a capa monta o app real dentro de uma
+   * moldura e precisa que ele JÁ ABRA na demonstração, sem ninguém clicar. Sem
+   * esta porta, o site teria que achar o botão pelo texto e simular o clique —
+   * e no dia em que alguém reescrevesse o rótulo, a demo pararia de entrar sem
+   * ninguém ficar sabendo.
+   *
+   * ESTE HOOK TEM QUE FICAR AQUI, ANTES do `if (restaurando) return` lá embaixo:
+   * hook depois de retorno antecipado muda a quantidade de hooks entre um render
+   * e outro, e o React derruba a tela inteira (erro #310). Foi o que aconteceu
+   * na primeira versão.
+   */
+  useEffect(() => {
+    if (restaurando || logado) return;
+    if (typeof window === 'undefined' || !window.location) return;
+    if (new URLSearchParams(window.location.search).get('demo') !== '1') return;
+    entrarDemo();
+    router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurando, logado]);
 
   if (restaurando) {
     return (

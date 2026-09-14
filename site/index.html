@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,16..72,200..400;1,16..72,200..400&family=Figtree:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,16..72,200..400;1,16..72,200..400&family=Figtree:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   /* ---------- Marca Ivo (fonte: packages/tokens) ---------- */
   :root {
@@ -92,7 +92,11 @@
     --f-serif:   'Newsreader', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
     --f-display: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --f-body:    'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --f-mono:    'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    /* RÓTULO — era monoespaçada (Roboto Mono), e era ela que dava o ar de
+       "gerado": mono em maiúscula muito espaçada é o uniforme de site de
+       software. Virou ARREDONDADA (Nunito), com tracking curto. O papel dela
+       não mudou: etiqueta, rótulo de campo, legenda e nota. */
+    --f-rotulo:  'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
   /* O escuro é o padrão para TODO MUNDO: a preferência de tema do sistema não
      muda mais a página (era o que o bloco prefers-color-scheme fazia aqui). A
@@ -161,7 +165,7 @@
      enfeite nenhum na frente. A mono continua na casa dela — etiqueta, dado e
      rótulo de campo —, que é onde ela é função e não decoração. */
   .eyebrow {
-    font-family: var(--f-serif); font-size: 1.12rem; font-weight: 300;
+    font-family: var(--f-serif); font-size: clamp(1.25rem, 1.7vw, 1.45rem); font-weight: 300;
     font-style: italic; letter-spacing: 0; color: var(--muted);
     display: inline-block; line-height: 1.3;
   }
@@ -272,19 +276,89 @@
      não de 14): o que se percebe é a página ganhando presença, não algo
      escorregando. Curva da referência, e roda UMA vez. Quem pede menos
      movimento já recebe tudo isso reduzido pelo bloco de reduced-motion. */
-  .hero-copy { display: flex; flex-direction: column; gap: 1.4rem; align-items: flex-start; animation: acende 1.1s var(--entrada) both; }
+  .hero-copy { display: flex; flex-direction: column; gap: 1.4rem; align-items: flex-start; }
   .hero-copy h1 { margin-top: .3rem; }
   .hero-cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .4rem; }
-  .hero-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); letter-spacing: .02em; }
+  .hero-note { font-family: var(--f-rotulo); font-size: .84rem; color: var(--muted); letter-spacing: .01em; }
+
+  /* A CAPA ENTRA EM CASCATA, não de uma vez.
+     Cada peça acende logo depois da anterior — e o título vem LINHA A LINHA,
+     que é o que dá a sensação de fluidez sem nada se mexendo depois. Tudo roda
+     UMA vez, com a curva de entrada. Os atrasos são curtos de propósito: a
+     última peça já está lá antes de 1,5s, então ninguém fica esperando a página
+     "terminar de aparecer" para poder ler. */
+  .hero-copy .eyebrow { animation: acende .85s .04s var(--entrada) both; }
+  .hero-copy h1 .l { display: block; animation: acende .95s var(--entrada) both; }
+  .hero-copy h1 .l:nth-child(1) { animation-delay: .13s; }
+  .hero-copy h1 .l:nth-child(2) { animation-delay: .25s; }
+  .hero-copy .lead { animation: acende .9s .42s var(--entrada) both; }
+  .hero-copy .hero-cta { animation: acende .9s .54s var(--entrada) both; }
+  .hero-copy .hero-note { animation: acende .9s .64s var(--entrada) both; }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @keyframes acende { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
   /* herói: a tela real do app numa moldura discreta */
-  .hero-shot { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: acende 1.5s .1s var(--entrada) both; }
+  .hero-shot { position: relative; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: acende-tela 1.5s .18s var(--entrada) both; }
+  /* HALO: o aparelho não fica pousado no escuro, ele ILUMINA o que está atrás.
+     É o "brilho volumétrico" da referência — estático, atrás de tudo, sem
+     interferir no toque. Frio de propósito: se fosse verde, brigaria com o
+     sinal. */
+  /* `isolation` + z-index 0/1 em vez de z-index -1: com -1 o halo ia parar
+     ATRÁS do fundo da própria página e simplesmente não aparecia. */
+  .hero-shot { isolation: isolate; }
+  .hero-shot > * { position: relative; z-index: 1; }
+  .hero-shot::before {
+    content: ""; position: absolute; inset: -14% -20% -4%; z-index: 0; pointer-events: none;
+    background: radial-gradient(56% 44% at 50% 38%, rgba(101, 88, 245, .46), rgba(143, 182, 238, .16) 48%, transparent 74%);
+    filter: blur(30px);
+  }
+  /* a tela também cresce um fio ao entrar: 0,985 -> 1 é quase imperceptível,
+     e é o que faz o aparelho parecer chegar em vez de piscar */
+  @keyframes acende-tela {
+    from { opacity: 0; transform: translateY(10px) scale(.985); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---------- Demo sob demanda dentro da moldura ---------- */
+  .hero-shot .screen { position: relative; }
+  .demo-btn {
+    position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: .5em; white-space: nowrap;
+    font-family: var(--f-display); font-weight: 600; font-size: .92rem;
+    padding: .7em 1.15em; border-radius: 999px; border: 0; cursor: pointer;
+    background: #101014; color: #FFFFFF;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .45);
+    transition: background .18s ease, transform 160ms var(--saida);
+  }
+  .demo-btn:hover { background: #23232A; }
+  .demo-btn:active { transform: translateX(-50%) scale(.97); }
+  .demo-play { font-size: .72em; }
+  .demo-carregando {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    gap: .6em; background: #F5F4F2;
+    font-family: var(--f-rotulo); font-size: .88rem; font-weight: 600; color: #37373F;
+  }
+  /* SEM ISTO O AVISO FICA SEMPRE NA TELA: `display:flex` na classe vence o
+     atributo `hidden` do HTML, que só traz `display:none` do navegador. */
+  .demo-carregando[hidden] { display: none; }
+  .demo-btn[hidden] { display: none; }
+  .demo-spin {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(55, 55, 63, .25); border-top-color: #0F7A69;
+    animation: girando .8s linear infinite;
+  }
+  /* único movimento perpétuo do site, e só existe ENQUANTO carrega: indicação
+     de progresso é função, não enfeite — igual à seta do formulário. */
+  @keyframes girando { to { transform: rotate(360deg); } }
+  /* O app real ocupa a moldura inteira. 390px é a largura de celular em que o
+     app foi desenhado; a escala encaixa isso na moldura sem distorcer. */
+  .demo-frame { width: 390px; height: 844px; border: 0; display: block; transform-origin: top left; }
+  .hero-shot .screen.rodando { aspect-ratio: 390 / 844; }
+  .hero-shot .screen.rodando .shot { display: none; }
   .hero-shot .phone { width: min(300px, 100%); flex: 0 0 auto; max-width: 100%; }
   /* min-width:0 impede que a largura natural da imagem estique a coluna do grid */
   .hero-copy, .hero-shot { min-width: 0; }
-  .hero-shot-cap { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; color: var(--muted); }
+  .hero-shot-cap { font-family: var(--f-rotulo); font-size: .7rem; letter-spacing: .06em; color: var(--muted); }
   @media (max-width: 900px) { .hero-shot { align-items: flex-start; } }
 
   /* cartão de alerta (herói antigo — mantido para o modo escuro/outras páginas) */
@@ -297,7 +371,7 @@
   .alert-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--critico); }
   .alert-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .chip {
-    font-family: var(--f-mono); font-size: .68rem; font-weight: 500; text-transform: uppercase; letter-spacing: .14em;
+    font-family: var(--f-rotulo); font-size: .68rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em;
     display: inline-flex; align-items: center; gap: .5em; padding: .35em .7em; border-radius: 999px;
   }
   .chip-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
@@ -305,12 +379,12 @@
      pessoa está lendo é ruído, e é o clichê que faz uma página parecer gerada.
      A cor já carrega o sinal. */
   .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-  .alert-time { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); }
+  .alert-time { font-family: var(--f-rotulo); font-size: .72rem; color: var(--muted); }
   .alert-headline { font-family: var(--f-display); font-weight: 600; font-size: 1.5rem; line-height: 1.2; color: var(--heading); letter-spacing: -0.02em; }
   .alert-headline b { color: var(--critico); font-weight: 600; }
   .alert-sub { color: var(--muted); font-size: .98rem; }
   .alert-figures { display: flex; gap: 26px; padding-top: 14px; border-top: 1px solid var(--line-2); }
-  .figure .flabel { font-family: var(--f-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+  .figure .flabel { font-family: var(--f-rotulo); font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   .figure .fval { font-family: var(--f-display); font-weight: 600; font-size: 1.32rem; font-variant-numeric: tabular-nums; color: var(--heading); margin-top: 2px; }
 
   /* linha de pulso (ECG) */
@@ -335,7 +409,7 @@
   .facts { display: flex; flex-direction: column; gap: 2px; margin-top: .5rem; }
   .fact { display: flex; gap: 16px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--line-2); }
   .fact:last-child { border-bottom: 0; }
-  .fact .fk { font-family: var(--f-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--pulse-ink); flex: 0 0 auto; width: 108px; }
+  .fact .fk { font-family: var(--f-rotulo); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--pulse-ink); flex: 0 0 auto; width: 108px; }
   .fact .fv { color: var(--ink); }
 
   /* PASSOS = TILES DE CATEGORIA (o elemento das duas referências que o João
@@ -363,8 +437,8 @@
      rótulo é trabalho da monoespaçada pequena. Foi o que a primeira versão
      errou — o algarismo gigante ocupava o lugar nobre sem dizer nada. */
   .step .snum {
-    font-family: var(--f-mono); font-size: .68rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: .16em; color: inherit; opacity: .74;
+    font-family: var(--f-rotulo); font-size: .68rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .06em; color: inherit; opacity: .74;
     margin-bottom: auto;
   }
   .step h3 { font-family: var(--f-serif); font-weight: 300; font-size: clamp(1.5rem, 2.2vw, 1.95rem); line-height: 1.08; color: inherit; letter-spacing: -0.012em; margin-top: 1.6rem; }
@@ -386,14 +460,14 @@
   .signal.sig-ok { background: color-mix(in srgb, var(--vivo) 6%, var(--surface-2)); }
   .signal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .signal .sk { display: flex; flex-direction: column; gap: 2px; font-family: var(--f-display); font-weight: 600; font-size: .98rem; color: var(--ink); letter-spacing: -0.01em; }
-  .signal .sk-tech { font-family: var(--f-mono); font-size: .58rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .signal .sk-tech { font-family: var(--f-rotulo); font-size: .58rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   .signal p { color: var(--ink); font-size: 1.02rem; }
-  .sev { font-family: var(--f-mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; padding: .3em .6em; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: .45em; }
+  .sev { font-family: var(--f-rotulo); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; padding: .3em .6em; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: .45em; }
   .sev-crit { color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
   .sev-warn { color: var(--alerta); background: color-mix(in srgb, var(--alerta) 15%, transparent); }
   .sev-ok { color: var(--pulse-ink); background: color-mix(in srgb, var(--vivo) 14%, transparent); }
   .sev .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .watch-foot { margin-top: 1.6rem; font-family: var(--f-mono); font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
+  .watch-foot { margin-top: 1.6rem; font-family: var(--f-rotulo); font-size: .88rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
   .watch-foot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--critico); }
 
   /* SEÇÃO INVERTIDA — o respiro claro que quebra o ritmo escuro. Regra da
@@ -422,7 +496,7 @@
   /* CTA final */
   .cta-final { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
   .cta-final .prose { text-align: center; }
-  .cta-note { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); }
+  .cta-note { font-family: var(--f-rotulo); font-size: .74rem; color: var(--muted); }
   .lista-form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: .3rem; text-align: left; }
   .lista-input { width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: .82em 1.15em; font-family: var(--f-body); font-size: 1rem; color: var(--ink); }
   .lista-input::placeholder { color: var(--muted); }
@@ -451,7 +525,7 @@
   @media (max-width: 480px) { .foot-top { grid-template-columns: 1fr; } }
   .foot-brandcol { display: flex; flex-direction: column; gap: 14px; }
   .foot-tagline { font-size: .92rem; color: #A9ACB6; line-height: 1.5; max-width: 30ch; }
-  .foot-col h4 { font-family: var(--f-mono); font-size: .68rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #8ED4C6; margin: 0 0 14px; }
+  .foot-col h4 { font-family: var(--f-rotulo); font-size: .68rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: #8ED4C6; margin: 0 0 14px; }
   .foot-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
   .foot-col a { font-size: .92rem; color: #C4C6CE; text-decoration: none; }
   .foot-col a:hover { color: #FFFFFF; }
@@ -463,9 +537,9 @@
   .store-badge .sb-txt { display: flex; flex-direction: column; line-height: 1.1; }
   .store-badge .sb-txt small { font-size: .56rem; letter-spacing: .04em; color: #A9ACB6; text-transform: uppercase; }
   .store-badge .sb-txt b { font-family: var(--f-display); font-weight: 600; font-size: .9rem; }
-  .foot-soon { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: #8ED4C6; margin-top: 2px; }
+  .foot-soon { font-family: var(--f-rotulo); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: #8ED4C6; margin-top: 2px; }
   .foot-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 22px; }
-  .foot-note { font-family: var(--f-mono); font-size: .72rem; color: #8A8D97; }
+  .foot-note { font-family: var(--f-rotulo); font-size: .72rem; color: #8A8D97; }
   .foot-social { display: inline-flex; align-items: center; gap: 8px; color: #C4C6CE; font-size: .82rem; text-decoration: none; }
   .foot-social:hover { color: #8ED4C6; }
 
@@ -496,13 +570,13 @@
     .wa-float:hover .wa-tip { max-width: 0; opacity: 0; margin-left: 0; }
   }
 
-  .draft-tag { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--alerta); border: 1px dashed color-mix(in srgb, var(--alerta) 55%, transparent); padding: .2em .5em; border-radius: 6px; }
+  .draft-tag { font-family: var(--f-rotulo); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: var(--alerta); border: 1px dashed color-mix(in srgb, var(--alerta) 55%, transparent); padding: .2em .5em; border-radius: 6px; }
 
   /* ---------- Segurança / LGPD ---------- */
   .safe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 2.6rem; }
   @media (max-width: 820px) { .safe-grid { grid-template-columns: 1fr; } }
   .safe-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); }
-  .safe-card .sk { font-family: var(--f-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--pulse-ink); }
+  .safe-card .sk { font-family: var(--f-rotulo); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--pulse-ink); }
   .safe-card p { color: var(--muted); font-size: .96rem; }
 
   /* ---------- FAQ ---------- */
@@ -601,15 +675,15 @@
   .plan.destaque { border-color: color-mix(in srgb, var(--vivo) 55%, var(--line)); position: relative; }
   /* a tarja usa o verde CLARO (--pulse) e não o escuro: preenchido com o verde
      de fundo claro, o texto escuro em cima dava 3,17:1 e sumia. */
-  .plan .p-tag { position: absolute; top: -11px; left: 24px; background: var(--pulse); color: #06231A; font-family: var(--f-mono); font-size: .6rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
-  .plan .p-name { font-family: var(--f-mono); font-size: .74rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--pulse-ink); }
+  .plan .p-tag { position: absolute; top: -11px; left: 24px; background: var(--pulse); color: #06231A; font-family: var(--f-rotulo); font-size: .6rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+  .plan .p-name { font-family: var(--f-rotulo); font-size: .74rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--pulse-ink); }
   .plan .p-price { font-family: var(--f-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 2.6rem); color: var(--heading); letter-spacing: -0.02em; line-height: 1; }
   .plan .p-price small { font-family: var(--f-body); font-weight: 500; font-size: .92rem; color: var(--muted); letter-spacing: 0; }
   .plan ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   .plan li { display: flex; gap: 10px; align-items: flex-start; font-size: .96rem; color: var(--ink); line-height: 1.4; }
   .plan li svg { flex: 0 0 auto; margin-top: 3px; }
   .plan .btn { margin-top: auto; justify-content: center; }
-  .plans-note { margin-top: 1.6rem; font-family: var(--f-mono); font-size: .78rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
+  .plans-note { margin-top: 1.6rem; font-family: var(--f-rotulo); font-size: .78rem; color: var(--muted); display: inline-flex; align-items: center; gap: .6em; }
   .plans-note::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--vivo); }
 
   /* ---------- Ajustes de enxugamento / fluidez (briefing) ---------- */
@@ -697,7 +771,8 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <span class="eyebrow">Feito para o dono, não para o contador</span>
-        <h1>Saiba que o caixa vai apertar.<br><span class="accent">Antes</span> de apertar.</h1>
+        <!-- as linhas são spans para poderem entrar uma depois da outra -->
+        <h1><span class="l">Saiba que o caixa vai apertar.</span><span class="l"><span class="accent">Antes</span> de apertar.</span></h1>
         <p class="lead">O Ivo acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho, com data e valor. Você reage a tempo, não depois do susto.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="calculadora.html">Simular grátis <span class="btn-arrow" aria-hidden="true">→</span></a>
@@ -707,14 +782,26 @@
 
       <!-- HERÓI: a tela real do produto. Nada de mockup desenhado — o que o
            visitante vê aqui é exatamente o que ele encontra ao entrar. -->
+      <!-- DEMO SOB DEMANDA: o pôster é a captura real do app; ao tocar em
+           "Experimentar", o app REAL monta aqui dentro, em demonstração. O
+           bundle do app tem ~2,7 MB — carregá-lo junto com a capa mataria a
+           velocidade da página, então ele só entra quando a pessoa pede. -->
       <figure class="hero-shot">
-        <div class="phone">
+        <div class="phone" id="demo-moldura">
           <div class="screen">
             <img class="shot" src="img/app-painel.png" width="780" height="1688" fetchpriority="high" decoding="async"
                  alt="Painel do Ivo mostrando o caixa projetado para 30 dias, de onde vem o saldo e até quando o dinheiro dura." />
+            <button class="demo-btn" id="demo-btn" type="button">
+              <span class="demo-play" aria-hidden="true">▶</span>
+              <span>Experimentar agora</span>
+            </button>
+            <div class="demo-carregando" id="demo-carregando" hidden>
+              <span class="demo-spin" aria-hidden="true"></span>
+              <span>Abrindo o Ivo…</span>
+            </div>
           </div>
         </div>
-        <figcaption class="hero-shot-cap">O painel do Ivo, com dados de demonstração.</figcaption>
+        <figcaption class="hero-shot-cap" id="demo-legenda">O painel do Ivo, com dados de demonstração.</figcaption>
       </figure>
     </div>
   </section>
@@ -817,27 +904,27 @@
       </div>
       <div class="watch-grid reveal stagger">
         <div class="signal sig-crit">
-          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span><span class="sev sev-crit"><span class="sdot"></span>Crítico</span></div>
+          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span><span class="sev sev-crit"><span class="sdot"></span>Aja agora</span></div>
           <p>Seu caixa pode zerar em menos de 60 dias.</p>
         </div>
         <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Cresce, mas o caixa aperta<span class="sk-tech">efeito tesoura</span></span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Cresce, mas o caixa aperta<span class="sk-tech">efeito tesoura</span></span><span class="sev sev-warn">Olhe este mês</span></div>
           <p>Você vende mais, mas o dinheiro está demorando mais a chegar.</p>
         </div>
         <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Depende de poucos clientes<span class="sk-tech">concentração</span></span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Depende de poucos clientes<span class="sk-tech">concentração</span></span><span class="sev sev-warn">Olhe este mês</span></div>
           <p>Um único cliente responde por boa parte do seu faturamento.</p>
         </div>
         <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Dinheiro fica preso<span class="sk-tech">ciclo de caixa</span></span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Dinheiro fica preso<span class="sk-tech">ciclo de caixa</span></span><span class="sev sev-warn">Olhe este mês</span></div>
           <p>O tempo entre pagar suas contas e receber está piorando.</p>
         </div>
         <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span><span class="sev sev-warn">Atenção</span></div>
+          <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span><span class="sev sev-warn">Olhe este mês</span></div>
           <p>Sua margem caiu dois meses seguidos. O custo subiu ou o preço ficou para trás.</p>
         </div>
         <div class="signal sig-ok">
-          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span><span class="sev sev-ok">Tudo certo</span></div>
+          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span><span class="sev sev-ok">Nada a fazer</span></div>
           <p>Quando está tudo bem, o Ivo fica quieto. Sem aviso, é bom sinal.</p>
         </div>
       </div>
@@ -1203,6 +1290,82 @@
       }).catch(function () {
         mostra('Não consegui salvar agora. Tente de novo em instantes.', 'lista-msg-erro');
       }).then(function () { ocupado(false); });
+    });
+  })();
+
+  /* ------------------------------------------------------------------
+     DEMO SOB DEMANDA
+
+     O pôster do herói é a captura real do app. Ao tocar em "Experimentar",
+     montamos o APP DE VERDADE (mesmo domínio, /app) dentro da moldura, já em
+     demonstração, com dados fictícios e sem depender do servidor.
+
+     Por que sob demanda: o bundle do app tem ~2,7 MB de JavaScript. Carregar
+     isso junto com a capa arruinaria a primeira impressão de quem só quer ler
+     a página. Quem pede, espera um pouco; quem não pede, não paga nada.
+
+     No CELULAR não embutimos: iframe pequeno dentro de página rolando é uma
+     experiência ruim. Lá o botão abre o app em tela cheia, em outra aba.
+     ------------------------------------------------------------------ */
+  (function () {
+    var btn = document.getElementById('demo-btn');
+    if (!btn) return;
+    var moldura = document.getElementById('demo-moldura');
+    var tela = moldura.querySelector('.screen');
+    var carregando = document.getElementById('demo-carregando');
+    var legenda = document.getElementById('demo-legenda');
+    /* SEM .html: com a extensão o Expo Router não casa a rota e cai em
+       "Unmatched Route". A URL limpa é resolvida pelo servidor estático (o
+       Render faz isso; conferido) e é a que o roteador do app entende. */
+    var URL_DEMO = '/app/boas-vindas?demo=1';
+
+    function ehCelular() {
+      return window.matchMedia('(max-width: 900px)').matches;
+    }
+
+    /** A moldura tem largura fixa; o app foi desenhado para 390px. */
+    function encaixar(frame) {
+      var escala = tela.clientWidth / 390;
+      frame.style.transform = 'scale(' + escala + ')';
+      tela.style.height = Math.round(844 * escala) + 'px';
+    }
+
+    btn.addEventListener('click', function () {
+      if (ehCelular()) {
+        window.open(URL_DEMO, '_blank', 'noopener');
+        return;
+      }
+      btn.hidden = true;
+      carregando.hidden = false;
+
+      var frame = document.createElement('iframe');
+      frame.className = 'demo-frame';
+      frame.title = 'Demonstração do aplicativo do Ivo';
+      frame.src = URL_DEMO;
+      frame.addEventListener('load', function () {
+        carregando.hidden = true;
+        tela.classList.add('rodando');
+        encaixar(frame);
+        legenda.textContent = 'Você está no Ivo de verdade, com dados fictícios. Pode tocar à vontade.';
+      });
+      tela.appendChild(frame);
+      encaixar(frame);
+
+      /* Rede de segurança: se o app não carregar (rede ruim, arquivo fora do
+         ar), a capa volta ao pôster em vez de ficar num vazio branco. */
+      setTimeout(function () {
+        if (!tela.classList.contains('rodando')) {
+          frame.remove();
+          carregando.hidden = true;
+          btn.hidden = false;
+          legenda.textContent = 'Não consegui abrir a demonstração agora. Tente de novo.';
+        }
+      }, 15000);
+    });
+
+    window.addEventListener('resize', function () {
+      var frame = tela.querySelector('.demo-frame');
+      if (frame) encaixar(frame);
     });
   })();
 </script>
