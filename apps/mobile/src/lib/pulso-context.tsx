@@ -261,6 +261,29 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let vivo = true;
     (async () => {
+      /**
+       * DEMONSTRAÇÃO POR URL (`?demo=1`, usada pela capa do site): NÃO restaura
+       * sessão e NÃO fala com o servidor.
+       *
+       * Sem esta saída, a demo caía na restauração normal, que termina em
+       * `await carregar(...)` — e o `fetchWithWake` fica esperando o servidor
+       * free acordar (30 a 50 segundos, às vezes mais). O visitante ficava
+       * olhando o logo e um spinner, achando que travou. Era o que acontecia.
+       *
+       * A demonstração roda com dados fictícios locais: não precisa de rede
+       * nenhuma, e agora abre na hora.
+       */
+      if (
+        typeof window !== 'undefined' &&
+        window.location &&
+        new URLSearchParams(window.location.search).get('demo') === '1'
+      ) {
+        if (vivo) {
+          entrarDemo();
+          setRestaurando(false);
+        }
+        return;
+      }
       try {
         const salvo = await AsyncStorage.getItem(CHAVE_TOKEN);
         if (vivo && salvo) {
@@ -303,7 +326,7 @@ export function PulsoProvider({ children }: { children: ReactNode }) {
     return () => {
       vivo = false;
     };
-  }, [carregar]);
+  }, [carregar, entrarDemo]);
 
   const value = useMemo(
     () => ({
