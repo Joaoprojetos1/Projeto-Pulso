@@ -406,11 +406,22 @@
   /* problema */
   .prob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4rem); align-items: start; }
   @media (max-width: 820px) { .prob-grid { grid-template-columns: 1fr; } }
-  .facts { display: flex; flex-direction: column; gap: 2px; margin-top: .5rem; }
-  .fact { display: flex; gap: 16px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--line-2); }
-  .fact:last-child { border-bottom: 0; }
-  .fact .fk { font-family: var(--f-rotulo); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--pulse-ink); flex: 0 0 auto; width: 108px; }
-  .fact .fv { color: var(--ink); }
+  .prob-grid .prose { margin-top: .2rem; }
+
+  /* TRÊS NÚMEROS, não uma lista de parágrafos. O valor vem na serifada grande —
+     é a mesma voz das afirmações da página — e a explicação fica embaixo, miúda.
+     Sem cartão e sem borda em volta: o que separa uma coluna da outra é o
+     espaço, e uma linha fina no topo de cada uma. */
+  .prob-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 4vw, 42px); margin-top: clamp(2.6rem, 6vw, 4rem); }
+  @media (max-width: 820px) { .prob-nums { grid-template-columns: 1fr; gap: 26px; } }
+  .pn { display: flex; flex-direction: column; gap: .25rem; padding-top: 18px; border-top: 1px solid var(--line); }
+  .pn-v {
+    font-family: var(--f-serif); font-weight: 300; font-size: clamp(2.3rem, 4.2vw, 3.1rem);
+    line-height: 1; letter-spacing: -0.02em; color: var(--heading); font-variant-numeric: tabular-nums;
+  }
+  .pn-v b { font-weight: 300; color: var(--pulse); }
+  .pn-k { font-family: var(--f-rotulo); font-size: .82rem; font-weight: 600; color: var(--ink); margin-top: .35rem; }
+  .pn p { color: var(--muted); font-size: .95rem; line-height: 1.5; margin-top: .2rem; }
 
   /* PASSOS = TILES DE CATEGORIA (o elemento das duas referências que o João
      escolheu). Cor chapada, canto grande, sem borda e sem sombra: a cor é a
@@ -563,11 +574,12 @@
     position: fixed; right: clamp(16px, 4vw, 26px); bottom: clamp(16px, 4vw, 26px); z-index: 50;
     display: inline-flex; align-items: center; gap: 0; overflow: hidden;
     height: 56px; width: 56px; padding: 0 15px; border-radius: var(--raio);
-    /* NÃO usa o verde do WhatsApp: uma segunda cor cromática preenchida rouba a
-       atenção do único botão de ação da página e é o que faz a página parecer
-       template. Fica no escuro da marca; quem identifica é o ícone. */
-    background: var(--surface); color: #FFFFFF; text-decoration: none;
-    border: 1px solid rgba(255,255,255,.18);
+    /* VERDE OFICIAL DO WHATSAPP (#25D366). Ele tinha saído em 08/09 porque uma
+       segunda cor cromática preenchida disputava com o botão de ação, que era
+       verde. Isso mudou: a ação primária agora é BRANCA, então não há disputa —
+       e o verde faz o canal ser reconhecido sem precisar ler. */
+    background: #25D366; color: #06231A; text-decoration: none;
+    border: 1px solid rgba(0, 0, 0, .12);
     transition: width .28s cubic-bezier(.2,.7,.2,1), background .18s ease;
   }
   .wa-float svg { flex: 0 0 auto; }
@@ -575,8 +587,7 @@
     font-family: var(--f-display); font-weight: 600; font-size: .92rem; white-space: nowrap;
     max-width: 0; opacity: 0; margin-left: 0; transition: max-width .28s ease, opacity .2s ease, margin-left .28s ease;
   }
-  .wa-float:hover { width: 258px; background: var(--surface-2); }
-  :root[data-theme="light"] .wa-float { background: var(--mata); }
+  .wa-float:hover { width: 258px; background: #1FBA5A; }
   .wa-float:hover .wa-tip { max-width: 200px; opacity: 1; margin-left: 10px; }
   .wa-float:focus-visible { outline: 3px solid var(--vivo); outline-offset: 3px; }
   @media (max-width: 600px) {
@@ -760,7 +771,7 @@
       <a class="navlink" href="#vigia">O que ele monitora</a>
       <a class="navlink" href="#planos">Planos</a>
       <a class="navlink" href="#faq">Perguntas</a>
-      <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
+      <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
     </nav>
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
       <span class="ham" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -775,7 +786,7 @@
     <a class="m-link" href="#vigia">O que ele monitora</a>
     <a class="m-link" href="#planos">Planos</a>
     <a class="m-link" href="#faq">Perguntas</a>
-    <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
+    <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
   </nav>
 </div>
 
@@ -790,9 +801,9 @@
         <h1><span class="l">Saiba que o caixa vai apertar.</span><span class="l"><span class="accent">Antes</span> de apertar.</span></h1>
         <p class="lead">O Ivo acompanha o dinheiro do seu negócio todo dia e te avisa, em português claro, quando o caixa está indo pro vermelho, com data e valor. Você reage a tempo, não depois do susto.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="calculadora.html">Simular grátis <span class="btn-arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona <span class="btn-arrow" aria-hidden="true">→</span></a>
         </div>
-        <p class="hero-note">Simulação na hora, de graça · veja quando o seu caixa pode apertar</p>
+        <p class="hero-note">É o Ivo de verdade, com dados de exemplo · sem cadastro, sem instalar nada</p>
       </div>
 
       <!-- HERÓI: a tela real do produto. Nada de mockup desenhado — o que o
@@ -823,17 +834,32 @@
 
   <!-- PROBLEMA -->
   <section class="sec" id="problema">
-    <div class="wrap prob-grid">
-      <div class="sec-head reveal">
-        <span class="eyebrow">Onde o aperto começa</span>
-        <h2>Você toca o seu negócio. Quem cuida do caixa?</h2>
+    <div class="wrap">
+      <div class="prob-grid">
+        <div class="sec-head reveal">
+          <span class="eyebrow">Onde o aperto começa</span>
+          <h2>Você toca o seu negócio. Quem cuida do caixa?</h2>
+        </div>
+        <p class="prose reveal">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde, pelo susto no extrato.</p>
       </div>
-      <div>
-        <p class="prose">Movimento não é a mesma coisa que caixa saudável. Seus clientes pagam <strong>semanas depois</strong> da venda, os custos chegam todo dia 5, e quando a conta aperta você já está dentro do aperto. Quase sempre a gente descobre tarde, pelo susto no extrato.</p>
-        <div class="facts">
-          <div class="fact"><span class="fk">Recebimento</span><span class="fv">Seus clientes pagam, em média, <b class="num-hl" data-countto="46">46</b> dias depois da venda. Nesse intervalo, as contas continuam chegando.</span></div>
-          <div class="fact"><span class="fk">Custo fixo</span><span class="fv">Aluguel, equipe e impostos não esperam o dinheiro entrar.</span></div>
-          <div class="fact"><span class="fk">O susto</span><span class="fv">Sem alguém olhando todo dia, o aperto chega sem aviso.</span></div>
+
+      <!-- O QUE ERA UMA LISTA DE TEXTO VIROU TRÊS NÚMEROS. O dado é a coisa
+           mais concreta desta seção e estava escondido no meio da frase. -->
+      <div class="prob-nums reveal stagger">
+        <div class="pn">
+          <span class="pn-v"><b data-countto="46">46</b> dias</span>
+          <span class="pn-k">até o cliente pagar</span>
+          <p>É o intervalo médio entre vender e o dinheiro cair. Nele, as contas continuam chegando.</p>
+        </div>
+        <div class="pn">
+          <span class="pn-v">Todo dia 5</span>
+          <span class="pn-k">as contas chegam</span>
+          <p>Aluguel, equipe e impostos não esperam o seu dinheiro entrar.</p>
+        </div>
+        <div class="pn">
+          <span class="pn-v">No susto</span>
+          <span class="pn-k">é quando você descobre</span>
+          <p>Sem alguém olhando todo dia, o aperto só aparece no extrato — tarde demais.</p>
         </div>
       </div>
     </div>
@@ -996,7 +1022,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Projeção de caixa 30/60/90 dias</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Alertas do que pede atenção</li>
           </ul>
-          <a class="btn btn-ghost" href="calculadora.html">Simular grátis</a>
+          <a class="btn btn-ghost" href="#topo" data-demo>Veja como funciona</a>
         </div>
         <div class="plan destaque">
           <span class="p-tag">Mais escolhido</span>
@@ -1007,7 +1033,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Contas a pagar e a receber</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico e comparações</li>
           </ul>
-          <a class="btn btn-primary" href="calculadora.html">Simular grátis</a>
+          <a class="btn btn-primary" href="#topo" data-demo>Veja como funciona</a>
         </div>
         <div class="plan">
           <span class="p-name">Pro</span>
@@ -1017,7 +1043,7 @@
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os indicadores do motor</li>
             <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7.5" stroke="#0F7A69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Suporte prioritário</li>
           </ul>
-          <a class="btn btn-ghost" href="calculadora.html">Simular grátis</a>
+          <a class="btn btn-ghost" href="#topo" data-demo>Veja como funciona</a>
         </div>
       </div>
       <p class="plans-note">Sem fidelidade. A assinatura acontece no site, sem comissão de loja. <a href="checkout.html" style="color:var(--pulse-ink);font-weight:600;text-decoration:none;">Quero assinar →</a></p>
@@ -1106,7 +1132,7 @@
           <li><a href="#como">Como funciona</a></li>
           <li><a href="#vigia">O que ele monitora</a></li>
           <li><a href="#planos">Planos</a></li>
-          <li><a href="calculadora.html">Simular grátis</a></li>
+          <li><a href="#topo" data-demo>Veja como funciona</a></li>
         </ul>
       </nav>
 
@@ -1123,7 +1149,7 @@
         <h4>Contato</h4>
         <ul>
           <li><a href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Ivo." target="_blank" rel="noopener">Fale no WhatsApp</a></li>
-          <li><a href="calculadora.html">Simulação grátis</a></li>
+          <li><a href="#topo" data-demo>Veja como funciona</a></li>
         </ul>
       </nav>
     </div>
@@ -1141,7 +1167,8 @@
 
 <!-- botão flutuante do WhatsApp (tira-dúvidas) -->
 <a class="wa-float" href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Ivo." target="_blank" rel="noopener" aria-label="Tirar dúvidas no WhatsApp">
-  <svg width="30" height="30" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.35-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.19-1.58-1.19-3.02s.76-2.14 1.03-2.43c.27-.29.58-.36.78-.36l.56.01c.18.01.42-.07.66.5.24.58.82 2.02.9 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.12.63-.07.17-.19.73-.85.92-1.14.19-.29.39-.24.66-.15.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.68-.17 1.36z"/></svg>
+  <!-- o glifo fica ESCURO sobre o verde oficial: branco sobre #25D366 dá 2,1:1 -->
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="#06231A" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.35-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.19-1.58-1.19-3.02s.76-2.14 1.03-2.43c.27-.29.58-.36.78-.36l.56.01c.18.01.42-.07.66.5.24.58.82 2.02.9 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.12.63-.07.17-.19.73-.85.92-1.14.19-.29.39-.24.66-.15.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.68-.17 1.36z"/></svg>
   <span class="wa-tip">Dúvidas? Fale com a gente</span>
 </a>
 
@@ -1339,6 +1366,15 @@
       return window.matchMedia('(max-width: 900px)').matches;
     }
 
+    /* no celular os links viram "abrir o app em tela cheia" */
+    if (ehCelular()) {
+      document.querySelectorAll('[data-demo]').forEach(function (el) {
+        el.setAttribute('href', URL_DEMO);
+        el.setAttribute('target', '_blank');
+        el.setAttribute('rel', 'noopener');
+      });
+    }
+
     /** A moldura tem largura fixa; o app foi desenhado para 390px. */
     function encaixar(frame) {
       var escala = tela.clientWidth / 390;
@@ -1346,11 +1382,12 @@
       tela.style.height = Math.round(844 * escala) + 'px';
     }
 
-    btn.addEventListener('click', function () {
+    function abrir() {
       if (ehCelular()) {
         window.open(URL_DEMO, '_blank', 'noopener');
         return;
       }
+      if (tela.classList.contains('rodando')) return; // já está aberta
       btn.hidden = true;
       carregando.hidden = false;
 
@@ -1377,6 +1414,23 @@
           legenda.textContent = 'Não consegui abrir a demonstração agora. Tente de novo.';
         }
       }, 15000);
+    }
+
+    btn.addEventListener('click', abrir);
+
+    /* TODO "Veja como funciona" da página cai aqui — cabeçalho, menu, planos e
+       rodapé. No computador a página sobe até a capa e a demonstração monta
+       dentro da moldura (o aparelho precisa estar à vista para fazer sentido);
+       no celular abre em tela cheia. Sem JavaScript, o link continua fazendo o
+       que o href promete: subir até a capa. */
+    document.querySelectorAll('[data-demo]').forEach(function (el) {
+      el.addEventListener('click', function (ev) {
+        if (ehCelular()) return; // deixa o href/nova aba cuidarem
+        ev.preventDefault();
+        var topo = document.getElementById('topo');
+        if (topo) topo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        abrir();
+      });
     });
 
     window.addEventListener('resize', function () {
