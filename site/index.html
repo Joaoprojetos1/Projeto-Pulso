@@ -553,15 +553,11 @@
   .bignum .cap { color: var(--muted); max-width: 34ch; margin: 1.2rem auto 0; font-size: clamp(1.02rem, 1.6vw, 1.2rem); line-height: 1.55; }
   .bignum .cap strong { color: var(--ink); font-weight: 600; }
 
-  /* ---------- Seção escura de largura total (âncora visual) ---------- */
-  .sec-dark { background: var(--mata); color: #E9F1EC; padding-block: clamp(3.6rem, 8vw, 6rem); position: relative; overflow: hidden; }
-  .sec-dark h2 { color: #F1F6F1; }
-  .sec-dark .prose { color: #C2C4CA; max-width: 56ch; }
-  .sec-dark .eyebrow { color: #3FBFA6; }
-  .sec-dark .eyebrow::before { background: #3FBFA6; box-shadow: 0 0 0 4px color-mix(in srgb, #3FBFA6 24%, transparent); }
-  .sec-dark .dark-inner { position: relative; z-index: 1; max-width: 640px; display: flex; flex-direction: column; gap: 1.1rem; }
-  .sec-dark .pulse-bg { position: absolute; right: -30px; bottom: -26px; width: min(52vw, 470px); opacity: .15; pointer-events: none; }
-  .sec-dark .pulse-bg .pulse-base { stroke: #3FBFA6; opacity: .5; }
+  /* A antiga "seção escura de largura total" saiu daqui: ela existia para ser a
+     âncora escura numa página clara, e hoje a página inteira é escura — nenhum
+     elemento a usava mais. Quem faz esse papel agora, invertido, é a
+     `.sec-invert`. (Junto saiu a última regra que ainda desenhava a bolinha
+     verde antes do chapéu.) */
 
   /* ---------- Produto: telas reais em molduras de celular ---------- */
   .product-head { max-width: 40ch; }
