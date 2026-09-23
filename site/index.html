@@ -563,6 +563,11 @@
   .cta-final { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
   .cta-final .prose { text-align: center; }
   .cta-note { font-family: var(--f-rotulo); font-size: .74rem; color: var(--muted); }
+  /* O segundo caminho da seção de contato: quem não quer formulário fala no
+     WhatsApp. Link, não botão — a ação primária continua sendo uma só. */
+  .cta-zap { margin-top: -.5rem; }
+  .cta-zap a { display: inline-flex; align-items: center; gap: .4rem; font-size: .92rem; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line); }
+  .cta-zap a:hover { text-decoration-color: currentColor; }
   .lista-form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: .3rem; text-align: left; }
   .lista-input { width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: .82em 1.15em; font-family: var(--f-body); font-size: 1rem; color: var(--ink); }
   .lista-input::placeholder { color: var(--muted); }
@@ -879,7 +884,10 @@
           <span class="eyebrow">Onde o aperto começa</span>
           <h2>Empresa não quebra por falta de lucro. Quebra por falta de caixa.</h2>
         </div>
-        <p class="prose reveal">Você vende, fatura, o movimento está bom. E um dia o dinheiro não está na conta. Não é má gestão: é que <strong>ninguém estava olhando o caixa todo dia</strong> enquanto você tocava o negócio.</p>
+        <!-- Frase do Marco (23/09) entra depois de "não está na conta". A
+             segunda frase foi encurtada junto: as duas diziam "ninguém estava
+             olhando", e lado a lado viravam repetição. -->
+        <p class="prose reveal">Você vende, fatura, o movimento está bom. E um dia o dinheiro não está na conta. Talvez seja porque você não tem <strong>ninguém dedicado a olhar as suas finanças e o seu caixa</strong>. Não é má gestão: é que ninguém fazia isso todo dia, enquanto você tocava o negócio.</p>
       </div>
 
       <!-- O QUE ERA UMA LISTA DE TEXTO VIROU TRÊS NÚMEROS. O dado é a coisa
@@ -936,11 +944,15 @@
              genérico que roda o núcleo universal para quem não é dos três. -->
         <div class="qc">
           <h3>Outros</h3>
-          <p>Salão, oficina, escritório, prestador de serviço.</p>
+          <p>Escritórios, oficinas, prestadores de serviços e outros…</p>
         </div>
       </div>
 
-      <p class="quem-foot reveal">Os indicadores de setor existem hoje para clínicas de saúde, comércio varejista e rede alimentícia. Todo o resto roda o que vale para qualquer negócio: caixa, projeção, prazos e margem. Se a sua empresa já tem uma estrutura financeira montada, o Ivo entra como um apoio a mais, nunca no lugar dela.</p>
+      <!-- A última frase era "se a sua empresa já tem estrutura financeira, o
+           Ivo entra como apoio a mais". O Marco trocou (23/09) por uma que
+           DESQUALIFICA o lead de propósito: quem já tem CFO ou controller não
+           é o público. É decisão comercial dele, não ajuste de texto. -->
+      <p class="quem-foot reveal">Os indicadores de setor existem hoje para clínicas de saúde, comércio varejista e rede alimentícia. Todo o resto roda o que vale para qualquer negócio: caixa, projeção, prazos e margem. Se você já tem apoio de CFO ou controller no seu dia a dia, talvez o Ivo não seja para você.</p>
     </div>
   </section>
 
@@ -1114,7 +1126,10 @@
            Horizonte", com foto. Falta o X, o N e o OK do próprio Marco para o
            nome e a imagem aparecerem numa página pública. Enquanto não vier,
            fica a frase sem os números: dado de prova social não se inventa. -->
-      <p class="plans-note" style="margin-top:1.8rem;">Cada fórmula é conferida por um consultor financeiro de Belo Horizonte, especialista em finanças de pequenas empresas.</p>
+      <!-- SUBSTITUÍDA pela frase do Marco (23/09). A anterior falava de UM
+           consultor conferindo as fórmulas; a dele fala da EQUIPE que mantém a
+           IA. Ficariam se contradizendo lado a lado, então é troca, não soma. -->
+      <p class="plans-note" style="margin-top:1.8rem;">O Ivo conta com uma equipe de especialistas e consultores financeiros, que atualizam e aprimoram a nossa inteligência artificial.</p>
     </div>
   </section>
 
@@ -1128,19 +1143,29 @@
        devolver os links "Planos" e "Perguntas" ao menu (topo, celular e
        rodapé) e a tag do precos.js no fim da página. -->
 
-  <!-- CAPTACAO DE LEAD (simulacao gratis + reserva no piloto) -->
+  <!-- CONTATO PARA ASSINAR.
+       Era "deixe seus dados que a gente manda a simulação do seu caixa e
+       reserva o seu lugar no piloto". O Marco (23/09): "não entendi isso,
+       aqui talvez seria faça contato para poder acessar os planos de
+       assinatura disponíveis (até a gente conseguir colocar os planos
+       prontos)". Faz sentido: os PLANOS saíram do ar em 18/09, então a
+       página inteira não tinha mais onde dizer como assinar.
+       QUANDO OS PLANOS VOLTAREM: esta seção vira o caminho para eles. -->
   <section class="sec" id="lista">
     <div class="wrap cta-final reveal">
-      <span class="eyebrow">Veja no seu caso</span>
-      <h2>Veja quando o seu caixa pode apertar.</h2>
-      <p class="prose">Deixe seus dados e a gente te manda a simulação completa do seu caixa e reserva o seu lugar no piloto. Sem compromisso e sem custo.</p>
+      <span class="eyebrow">Para começar</span>
+      <h2>Fale com a gente e conheça os planos.</h2>
+      <p class="prose">Deixe seu contato que a gente te apresenta os planos de assinatura e te ajuda a colocar o Ivo para rodar no seu negócio. Sem compromisso.</p>
       <form class="lista-form" id="lista-form" novalidate>
         <input class="lista-input" id="lista-nome" type="text" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome" required />
         <input class="lista-input" id="lista-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" aria-label="Seu e-mail" required />
         <input class="lista-input" id="lista-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" aria-label="Seu WhatsApp" maxlength="16" required />
-        <button class="btn btn-primary" id="lista-btn" type="submit">Quero minha simulação <span class="btn-arrow" aria-hidden="true">→</span></button>
+        <button class="btn btn-primary" id="lista-btn" type="submit">Quero conhecer os planos <span class="btn-arrow" aria-hidden="true">→</span></button>
       </form>
-      <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Sem compromisso. Usamos seu contato só para te enviar a simulação e o aviso de lançamento.</p>
+      <!-- O segundo caminho que o Marco pediu: quem não quer preencher
+           formulário fala direto. Mesmo número do suporte no rodapé. -->
+      <p class="cta-zap"><a href="https://wa.me/553194287877?text=Oi%2C%20quero%20conhecer%20os%20planos%20do%20Ivo." target="_blank" rel="noopener">Prefere falar agora? Chame no WhatsApp <span class="btn-arrow" aria-hidden="true">→</span></a></p>
+      <p class="cta-note" id="lista-msg" role="status" aria-live="polite">Usamos seu contato só para te falar dos planos e avisar do lançamento.</p>
     </div>
   </section>
 
@@ -1201,8 +1226,16 @@
     </div>
 
     <div class="foot-bottom">
-      <!-- TODO(rodape): CNPJ real, e-mail de contato e cidade quando existirem (hoje placeholder). -->
-      <span class="foot-note">© 2026 IVO · CNPJ a definir · Seus dados são seus, nunca compartilhamos.</span>
+      <!-- CNPJ REAL (cartão de 08/09/2026): Oliveira Alves Tecnologia Ltda,
+           68.982.932/0001-10, aberta em 04/09/2026, EPP, Av. dos Andradas
+           3323 sala 501, Belo Horizonte/MG. O Decreto 7.962/2013 (art. 2º)
+           exige nome empresarial e CNPJ em local de destaque num site que
+           vende, então os dois entram, não só o número.
+           ATENÇÃO: a razão social contém "Oliveira Alves", e a decisão de
+           20/07/2026 foi que a OA não aparece na marca Ivo. Identificação
+           legal do fornecedor é outra coisa — mas se o João quiser, dá para
+           deixar só o CNPJ. -->
+      <span class="foot-note">© 2026 IVO · Oliveira Alves Tecnologia Ltda · CNPJ 68.982.932/0001-10 · Belo Horizonte/MG · Seus dados são seus, nunca compartilhamos.</span>
       <a class="foot-social" href="https://wa.me/553194287877?text=Oi%2C%20tenho%20uma%20d%C3%BAvida%20sobre%20o%20Ivo." target="_blank" rel="noopener">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#8ED4C6" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.35-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.19-1.58-1.19-3.02s.76-2.14 1.03-2.43c.27-.29.58-.36.78-.36l.56.01c.18.01.42-.07.66.5.24.58.82 2.02.9 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.12.63-.07.17-.19.73-.85.92-1.14.19-.29.39-.24.66-.15.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.68-.17 1.36z"/></svg>
         Suporte no WhatsApp
@@ -1375,7 +1408,7 @@
       }).then(function (r) {
         if (!r.ok) throw new Error('falhou');
         form.reset();
-        mostra('Pronto! A gente te envia a simulação e avisa quando o app abrir.', 'lista-msg-ok');
+        mostra('Pronto! A gente entra em contato com os planos e avisa quando o app abrir.', 'lista-msg-ok');
       }).catch(function () {
         mostra('Não consegui salvar agora. Tente de novo em instantes.', 'lista-msg-erro');
       }).then(function () { ocupado(false); });
