@@ -76,6 +76,12 @@ li { margin: 0.3rem 0; }
 .page-head { border-bottom: 1px solid var(--line-2); background: color-mix(in srgb, var(--bg) 82%, transparent); position: sticky; top: 0; z-index: 10; backdrop-filter: saturate(140%) blur(10px); }
 .page-head .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; max-width: 960px; }
 .brand { display: inline-flex; align-items: center; gap: .6em; font-family: var(--f-display); font-weight: 700; font-size: 1.14rem; color: var(--heading); text-decoration: none; letter-spacing: -0.02em; }
+/* O check do wordmark pulsando — mesma regra do index.html (pedido do João,
+   23/09). Respiro de opacidade, não liga/desliga: indo a zero, o "V" some da
+   palavra IVO e lê como falha de carregamento. */
+@keyframes tick-pulsa { 0%, 100% { opacity: 1; } 50% { opacity: .38; } }
+.tick { animation: tick-pulsa 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tick { animation: none; } }
 .back { font-size: .92rem; color: var(--muted); text-decoration: none; }
 .back:hover { color: var(--ink); }
 

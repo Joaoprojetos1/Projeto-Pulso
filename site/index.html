@@ -228,6 +228,18 @@
   .site-head .wrap { display: flex; align-items: center; justify-content: space-between; height: 66px; }
   .brand { display: inline-flex; align-items: center; gap: .6em; font-family: var(--f-display); font-weight: 700; font-size: 1.16rem; color: var(--heading); letter-spacing: -0.02em; text-decoration: none; }
   .brand svg { display: block; overflow: visible; }
+  /* O CHECK DO WORDMARK PULSANDO (pedido do João, 23/09).
+     É respiro de opacidade e não liga/desliga: um blink seco até a opacidade
+     zero faz o "V" sumir da palavra IVO e lê como falha de renderização, não
+     como marca viva. 2,6s é lento o bastante para não puxar o olho de quem
+     está lendo a página.
+     RESSALVA REGISTRADA: em 08/09 tiramos deste site três animações infinitas
+     (inclusive um `blink 1.6s`) porque movimento perpétuo em cima de conteúdo
+     é o clichê nº 1 de landing gerada. Esta volta por decisão do João, e o
+     cabeçalho é fixo — ou seja, ela fica no campo de visão o tempo todo. */
+  @keyframes tick-pulsa { 0%, 100% { opacity: 1; } 50% { opacity: .38; } }
+  .tick { animation: tick-pulsa 2.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .tick { animation: none; } }
   .nav { display: flex; align-items: center; gap: 1.6rem; }
   .nav a.navlink { font-size: .94rem; color: var(--muted); text-decoration: none; }
   .nav a.navlink:hover { color: var(--ink); }
@@ -807,7 +819,7 @@
     <a class="brand" href="#topo" aria-label="IVO, início">
       <svg width="52" height="24" viewBox="-8 -20 292 136" aria-hidden="true">
         <rect x="0" y="0" width="20" height="100" fill="currentColor"/>
-        <path d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--pulse)" stroke-width="20"/>
+        <path class="tick" d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--pulse)" stroke-width="20"/>
         <circle cx="210" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="20"/>
       </svg><span class="sr-only">IVO</span>
     </a>
@@ -1186,7 +1198,7 @@
         <a class="brand" href="#topo" aria-label="IVO">
           <svg width="52" height="24" viewBox="-8 -20 292 136" aria-hidden="true">
         <rect x="0" y="0" width="20" height="100" fill="currentColor"/>
-        <path d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--pulse)" stroke-width="20"/>
+        <path class="tick" d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--pulse)" stroke-width="20"/>
         <circle cx="210" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="20"/>
       </svg><span class="sr-only">IVO</span>
         </a>
