@@ -913,6 +913,49 @@
     </div>
   </section>
 
+  <!-- O QUE O IVO VIGIA.
+       SUBIU (23/09, pedido do João): estava em 7º, depois das telas do
+       produto. Aqui ela emenda direto no problema — "quebra por falta de
+       caixa" e, na sequência, quais são os sinais que aparecem ANTES dele.
+       Quem chega pela primeira vez vê o que o Ivo olha antes de qualquer
+       conversa sobre produto, plano ou tela. -->
+  <section class="sec" id="vigia">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Antes do vermelho</span>
+        <h2>Os sinais que aparecem antes do problema.</h2>
+      </div>
+      <!-- QUATRO sinais, não seis: um vermelho, dois âmbares e um verde. A cor
+           mora na barra da lateral; o que ela significa está na legenda logo
+           abaixo, uma vez só, em vez de repetida em cada cartão. -->
+      <div class="watch-grid reveal stagger">
+        <div class="signal sig-crit">
+          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span></div>
+          <p>Seu caixa pode zerar em menos de 60 dias. Com a data.</p>
+        </div>
+        <div class="signal sig-warn">
+          <div class="signal-top"><span class="sk">Vende mais, sobra menos<span class="sk-tech">efeito tesoura</span></span></div>
+          <p>Você está financiando seus clientes sem perceber. Cresce o faturamento, some o dinheiro.</p>
+        </div>
+        <div class="signal sig-warn">
+          <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span></div>
+          <p>Sua margem caiu dois meses seguidos. O custo subiu ou o preço ficou para trás.</p>
+        </div>
+        <div class="signal sig-ok">
+          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span></div>
+          <p>Quando está tudo bem, o Ivo fica quieto. Silêncio é bom sinal.</p>
+        </div>
+      </div>
+
+      <div class="legenda-cores">
+        <span class="lc lc-crit"><b>Vermelho:</b>&nbsp;aja agora</span>
+        <span class="lc lc-warn"><b>Âmbar:</b>&nbsp;olhe este mês</span>
+        <span class="lc lc-ok"><b>Verde:</b>&nbsp;nada a fazer</span>
+      </div>
+      <p class="watch-foot">O vermelho só aparece quando o risco é real. Nada de alarme falso.</p>
+    </div>
+  </section>
+
   <!-- PRA QUEM É — qualifica o visitante antes de falar de produto, e diz
        abertamente para quem o Ivo NÃO serve. -->
   <section class="sec" id="quem">
@@ -1053,44 +1096,6 @@
     </div>
   </section>
 
-  <!-- O QUE O PULSO VIGIA -->
-  <section class="sec" id="vigia">
-    <div class="wrap">
-      <div class="sec-head">
-        <span class="eyebrow">Antes do vermelho</span>
-        <h2>Os sinais que aparecem antes do problema.</h2>
-      </div>
-      <!-- QUATRO sinais, não seis: um vermelho, dois âmbares e um verde. A cor
-           mora na barra da lateral; o que ela significa está na legenda logo
-           abaixo, uma vez só, em vez de repetida em cada cartão. -->
-      <div class="watch-grid reveal stagger">
-        <div class="signal sig-crit">
-          <div class="signal-top"><span class="sk">Caixa vai zerar<span class="sk-tech">projeção de caixa</span></span></div>
-          <p>Seu caixa pode zerar em menos de 60 dias. Com a data.</p>
-        </div>
-        <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Vende mais, sobra menos<span class="sk-tech">efeito tesoura</span></span></div>
-          <p>Você está financiando seus clientes sem perceber. Cresce o faturamento, some o dinheiro.</p>
-        </div>
-        <div class="signal sig-warn">
-          <div class="signal-top"><span class="sk">Sobra menos por venda<span class="sk-tech">margem</span></span></div>
-          <p>Sua margem caiu dois meses seguidos. O custo subiu ou o preço ficou para trás.</p>
-        </div>
-        <div class="signal sig-ok">
-          <div class="signal-top"><span class="sk">Está tudo bem<span class="sk-tech">silêncio é bom sinal</span></span></div>
-          <p>Quando está tudo bem, o Ivo fica quieto. Silêncio é bom sinal.</p>
-        </div>
-      </div>
-
-      <div class="legenda-cores">
-        <span class="lc lc-crit"><b>Vermelho:</b>&nbsp;aja agora</span>
-        <span class="lc lc-warn"><b>Âmbar:</b>&nbsp;olhe este mês</span>
-        <span class="lc lc-ok"><b>Verde:</b>&nbsp;nada a fazer</span>
-      </div>
-      <p class="watch-foot">O vermelho só aparece quando o risco é real. Nada de alarme falso.</p>
-    </div>
-  </section>
-
   <!-- SEGURANÇA / LGPD — a ÚNICA seção clara da página (ver .sec-invert):
        é o respiro que impede o escuro de virar breu, e cai bem justamente
        aqui, onde o assunto é documento e confiança. -->
@@ -1200,9 +1205,10 @@
       <nav class="foot-col" aria-label="Produto">
         <h4>Produto</h4>
         <ul>
-          <li><a href="#como">Como funciona</a></li>
+          <!-- na ordem em que as seções aparecem na página -->
           <li><a href="#vigia">O que ele monitora</a></li>
           <li><a href="#quem">Pra quem é</a></li>
+          <li><a href="#como">Como funciona</a></li>
           <li><a href="#topo" data-demo>Ver o Ivo funcionando</a></li>
         </ul>
       </nav>
