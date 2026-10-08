@@ -104,6 +104,11 @@
   .linkcard .lt{font-family:var(--display);font-weight:700;font-size:16.5px;letter-spacing:-.01em}
   .linkcard .ld{font-size:12.5px;color:var(--muted);line-height:1.4}
   .linkcard .lgo{margin-top:auto;padding-top:8px;font-family:var(--mono);font-size:11px;color:var(--vivo);font-weight:600}
+  .linkcard.off{background:var(--surface-2);border-style:dashed}
+  .linkcard.off:hover{transform:none;border-color:var(--border)}
+  .linkcard.off .lt{color:var(--muted)}
+  .linkcard.off .lgo{color:var(--alerta)}
+  .gnota{margin:10px 0 0;padding-top:9px;border-top:1px dashed var(--border);font-size:12.5px;line-height:1.45;color:var(--muted)}
 
   .grupos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media (max-width:720px){.grupos{grid-template-columns:1fr}}
@@ -175,62 +180,62 @@
       <path class="beat" d="M52 46 L86 88 L134 -8" fill="none" stroke="var(--vivo)" stroke-width="20"/>
       <circle cx="210" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="20"/>
     </svg>
-    <div class="eyebrow">Andamento do projeto · intensivo</div>
+    <div class="eyebrow">Andamento do projeto</div>
   </header>
 
   <section class="hero">
     <p class="k">Onde estamos</p>
-    <h1>De produto a negócio: o Ivo agora sabe cobrar, operar e encher o próprio caixa.</h1>
-    <p>Depois de virar consultor (diagnóstico do momento, simulador "e se", resumo da semana, conversa com memória), o Ivo ganhou a camada de negócio. Agora o dono enche o painel sozinho — informa o caixa e o custo fixo e o motor gira, sem depender do arquivo do sistema da clínica. O site foi refeito e passou a capturar contatos de verdade; há planos de verdade e um fluxo de assinatura completo: o dono escolhe o plano no app, paga no site (sem a comissão das lojas) e o app libera. E nasceu um painel de operação: o CEO acompanha todas as clínicas de um lugar só. Por baixo, o Ivo foi blindado para produção: proteção contra abuso, isolamento entre empresas, registros sem dado pessoal e mais robustez sob carga. O que falta agora é ligar o aviso automático (push, travado numa configuração externa), plugar o meio de pagamento, ler o arquivo real de uma clínica e ir a campo com o piloto.</p>
+    <h1>O Ivo lê os arquivos do negócio, tem nome próprio e um site que mostra o produto funcionando.</h1>
+    <p>Desde o fim de julho o produto mudou de patamar em três pontos. Primeiro, o dono parou de digitar: o Ivo lê o extrato do banco (OFX, CSV, Excel e PDF), a folha de pagamento, a maquininha e os relatórios do sistema da empresa. Em todos os casos o código confere o que foi lido e o dono confirma antes de qualquer número entrar na conta. Segundo, a marca: o nome antigo foi descartado por não poder ser registrado e o produto virou Ivo, com identidade nova, domínio próprio e a empresa aberta com CNPJ. Terceiro, a entrada: o cadastro virou uma esteira de 8 passos testada com o especialista, e o site novo abre com o aplicativo de verdade rodando na capa. O que falta agora é pouco código e muita decisão: recolocar os planos no site com um meio de pagamento, ligar o WhatsApp, gerar o aplicativo instalável com a marca nova, fechar as calibragens com o especialista e pôr a primeira empresa real para usar.</p>
 
     <div class="stat">
-      <b class="tnum">77<span> / 95 tarefas</span></b>
+      <b class="tnum">110<span> / 131 tarefas</span></b>
       <span class="leg">concluídas. Cada frente abaixo mostra o que está feito e o que falta.</span>
     </div>
-    <div class="barra" role="img" aria-label="80% concluído"><div class="fill" style="width:80%"></div></div>
-    <p class="obs">≈ 80% · blindagem para produção (segurança, robustez e registros) + app polido de ponta a ponta · falta testar o aviso no aparelho, plugar o pagamento, ler o arquivo real e ir a campo</p>
+    <div class="barra" role="img" aria-label="84% concluído"><div class="fill" style="width:84%"></div></div>
+    <p class="obs">≈ 84% · o mapa cresceu de 95 para 131 tarefas porque o produto cresceu (leitura de arquivos, marca nova, site novo) · das 21 que faltam, a maior parte depende de decisão e não de código</p>
   </section>
 
   <div class="focus">
     <div class="pulse-dot" aria-hidden="true"></div>
     <div>
       <div class="fi">Frentes da vez</div>
-      <h3>Testar o aviso no aparelho, plugar o pagamento e ir a campo</h3>
-      <p>O aplicativo novo já está pronto para instalar, com o aviso automático ligado (Firebase). Falta você instalar e fazer o teste final para o aviso chegar sozinho no celular. Em paralelo: o meio de pagamento real para cobrar pelo site, ler o arquivo de verdade de um negócio (com o especialista) e o piloto com o primeiro cliente real.</p>
+      <h3>Voltar a vender pelo site, calibrar com o especialista e pôr a primeira empresa real para usar</h3>
+      <p>Os planos saíram do site em 18 de setembro e hoje a página termina num contato. Falta decidir os planos e o meio de pagamento para voltar a ter um caminho de compra. Em paralelo, cinco itens esperam o olhar do especialista (limiares do diagnóstico, regras de juízo, números de mercado, as 15 perguntas e os textos da IA) e o piloto com uma empresa de verdade ainda não começou. O aplicativo instalável precisa ser gerado de novo, agora com o nome e o ícone do Ivo.</p>
     </div>
   </div>
 
   <h2 class="sec">Ver o Ivo agora</h2>
-  <p class="seclead">Três formas de acompanhar. O app no navegador é o jeito mais fácil de testar no computador.</p>
+  <p class="seclead">O app no navegador é o jeito mais fácil de testar. O aplicativo instalável está em espera.</p>
   <div class="links">
     <a class="linkcard" href="https://seuivo.com.br" target="_blank" rel="noopener">
       <span class="lk">Site</span>
-      <span class="lt">Site de vendas</span>
-      <span class="ld">A página pública do Ivo, com planos e lista de espera.</span>
+      <span class="lt">Site do Ivo</span>
+      <span class="ld">A página pública, com o aplicativo de verdade rodando na capa em modo demonstração.</span>
       <span class="lgo">seuivo.com.br →</span>
     </a>
     <a class="linkcard" href="https://seuivo.com.br/app/" target="_blank" rel="noopener">
       <span class="lk">App · navegador</span>
       <span class="lt">Abrir o app no PC</span>
-      <span class="ld">O aplicativo rodando no navegador, sem instalar nada. Toque em "Ver demonstração" para explorar.</span>
+      <span class="ld">O aplicativo completo no navegador, sem instalar nada. Dá para criar conta ou só ver a demonstração.</span>
       <span class="lgo">abrir no navegador →</span>
     </a>
-    <a class="linkcard" href="https://expo.dev/artifacts/eas/KX2MDkHWfcVLsFj7ARhfbm2q1hm4Rwt2tyEixnIgKZI.apk" target="_blank" rel="noopener">
+    <div class="linkcard off">
       <span class="lk">App · Android</span>
-      <span class="lt">Instalar no celular</span>
-      <span class="ld">O app instalável (Android), versão 0.1.1 com o aviso automático, biometria e foto do avatar. O link do arquivo pode expirar com o tempo; se não baixar, é só pedir um novo.</span>
-      <span class="lgo">baixar o APK →</span>
-    </a>
+      <span class="lt">Instalável em espera</span>
+      <span class="ld">O aplicativo de julho ainda tinha o nome antigo e o link dele expirou. O próximo será gerado com a marca Ivo, o aviso automático e o envio de arquivo.</span>
+      <span class="lgo">a gerar</span>
+    </div>
   </div>
 
-  <h2 class="sec">Diário do intensivo</h2>
-  <p class="seclead">Um cartão por dia de trabalho. Clique no dia para abrir e ver o que foi entregue.</p>
+  <h2 class="sec">Diário do projeto</h2>
+  <p class="seclead">Os nove primeiros cartões são os dias do intensivo de julho. De agosto em diante, um cartão por etapa de trabalho. Clique para abrir e ver o que foi entregue.</p>
   <div class="dias">
 
     <details class="dia">
       <summary>
         <span class="dnum">DIA 1</span>
-        <span class="dtit">17 de julho — a fundação inteira</span>
+        <span class="dtit">17 de julho · a fundação inteira</span>
         <span class="dresumo tnum">9 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -252,7 +257,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 2</span>
-        <span class="dtit">20 de julho — o Ivo no ar, fora do computador</span>
+        <span class="dtit">20 de julho · o Ivo no ar, fora do computador</span>
         <span class="dresumo tnum">6 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -271,7 +276,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 3</span>
-        <span class="dtit">21 de julho — o produto ganha corpo</span>
+        <span class="dtit">21 de julho · o produto ganha corpo</span>
         <span class="dresumo tnum">8 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -292,7 +297,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 4</span>
-        <span class="dtit">22 de julho — de monitor a consultor</span>
+        <span class="dtit">22 de julho · de monitor a consultor</span>
         <span class="dresumo tnum">13 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -318,7 +323,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 5</span>
-        <span class="dtit">23 de julho — de produto a negócio</span>
+        <span class="dtit">23 de julho · de produto a negócio</span>
         <span class="dresumo tnum">14 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -345,7 +350,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 6</span>
-        <span class="dtit">24 de julho — o novo aplicativo, com o aviso automático</span>
+        <span class="dtit">24 de julho · o novo aplicativo, com o aviso automático</span>
         <span class="dresumo tnum">3 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -361,7 +366,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 7</span>
-        <span class="dtit">24–25 de julho — polimento do app e reforma da operação</span>
+        <span class="dtit">24–25 de julho · polimento do app e reforma da operação</span>
         <span class="dresumo tnum">8 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -382,7 +387,7 @@
     <details class="dia">
       <summary>
         <span class="dnum">DIA 8</span>
-        <span class="dtit">25–26 de julho — blindagem para produção</span>
+        <span class="dtit">25–26 de julho · blindagem para produção</span>
         <span class="dresumo tnum">10 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -402,10 +407,10 @@
       </div>
     </details>
 
-    <details class="dia" open>
+    <details class="dia">
       <summary>
         <span class="dnum">DIA 9</span>
-        <span class="dtit">29 de julho — o Ivo aprende o setor de cada negócio</span>
+        <span class="dtit">29 de julho · o Ivo aprende o setor de cada negócio</span>
         <span class="dresumo tnum">6 entregas</span>
         <span class="seta-d">›</span>
       </summary>
@@ -421,6 +426,133 @@
       </div>
     </details>
 
+    <details class="dia">
+      <summary>
+        <span class="dnum">ETAPA 10</span>
+        <span class="dtit">30 de julho a 6 de agosto · o Ivo aprende a ler arquivo de verdade</span>
+        <span class="dresumo tnum">7 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Tela "Alimentar o Ivo"</b>: um lugar só para escolher como o dado entra (extrato, maquininha, relatório do sistema ou à mão)</span></li>
+          <li><span class="ok">✓</span><span><b>A aba de contas saiu da barra</b>: decisão de produto do especialista. O dono não digita mais contas a pagar e a receber; esse dado passa a vir pronto, por arquivo</span></li>
+          <li><span class="ok">✓</span><span><b>Leitor de extrato bancário</b>: PDF do Inter e do Santander e o formato OFX, que todo banco exporta. Conferido contra extratos reais, batendo o saldo</span></li>
+          <li><span class="ok">✓</span><span><b>Leitor dos relatórios do Linx Microvix</b> (faturamento, giro, inventário e movimento), o sistema de loja mais comum no varejo de roupa</span></li>
+          <li><span class="ok">✓</span><span><b>Dado real fica fora do projeto</b>: os arquivos de empresas de verdade nunca entram no repositório; os testes usam arquivos inventados com a mesma estrutura</span></li>
+          <li><span class="ok">✓</span><span><b>Envio ligado de ponta a ponta</b>: o arquivo sobe, o Ivo descobre o formato pelo conteúdo (não pelo nome), recusa duplicado e o painel recalcula na hora</span></li>
+          <li><span class="ok">✓</span><span><b>App no navegador em endereço próprio</b>: passou a ser servido junto com o site, sem depender de serviço de terceiro</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia">
+      <summary>
+        <span class="dnum">ETAPA 11</span>
+        <span class="dtit">8 a 10 de agosto · cadastro novo e o fim da digitação</span>
+        <span class="dresumo tnum">8 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Regras de juízo</b>: o Ivo só afirma o que os dados sustentam. Sem dado suficiente, ele diz que não sabe em vez de arriscar um veredito</span></li>
+          <li><span class="ok">✓</span><span><b>Cadastro pelo CNPJ</b>: o dono digita o CNPJ e o Ivo busca sozinho o nome, o ramo e o quadro de sócios</span></li>
+          <li><span class="ok">✓</span><span><b>Cadastro novo em sequência</b>: CNPJ, segmento, sistemas que a empresa usa e dados</span></li>
+          <li><span class="ok">✓</span><span><b>Aba Dados</b>: enviar vários arquivos de uma vez, cada um com seu tipo, ver a lista do que já foi enviado e remover</span></li>
+          <li><span class="ok">✓</span><span><b>Custo fixo sem digitar</b>: o Ivo estima a partir do extrato e o dono só confirma</span></li>
+          <li><span class="ok">✓</span><span><b>Tela inicial do ramo</b>: os indicadores do setor da empresa aparecem logo na abertura</span></li>
+          <li><span class="ok">✓</span><span><b>O motor lê o cadastro</b>: se a empresa declarou que não tem um sistema, o indicador que dependeria dele aparece como "não dá para calcular", com o motivo</span></li>
+          <li><span class="ok">✓</span><span><b>Aba Relatórios completa</b>: evolução dos números no tempo, histórico das recomendações e o documento do mês</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia">
+      <summary>
+        <span class="dnum">ETAPA 12</span>
+        <span class="dtit">12 a 17 de agosto · mais arquivos, mercado, WhatsApp e sócios</span>
+        <span class="dresumo tnum">10 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Cadastro obrigatório</b>: o app só abre depois de a empresa estar cadastrada</span></li>
+          <li><span class="ok">✓</span><span><b>Extrato em planilha</b>: além de OFX e PDF, o Ivo lê extrato em CSV e em Excel, reconhecendo as colunas mesmo quando vêm em ordem diferente</span></li>
+          <li><span class="ok">✓</span><span><b>Folha de pagamento vira custo fixo</b>: a IA lê o arquivo só para extrair os valores, o código confere e o dono confirma ("li R$ X de folha, confere?") antes de entrar na conta</span></li>
+          <li><span class="ok">✓</span><span><b>Relatório do mês e resumo para o contador em PDF</b> de verdade, no lugar da imagem</span></li>
+          <li><span class="ok">✓</span><span><b>Canal WhatsApp construído</b>: recebe a mensagem, responde com o mesmo cérebro do app e não processa a mesma mensagem duas vezes. Está no ar e desligado, esperando a conta na Meta</span></li>
+          <li><span class="ok">✓</span><span><b>Referência de mercado</b>: a IA pesquisa a média do setor e guarda sempre com a fonte, numa caixa separada dos números calculados do caixa</span></li>
+          <li><span class="ok">✓</span><span><b>Troca de provedor de IA</b>: dá para plugar outra inteligência sem afrouxar nenhuma das travas contra número inventado</span></li>
+          <li><span class="ok">✓</span><span><b>Revisão de segurança e LGPD</b>: fechado um vazamento de dado de cadastro e reforçada a assinatura das mensagens que chegam de fora</span></li>
+          <li><span class="ok">✓</span><span><b>Sócios</b>: dinheiro que o sócio põe na empresa não conta como receita, e o que ele retira não conta como custo. O Ivo sugere quem é sócio pelo CNPJ e o dono confirma</span></li>
+          <li><span class="ok">✓</span><span><b>Levantamento de custos</b> do produto: banco de dados, IA, hospedagem, pagamento e lojas de aplicativo</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia">
+      <summary>
+        <span class="dnum">ETAPA 13</span>
+        <span class="dtit">28 a 31 de agosto · o produto vira Ivo</span>
+        <span class="dresumo tnum">5 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Nome novo</b>: o nome anterior foi descartado por não poder ser registrado como marca. O produto passou a se chamar Ivo, "o conselheiro do seu negócio"</span></li>
+          <li><span class="ok">✓</span><span><b>Identidade nova</b>: a palavra IVO com o V desenhado como um sinal de conferido, cores novas e ícones em todos os tamanhos</span></li>
+          <li><span class="ok">✓</span><span><b>Troca completa</b>: aplicativo, site, textos da IA, e-mails, avisos e documentos. Uma varredura final confirmou que o nome antigo não aparece mais para o cliente</span></li>
+          <li><span class="ok">✓</span><span><b>Leitura conferida</b>: todos os textos e botões medidos contra o padrão de contraste de acessibilidade, com as cores de alerta ajustadas para continuarem legíveis</span></li>
+          <li><span class="ok">✓</span><span><b>Endereço próprio</b>: seuivo.com.br no ar com cadeado, e meuivo.com.br levando para ele</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia">
+      <summary>
+        <span class="dnum">ETAPA 14</span>
+        <span class="dtit">7 a 11 de setembro · teste de ponta a ponta com o especialista</span>
+        <span class="dresumo tnum">10 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Cadastro em 8 passos</b>, na ordem pedida pelo especialista: conta, CNPJ, segmento, sistemas, diagnóstico de gestão, demonstração, plano e arquivos. O diagnóstico vem antes dos arquivos, para o motor saber o que esperar</span></li>
+          <li><span class="ok">✓</span><span><b>Quem para no meio volta de onde parou</b>: o app lembra o passo e retoma o cadastro</span></li>
+          <li><span class="ok">✓</span><span><b>Segmento "Outros"</b>: empresa que não é clínica, varejo nem restaurante usa só os indicadores universais, sem nenhum sinal de setor aparecendo por engano</span></li>
+          <li><span class="ok">✓</span><span><b>Saldo com data</b>: o painel passou a dizer de quando é o saldo usado ("estimativa a partir do saldo de R$ 48.000, informado em 14 de julho") e avisa quando ele tem mais de uma semana</span></li>
+          <li><span class="ok">✓</span><span><b>Painel sem gráfico genérico</b>: no lugar da linha comum, uma linha do tempo de hoje a 90 dias com um único marco, o dia em que o caixa aperta</span></li>
+          <li><span class="ok">✓</span><span><b>A escada do caixa</b>: na tela de detalhe, degrau por degrau, o que faz o caixa subir e descer até chegar à projeção. Um teste garante que o fim da escada bate com o número projetado</span></li>
+          <li><span class="ok">✓</span><span><b>Maquininha e relatórios</b>: o Ivo passou a ler também o arquivo da maquininha (o que foi vendido e ainda não caiu) e os relatórios gerencial, de estoque, de serviços e contábil, sempre com confirmação do dono</span></li>
+          <li><span class="ok">✓</span><span><b>CPF protegido</b>: todo CPF é apagado do texto antes de qualquer arquivo ser lido pela IA</span></li>
+          <li><span class="ok">✓</span><span><b>Custo da IA corrigido</b>: a tela de bastidores mostrava um custo três vezes maior que o real. Corrigido, e os modelos subiram para a geração mais nova</span></li>
+          <li><span class="ok">✓</span><span><b>Avisos por WhatsApp no app</b>: saiu o "em breve". O dono cadastra o número e o canal abre sozinho quando for ligado</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dia" open>
+      <summary>
+        <span class="dnum">ETAPA 15</span>
+        <span class="dtit">8 a 23 de setembro · o site novo</span>
+        <span class="dresumo tnum">9 entregas</span>
+        <span class="seta-d">›</span>
+      </summary>
+      <div class="dcorpo">
+        <ul>
+          <li><span class="ok">✓</span><span><b>Telas reais no site</b>: os celulares desenhados à mão, que já mostravam um produto antigo, deram lugar a capturas do aplicativo de verdade</span></li>
+          <li><span class="ok">✓</span><span><b>Nova direção visual</b>: o site ficou escuro, com título em letra serifada e uma única cor de ação. O verde voltou a ser só sinal</span></li>
+          <li><span class="ok">✓</span><span><b>Demonstração na capa</b>: ao tocar em "Ver o Ivo funcionando", o aplicativo real abre dentro da página, com dados de exemplo, em cerca de um segundo</span></li>
+          <li><span class="ok">✓</span><span><b>Movimento com função</b>: saíram as animações que rodavam sem parar e entrou resposta ao toque (botão, perguntas, envio do formulário)</span></li>
+          <li><span class="ok">✓</span><span><b>Texto novo</b>, com as seções "Pra quem é" e "Depois do número", e três correções de precisão no que o site promete sobre os dados</span></li>
+          <li><span class="ok">✓</span><span><b>A calculadora saiu</b>: todo botão do site passou a levar à demonstração</span></li>
+          <li><span class="ok">✓</span><span><b>Planos e perguntas fora do ar</b> desde 18 de setembro, por decisão. A seção final virou um contato, com WhatsApp como segundo caminho, até os planos voltarem</span></li>
+          <li><span class="ok">✓</span><span><b>Ajustes do especialista</b> aplicados em duas rodadas, incluindo a nova ordem das seções</span></li>
+          <li><span class="ok">✓</span><span><b>Empresa aberta</b>: razão social e CNPJ no rodapé, na política de privacidade e nos termos de uso</span></li>
+        </ul>
+      </div>
+    </details>
+
   </div>
 
   <h2 class="sec">O mapa completo</h2>
@@ -429,7 +561,7 @@
   <div class="grupos">
 
     <div class="grupo">
-      <div class="ghead"><h3>1 · Motor de cálculo (cérebro)</h3><span class="gcount tnum">8 de 10</span></div>
+      <div class="ghead"><h3>1 · Motor de cálculo (cérebro)</h3><span class="gcount tnum">11 de 13</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Estrutura e regras do projeto no GitHub</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Indicadores financeiros calculados em código, auditáveis</span></li>
@@ -439,33 +571,41 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Simulador "e se": adiar pagamento, cortar custo, antecipar recebível</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">As contas previstas empurrando a projeção de caixa</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes automáticos travando os cálculos</span></li>
-        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Com o especialista:</b> calibrar os limiares e a prescrição de cada estágio</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Regras de juízo: o produto só afirma o que os dados sustentam</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Movimentos de sócio fora do resultado (aporte não é receita, retirada não é custo)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">A escada do caixa: a composição da projeção, conferida contra o número projetado</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Com o especialista:</b> calibrar os limiares, as regras de juízo e a prescrição de cada estágio</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Auditoria final das fórmulas pelo especialista</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>2 · Clínicas de teste</h3><span class="gcount full tnum">3 de 3</span></div>
+      <div class="ghead"><h3>2 · Empresas de teste</h3><span class="gcount full tnum">3 de 3</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica saudável fictícia, fica em silêncio</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Clínica "tesoura" fictícia, dispara os alarmes certos</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Empresa saudável fictícia, fica em silêncio</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Empresa "tesoura" fictícia, dispara os alarmes certos</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes que travam esse comportamento</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>3 · Leitura de dados reais</h3><span class="gcount tnum">2 de 5</span></div>
+      <div class="ghead"><h3>3 · Leitura de dados reais</h3><span class="gcount tnum">8 de 10</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Entrada de dados no servidor (formato padrão), sem duplicar arquivo</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">O dono alimenta o motor à mão (caixa + custo fixo), sem esperar o arquivo</span></li>
-        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Aguardando</b> o arquivo modelo do sistema da clínica (especialista)</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Leitor tolerante a arquivo bagunçado</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Envio do arquivo pelo aplicativo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">O dono alimenta o motor à mão (caixa + custo fixo), como alternativa</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Leitor de extrato bancário: OFX, CSV, Excel e PDF (Inter e Santander)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Leitor tolerante: descobre o formato pelo conteúdo e recusa com mensagem clara</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Envio de vários arquivos pelo app no navegador, cada um com seu tipo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Folha de pagamento vira custo fixo (IA extrai, código confere, dono confirma)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Maquininha e relatórios (gerencial, estoque, serviços, contábil) lidos por tipo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Leitores de extrato conferidos contra arquivos reais de duas empresas</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Aguardando</b> arquivos reais de mais empresas para calibrar folha, maquininha e relatórios</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Maquininha por conexão direta (agenda de recebíveis sem enviar arquivo)</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">7 de 8</span></div>
+      <div class="ghead"><h3>4 · Servidor</h3><span class="gcount tnum">8 de 9</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Banco de dados com histórico completo</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">As portas: cadastro, dados, cálculo, painel, contas e chat</span></li>
@@ -473,13 +613,14 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Testes de ponta a ponta com banco de verdade</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Login e controle de acesso</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Servidor na nuvem, no ar 24h (Render + banco Neon)</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Isolamento entre empresas reforçado (uma clínica nunca vê dado de outra)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Isolamento entre empresas reforçado (uma empresa nunca vê dado de outra)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Cadastro da empresa pelo CNPJ, com consulta automática</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Backup e monitoramento</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>5 · A voz (IA)</h3><span class="gcount tnum">7 de 8</span></div>
+      <div class="ghead"><h3>5 · A voz (IA)</h3><span class="gcount tnum">10 de 12</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">IA escreve os avisos só com números já calculados</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Fiscal em código contra número inventado</span></li>
@@ -488,12 +629,16 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Inteligência artificial ligada em produção</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Memória da conversa (lembra perguntas, alertas e o diagnóstico anterior)</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Controle de custo: medição do consumo e limite mensal de perguntas</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Pronta para trocar de provedor de IA sem afrouxar as travas</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Referência de mercado pesquisada pela IA, sempre com a fonte e separada dos números do caixa</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Modelos na geração mais nova e custo real por empresa conferido</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Com o especialista:</b> conferir os primeiros números de mercado contra as amostras dele</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Revisão dos textos pelo especialista</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">14 de 16</span></div>
+      <div class="ghead"><h3>6 · Aplicativo</h3><span class="gcount tnum">20 de 22</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">As telas com a marca</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">"De onde vem esse número" aberto em todo alerta</span></li>
@@ -509,7 +654,13 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de assinatura (escolher plano) e "Ivo IA" no lugar de "Conversa"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Toques finais nativos: vibração, biometria opcional, foto do avatar e "mandar pro contador"</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Fluxo e cadastro afinados: sair volta ao início, cadastro pede WhatsApp, "primeiros passos" e demonstração positiva</span></li>
-        <li class="t-now"><span class="ic">●</span><span class="tx">Notificações: <b>novo aplicativo gerado com o aviso (Firebase)</b> — falta instalar e confirmar o aviso chegando</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Cadastro em 8 passos, com retomada de onde a pessoa parou</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Aba Dados: enviar, listar e remover arquivos</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Aba Relatórios: evolução no tempo, recomendações, relatório do mês e resumo para o contador em PDF</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Painel novo: linha do tempo do caixa, saldo com data e a escada que explica a projeção</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Tela de avisos por WhatsApp (abre sozinha quando o canal for ligado)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Marca Ivo em todas as telas</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Aplicativo instalável novo:</b> gerar com a marca Ivo, o aviso automático (Firebase) e o envio de arquivo, e confirmar o aviso chegando no aparelho</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Publicação nas lojas (App Store / Google Play)</span></li>
       </ul>
     </div>
@@ -523,17 +674,23 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">A previsão empurrando a projeção de caixa (liberado pelo especialista)</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Aprendizado do atraso de cada cliente</span></li>
       </ul>
+      <p class="gnota">Em espera desde 30 de julho: a aba saiu da barra do app por decisão de produto. O dono não digita contas; o dado virá por arquivo. O que foi construído continua funcionando por baixo.</p>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>8 · Site e venda</h3><span class="gcount tnum">5 de 6</span></div>
+      <div class="ghead"><h3>8 · Site e venda</h3><span class="gcount tnum">9 de 11</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Página de vendas publicada (planos, segurança, perguntas)</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Lista de espera com nome, e-mail e telefone (funcionando)</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Calculadora do efeito tesoura, que traz contatos</span></li>
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Páginas de privacidade e termos publicadas</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Página pública no ar</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Captura de contato com nome, e-mail e telefone (funcionando)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Calculadora do efeito tesoura (aposentada em setembro, em favor da demonstração)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Privacidade e termos publicados, com razão social e CNPJ</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Casca do checkout: escolha de plano e captura da intenção de compra</span></li>
-        <li class="t-now"><span class="ic">●</span><span class="tx">Meio de pagamento real (Pix/cartão) e CNPJ — <b>depende do CEO</b></span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Domínio próprio: seuivo.com.br (meuivo.com.br leva para ele)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Nova direção visual, com telas reais do aplicativo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Demonstração interativa na capa (o app de verdade, com dados de exemplo)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Empresa aberta, com CNPJ publicado no site</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Planos de volta ao site (fora do ar desde 18 de setembro): <b>depende do CEO</b></span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Meio de pagamento real (Pix/cartão): <b>depende do CEO</b></span></li>
       </ul>
     </div>
 
@@ -563,25 +720,27 @@
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>11 · WhatsApp</h3><span class="gcount tnum">1 de 3</span></div>
+      <div class="ghead"><h3>11 · WhatsApp</h3><span class="gcount tnum">3 de 5</span></div>
       <ul class="tarefas">
-        <li class="t-done"><span class="ic">✓</span><span class="tx">Cérebro separado do canal + adaptador pronto para plugar o WhatsApp</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Chatbot do Ivo no WhatsApp (conta Business + provedor)</span></li>
-        <li class="t-todo"><span class="ic"></span><span class="tx">Alertas chegando pelo WhatsApp</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Cérebro separado do canal: o WhatsApp é só mais uma porta da mesma inteligência</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Canal construído: recebe, responde e não repete mensagem (no ar, desligado)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">O dono cadastra o número no app para receber avisos</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx">Ligar o canal: conta WhatsApp Business verificada na Meta e as credenciais. <b>Depende do CEO</b></span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Alertas chegando sozinhos pelo WhatsApp</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>12 · Piloto com clínica real</h3><span class="gcount tnum">0 de 3</span></div>
+      <div class="ghead"><h3>12 · Piloto com empresa real</h3><span class="gcount tnum">0 de 3</span></div>
       <ul class="tarefas">
-        <li class="t-todo"><span class="ic"></span><span class="tx">Primeira clínica de verdade usando</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Primeira empresa de verdade usando</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Métricas do piloto: alerta aberto? ação tomada?</span></li>
         <li class="t-todo"><span class="ic"></span><span class="tx">Ajustes com o retorno do especialista</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>13 · Segurança e robustez</h3><span class="gcount full tnum">8 de 8</span></div>
+      <div class="ghead"><h3>13 · Segurança e robustez</h3><span class="gcount full tnum">10 de 10</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Limite de tentativas (login, cadastro, recuperação de senha e IA), contra força bruta e abuso</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Sessão expira sozinha (60 dias); o servidor recusa acesso vencido</span></li>
@@ -591,11 +750,13 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Isolamento entre empresas testado também nas contas (uma nunca alcança a de outra)</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Registros de eventos e logs sem dado pessoal; app não quebra em tela branca</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Robustez: saúde real, desligamento sem perder requisição, timeout+retry da IA, índices no banco</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Revisão de segurança e LGPD de agosto: vazamento de cadastro fechado e mensagens externas assinadas</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">CPF apagado do texto antes de qualquer arquivo ser lido pela IA</span></li>
       </ul>
     </div>
 
     <div class="grupo">
-      <div class="ghead"><h3>14 · Motor por segmento</h3><span class="gcount full tnum">7 de 7</span></div>
+      <div class="ghead"><h3>14 · Motor por segmento</h3><span class="gcount tnum">9 de 10</span></div>
       <ul class="tarefas">
         <li class="t-done"><span class="ic">✓</span><span class="tx">Cérebro com pacotes por setor (clínica, varejo, restaurante), só somando ao universal</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">"Números do mês" do setor: formulário no app que muda conforme o negócio</span></li>
@@ -604,7 +765,22 @@
         <li class="t-done"><span class="ic">✓</span><span class="tx">Segmento nos bastidores: dossiê, troca de setor (recalcula) e contagem por setor</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Premissas de cada segmento validadas pelo CEO e publicadas em produção</span></li>
         <li class="t-done"><span class="ic">✓</span><span class="tx">Telas novas no aplicativo instalado, pela atualização automática</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Segmento "Outros": só os indicadores universais, sem sinal de setor por engano</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Indicadores do ramo na tela inicial do app</span></li>
+        <li class="t-now"><span class="ic">●</span><span class="tx"><b>Com o especialista:</b> revisar as 15 perguntas do diagnóstico (as de setor ainda não filtram pelo segmento escolhido)</span></li>
       </ul>
+    </div>
+
+    <div class="grupo">
+      <div class="ghead"><h3>15 · Marca Ivo</h3><span class="gcount tnum">4 de 5</span></div>
+      <ul class="tarefas">
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Nome novo e identidade (a palavra IVO com o V em sinal de conferido)</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">App, site, textos da IA, e-mails e documentos trocados para Ivo</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Domínios no ar com cadeado</span></li>
+        <li class="t-done"><span class="ic">✓</span><span class="tx">Contraste de leitura medido e corrigido</span></li>
+        <li class="t-todo"><span class="ic"></span><span class="tx">Licenciar a fonte definitiva da marca (hoje usa uma substituta)</span></li>
+      </ul>
+      <p class="gnota">A alinhar com o especialista: o site novo usa uma letra de título diferente da do aplicativo.</p>
     </div>
 
   </div>
@@ -613,9 +789,9 @@
     <div class="card">
       <h3>Números de hoje</h3>
       <div class="metricrow">
-        <div class="metric"><b class="tnum">77</b><span>tarefas concluídas</span></div>
-        <div class="metric"><b class="tnum">18</b><span>pela frente</span></div>
-        <div class="metric"><b class="tnum">167</b><span>testes no servidor</span></div>
+        <div class="metric"><b class="tnum">110</b><span>tarefas concluídas</span></div>
+        <div class="metric"><b class="tnum">21</b><span>pela frente</span></div>
+        <div class="metric"><b class="tnum">439</b><span>testes automáticos passando</span></div>
       </div>
     </div>
     <div class="card">
@@ -634,7 +810,7 @@
 
   <footer class="foot">
     <span>IVO</span>
-    <span>Atualizado 26 jul 2026</span>
+    <span>Atualizado 8 out 2026</span>
   </footer>
 
 </div>
