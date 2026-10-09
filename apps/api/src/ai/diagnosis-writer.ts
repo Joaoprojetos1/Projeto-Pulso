@@ -91,10 +91,11 @@ export function buildDiagnosisPrompt(
   diag: Diagnosis,
   profile: CompanyProfile,
   permissions: ClaimPermission[] = [],
+  specialistBlock = '',
 ): AlertPrompt {
   const guidance = renderClaimGuidance(permissions);
   return {
-    system: guidance ? `${SYSTEM_PROMPT}\n\n${guidance}` : SYSTEM_PROMPT,
+    system: [SYSTEM_PROMPT, guidance, specialistBlock].filter(Boolean).join('\n\n'),
     user: JSON.stringify({
       estagio: diag.stage,
       porque: diag.drivers.map((d) => ({ premissa: d.premissa, fatos: d.facts })),
@@ -120,6 +121,8 @@ export async function writeDiagnosis(
   onUsage?: UsageSink,
   permissions: ClaimPermission[] = [],
   log?: DiagnosisWriterLog,
+  /** Orientação do especialista para este estágio (bloco pronto; vazio = nenhuma). */
+  specialistBlock = '',
 ): Promise<DiagnosisText> {
   // O "momento" da empresa É um juízo de saúde do caixa. Se a cobertura não o
   // autoriza, nem a IA nem o template confiante entram: reportamos a limitação.
@@ -129,7 +132,7 @@ export async function writeDiagnosis(
   const fallback = diagnosisTemplate(diag);
   if (!model) return fallback;
 
-  const prompt = buildDiagnosisPrompt(diag, profile, permissions);
+  const prompt = buildDiagnosisPrompt(diag, profile, permissions, specialistBlock);
   const ctx = groundingContext(diag);
 
   for (let attempt = 0; attempt < 2; attempt++) {

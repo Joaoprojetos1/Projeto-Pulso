@@ -112,6 +112,7 @@ export default function RootLayout() {
         <Stack.Screen name="admin/leads" />
         <Stack.Screen name="admin/ia" />
         <Stack.Screen name="admin/saude" />
+        <Stack.Screen name="admin/especialista" />
         <Stack.Screen
           name="alerta/[index]"
           // o alerta sobe como uma folha, de baixo para cima, e fecha por gesto (arrastar)

@@ -94,10 +94,19 @@ export function checkGrounding(text: string, facts: AlertFact['facts']): Groundi
  * Versão do chat: confere o texto contra QUALQUER contexto (snapshot de
  * indicadores + alertas). Inteiros pequenos (0 a 12) são liberados —
  * enumerações do tipo "3 caminhos" não são números financeiros.
+ *
+ * `extraAllowed` libera números EXATOS vindos de fora do retrato, sem as
+ * variantes de formato (centavos, percentual): hoje, só as referências que o
+ * especialista escreveu nas orientações aplicadas à conversa.
  */
-export function checkGroundingDeep(text: string, context: unknown): GroundingResult {
+export function checkGroundingDeep(
+  text: string,
+  context: unknown,
+  extraAllowed: number[] = [],
+): GroundingResult {
   const allowed = collectAllowedNumbers(context);
   for (let i = 0; i <= 12; i++) allowed.add(i);
+  for (const n of extraAllowed) allowed.add(n);
   return checkAgainstAllowed(text, allowed);
 }
 

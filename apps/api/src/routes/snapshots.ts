@@ -25,6 +25,12 @@ import type { Sql } from '../db';
 import { companyParamsSchema, DATE_PATTERN, findCompany, toCompanyJson, type CompanyRow } from '../http';
 import type { PushMessage, PushSender } from '../push';
 import { loadMarketReference } from '../services/market';
+import {
+  EMPTY_SPECIALIST,
+  loadSpecialistContext,
+  renderSpecialistForWriter,
+  type SpecialistContext,
+} from '../services/specialist';
 import { saoPauloToday } from '../quota';
 import { requireAdmin } from './admin/guard';
 
@@ -437,11 +443,36 @@ export async function computeAndStore(
       // a voz do Pulso: a IA (ou o template) redige a partir dos facts —
       // e de NADA além dos facts; e só afirma o que as permissões autorizam.
       const profile = { name: company.name, niche: company.niche };
+
+      // o que o especialista ensinou para o estágio e para os avisos desta
+      // empresa (só o publicado). Best-effort e só quando há IA: sem writer, o
+      // texto é o padrão e a orientação não teria onde entrar.
+      let especialista: SpecialistContext = EMPTY_SPECIALIST;
+      if (alertWriter) {
+        try {
+          especialista = await loadSpecialistContext(sql, {
+            niche: company.niche,
+            stage: diag.stage,
+            ruleKeys: alerts.map((a) => a.ruleKey),
+          });
+        } catch (err) {
+          log?.warn({ err }, 'falha ao ler as orientações do especialista; seguindo sem elas');
+        }
+      }
+
       const aiUsage: AiCallUsage[] = [];
       const written = await Promise.all(
         alerts.map(async (a) => ({
           alert: a,
-          text: await writeAlert(alertWriter, a, profile, (u) => aiUsage.push(u), log, permissions),
+          text: await writeAlert(
+            alertWriter,
+            a,
+            profile,
+            (u) => aiUsage.push(u),
+            log,
+            permissions,
+            renderSpecialistForWriter(especialista, 'aviso', a.ruleKey),
+          ),
         })),
       );
 
@@ -449,7 +480,15 @@ export async function computeAndStore(
       // NÃO medimos esta chamada em ai_usage por ora: a métrica de metering trata
       // kind='alert_writer' como "um por alerta". Se o custo do diagnóstico
       // precisar entrar, criar um kind='diagnosis' dedicado (enum + migração).
-      const diagText = await writeDiagnosis(alertWriter, diag, profile, undefined, permissions, log);
+      const diagText = await writeDiagnosis(
+        alertWriter,
+        diag,
+        profile,
+        undefined,
+        permissions,
+        log,
+        renderSpecialistForWriter(especialista, 'estagio', diag.stage),
+      );
       // guardamos as permissões junto do diagnóstico: o chat e o painel leem daqui
       // (o chat usa para não adjetivar sem cobertura; o painel, para orientar).
       const diagnosisStored = { ...diag, text: diagText, permissions };

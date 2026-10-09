@@ -27,6 +27,7 @@ import { registerReports } from './routes/reports';
 import { registerSegments } from './routes/segments';
 import { registerSimulate } from './routes/simulate';
 import { registerSnapshots } from './routes/snapshots';
+import { registerSpecialist } from './routes/specialist';
 import { registerSubscription } from './routes/subscription';
 import { registerWhatsApp } from './routes/whatsapp';
 import type { WhatsAppSender } from './channels/whatsapp';
@@ -150,6 +151,7 @@ export function buildApp(sql: Sql, opts: AppOptions = {}) {
   registerAdmin(app, sql, opts.alertWriter ?? null, opts.pushSender ?? null);
   registerInterest(app, sql);
   registerMarket(app, sql, opts.marketResearcher ?? null);
+  registerSpecialist(app, sql, opts.chatModel ?? null);
   registerPlanned(app, sql);
   registerCompanies(app, sql);
   registerCompany(app, sql, opts.cnpjLookup);

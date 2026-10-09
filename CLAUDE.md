@@ -122,6 +122,39 @@ CÓDIGO casa o nome com a contraparte do extrato (`services/partners.ts`), o DON
 contar. **Pró-labore é o caso cinzento** (remuneração do sócio que toca o negócio):
 por ora **conta como custo** — a decisão final é do especialista.
 
+## Bancada do especialista (o que ele ensina sem publicar código)
+
+O especialista ajusta o Ivo sozinho, pela área de operação do app
+(`/admin/especialista`), e o que publica vale na conversa seguinte. São só
+TEXTOS de orientação; nenhuma fórmula, limiar ou número de empresa passa por
+ali. Código em `apps/api/src/services/specialist.ts` e
+`apps/api/src/routes/specialist.ts`.
+
+- **Orientações**: o que recomendar. Três escopos: `geral` (toda conversa),
+  `estagio` (conversa + texto do momento, quando a empresa está naquele estágio)
+  e `aviso` (conversa + texto do aviso, quando aquela regra está ativa). Opcional
+  por segmento. Nasce rascunho; só o PUBLICADO chega ao dono. Cada publicação
+  vira versão, e dá para voltar.
+- **Ensaio**: ele pergunta ao Ivo como se fosse o dono de uma empresa. Usa a
+  mesma montagem de contexto e os mesmos fiscais da conversa real, sem gravar
+  memória, sem contar cota e sem medir consumo.
+- **Exemplos**: a resposta que ele corrigiu ("eu diria assim"). Entram na
+  conversa como referência de tom e raciocínio, os 3 mais parecidos com a
+  pergunta.
+
+O que NÃO muda: a IA segue sem calcular, e os dois fiscais conferem a resposta
+final por fora. Duas regras de número, de propósito:
+
+- Um número que o especialista escreveu numa orientação aplicada pode ser citado
+  **na conversa** (é referência dele, não invenção da IA). Nos textos curtos de
+  aviso e de momento, não: lá o fiscal continua estrito, só `facts`.
+- Número de **exemplo** nunca libera o fiscal. O exemplo foi escrito com os
+  dados de uma empresa; repetido para outra, seria número errado.
+
+Ainda fora da bancada (próximas fatias): os limiares do diagnóstico e das regras
+(hoje constantes no core), as perguntas do diagnóstico de gestão e as médias de
+mercado.
+
 ## Como o dado entra: direção do produto
 
 Documentação de direção (não é implementação agora): orienta decisões futuras de

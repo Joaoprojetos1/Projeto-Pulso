@@ -15,6 +15,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ClaimPermission } from '@pulso/core';
 
+import {
+  renderSpecialistForChat,
+  specialistReferenceNumbers,
+  type SpecialistContext,
+} from '../services/specialist';
 import { checkGroundingDeep } from './grounding';
 import { checkJudgment, renderClaimGuidance } from './judgment';
 import { CHAT_MODEL } from './models';
@@ -74,6 +79,13 @@ export interface ChatContext {
     ramo?: string | null;
     socios?: string[];
   } | null;
+  /**
+   * O que o ESPECIALISTA ensinou e que se aplica a esta empresa (orientações e
+   * exemplos de resposta). É só texto de orientação: entra no prompt, não no
+   * retrato. Os fiscais seguem conferindo a resposta; a única folga é que um
+   * número escrito por ele numa orientação pode ser citado como referência.
+   */
+  specialist?: SpecialistContext | null;
 }
 
 /** Configuração da memória (com padrões; sobrescrevível por ambiente/teste). */
@@ -95,6 +107,12 @@ export interface ChatReply {
   modelVersion: string;
   /** Consumo desta chamada (só a implementação real preenche; medição). */
   usage?: AiCallUsage;
+  /**
+   * Preenchido só quando a resposta do modelo foi REPROVADA pelos fiscais e
+   * entrou o texto seguro: o que cada fiscal pegou. Serve à bancada do
+   * especialista (ele vê por que a resposta não passou); o dono nunca recebe.
+   */
+  blocked?: { numbers: number[]; claims: string[] };
 }
 
 /** Interface do modelo — dublê nos testes, Anthropic em produção. */
@@ -147,9 +165,13 @@ export function buildChatPrompt(ctx: ChatContext, turns: ChatTurn[], opts: ChatB
     diagnosticoAnterior: ctx.diagnosisPrevious ?? null,
   });
   const guidance = renderClaimGuidance(ctx.permissions ?? []);
+  // o que o especialista ensinou vem DEPOIS da autorização de juízo: orienta o
+  // que recomendar, mas não passa por cima do que os dados não sustentam.
+  const especialista = renderSpecialistForChat(ctx.specialist);
   const system =
     `${SYSTEM_BASE}\n\nRETRATO DO NEGÓCIO (única fonte de números):\n${retrato}` +
-    (guidance ? `\n\n${guidance}` : '');
+    (guidance ? `\n\n${guidance}` : '') +
+    (especialista ? `\n\n${especialista}` : '');
 
   // últimas N mensagens, começando num turno do usuário
   let kept = sanitizeTurns(turns, historyN);
@@ -188,6 +210,11 @@ export async function askPulso(
     return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
   }
 
+  // referências que o especialista escreveu nas orientações aplicadas: podem
+  // ser citadas (não são invenção da IA). Números de EXEMPLO não entram aqui.
+  const referencias = specialistReferenceNumbers(ctx.specialist);
+  let blocked: ChatReply['blocked'];
+
   for (let attempt = 0; attempt < 2; attempt++) {
     let out: ChatReply;
     try {
@@ -201,20 +228,28 @@ export async function askPulso(
 
     // o fiscal: números da resposta têm que existir no retrato — inclui agora os
     // facts dos alertas recentes e dos diagnósticos que entraram na memória.
-    const grounded = checkGroundingDeep(out.text, {
-      indicators: ctx.indicators,
-      alerts: ctx.alerts,
-      recentAlerts: ctx.recentAlerts ?? null,
-      diagnosisCurrent: ctx.diagnosisCurrent ?? null,
-      diagnosisPrevious: ctx.diagnosisPrevious ?? null,
-      asOf: ctx.asOf,
-    });
+    const grounded = checkGroundingDeep(
+      out.text,
+      {
+        indicators: ctx.indicators,
+        alerts: ctx.alerts,
+        recentAlerts: ctx.recentAlerts ?? null,
+        diagnosisCurrent: ctx.diagnosisCurrent ?? null,
+        diagnosisPrevious: ctx.diagnosisPrevious ?? null,
+        asOf: ctx.asOf,
+      },
+      referencias,
+    );
     // fiscal de juízo: a resposta não pode adjetivar o que a cobertura não autoriza
     const judged = checkJudgment(out.text, ctx.permissions ?? []);
     if (grounded.ok && judged.ok) return out;
+    blocked = {
+      numbers: grounded.offending,
+      claims: [...new Set(judged.offending.map((o) => o.term))],
+    };
   }
 
-  return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION };
+  return { text: SAFE_REPLY, modelVersion: CHAT_FALLBACK_VERSION, blocked };
 }
 
 // ---------------------------------------------------------------

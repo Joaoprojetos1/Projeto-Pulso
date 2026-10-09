@@ -103,10 +103,13 @@ export function buildPrompt(
   alert: AlertFact,
   profile: CompanyProfile,
   permissions: ClaimPermission[] = [],
+  specialistBlock = '',
 ): AlertPrompt {
   const guidance = renderClaimGuidance(permissions);
   return {
-    system: guidance ? `${SYSTEM_PROMPT}\n\n${guidance}` : SYSTEM_PROMPT,
+    // a orientação do especialista (se houver para esta regra) vai no SYSTEM: o
+    // conteúdo do usuário continua sendo só o alerta + perfil.
+    system: [SYSTEM_PROMPT, guidance, specialistBlock].filter(Boolean).join('\n\n'),
     user: JSON.stringify({
       ruleKey: alert.ruleKey,
       severity: alert.severity,
@@ -141,11 +144,13 @@ export async function writeAlert(
   onUsage?: UsageSink,
   log?: WriterLog,
   permissions: ClaimPermission[] = [],
+  /** Orientação do especialista para esta regra (bloco pronto; vazio = nenhuma). */
+  specialistBlock = '',
 ): Promise<WrittenAlert> {
   const fallback: WrittenAlert = { ...templateFor(alert), modelVersion: TEMPLATE_VERSION };
   if (!model) return fallback;
 
-  const prompt = buildPrompt(alert, profile, permissions);
+  const prompt = buildPrompt(alert, profile, permissions, specialistBlock);
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let out: WrittenAlert;

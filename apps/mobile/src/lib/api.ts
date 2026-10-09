@@ -1607,3 +1607,185 @@ export async function unlinkMyWhatsApp(token: string): Promise<void> {
   if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
   if (!res.ok) throw new Error(`HTTP ${res.status} ao desligar o WhatsApp`);
 }
+
+// ---------------------------------------------------------------------------
+// Bancada do especialista (operação)
+//
+// Onde o consultor ensina o Ivo: orientações (o que recomendar), ensaio
+// (perguntar como se fosse o dono) e exemplos (a resposta corrigida por ele).
+// O app segue burro: as opções dos seletores, os rótulos e os limites de
+// tamanho vêm do servidor. Nenhuma regra de quando a orientação entra vive aqui.
+// ---------------------------------------------------------------------------
+
+export type EspecialistaEscopo = 'geral' | 'estagio' | 'aviso';
+/** rascunho: nunca foi ao ar | publicada: no ar igual à tela | alterada: no ar, com mudanças por publicar */
+export type EspecialistaStatus = 'rascunho' | 'publicada' | 'alterada';
+
+export interface EspecialistaOrientacao {
+  id: string;
+  scope: EspecialistaEscopo;
+  scopeKey: string;
+  scopeLabel: string;
+  niche: string | null;
+  nicheLabel: string | null;
+  title: string;
+  body: string;
+  publishedBody: string | null;
+  publishedAt: string | null;
+  updatedAt: string;
+  status: EspecialistaStatus;
+}
+
+export interface EspecialistaExemplo {
+  id: string;
+  question: string;
+  originalAnswer: string | null;
+  answer: string;
+  niche: string | null;
+  nicheLabel: string | null;
+  stage: string | null;
+  stageLabel: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface EspecialistaEmpresa {
+  id: string;
+  name: string;
+  niche: string;
+  nicheLabel: string | null;
+  isDemo: boolean;
+  hasData: boolean;
+  stage: string | null;
+  stageLabel: string | null;
+}
+
+export interface EspecialistaOpcao {
+  key: string;
+  label: string;
+  niche?: string;
+}
+
+export interface EspecialistaBancada {
+  guidance: EspecialistaOrientacao[];
+  examples: EspecialistaExemplo[];
+  companies: EspecialistaEmpresa[];
+  options: {
+    scopes: EspecialistaEscopo[];
+    stages: EspecialistaOpcao[];
+    rules: EspecialistaOpcao[];
+    niches: EspecialistaOpcao[];
+    limits: { title: number; body: number; question: number; answer: number };
+    aiAvailable: boolean;
+  };
+}
+
+export interface EspecialistaVersao {
+  id: string;
+  body: string;
+  publishedAt: string;
+  publishedBy: string | null;
+}
+
+export interface EspecialistaEnsaio {
+  reply: string;
+  modelVersion: string;
+  aiAvailable: boolean;
+  hasData: boolean;
+  stage: string | null;
+  stageLabel: string | null;
+  /** O que os fiscais barraram, quando a resposta da IA foi trocada pela segura. */
+  blocked: { numbers: number[]; claims: string[] } | null;
+  applied: {
+    guidance: Array<{ id: string; title: string; scopeLabel: string }>;
+    examples: Array<{ id: string; question: string }>;
+  };
+}
+
+/** Escrita da bancada: quando o servidor recusa (422), a mensagem dele vai para a tela. */
+async function bancadaWrite<T>(
+  token: string,
+  method: 'POST' | 'PATCH' | 'DELETE',
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const res = await fetchWithWake(`${apiBase()}${path}`, {
+    method,
+    headers: { 'content-type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(body ?? {}),
+  });
+  if (res.status === 404) throw new NaoAutorizadoError();
+  if (res.status === 401) throw new AuthError('credenciais', 'Sua sessão expirou.');
+  if (res.status === 422 || res.status === 400) {
+    const erro = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(erro.error ?? 'Confira os campos e tente de novo.');
+  }
+  if (!res.ok) throw new Error('Não consegui salvar agora. Tente de novo em instantes.');
+  return (await res.json()) as T;
+}
+
+export function fetchEspecialista(token: string): Promise<EspecialistaBancada> {
+  return adminGet(token, '/admin/specialist');
+}
+
+export function criarOrientacao(
+  token: string,
+  body: { scope: EspecialistaEscopo; scopeKey: string; niche: string | null; title: string; body: string },
+): Promise<EspecialistaOrientacao> {
+  return bancadaWrite(token, 'POST', '/admin/specialist/guidance', body);
+}
+
+export function salvarOrientacao(
+  token: string,
+  id: string,
+  body: { title?: string; body?: string; niche?: string | null },
+): Promise<EspecialistaOrientacao> {
+  return bancadaWrite(token, 'PATCH', `/admin/specialist/guidance/${id}`, body);
+}
+
+export function publicarOrientacao(token: string, id: string): Promise<EspecialistaOrientacao> {
+  return bancadaWrite(token, 'POST', `/admin/specialist/guidance/${id}/publish`);
+}
+
+export function desligarOrientacao(token: string, id: string): Promise<EspecialistaOrientacao> {
+  return bancadaWrite(token, 'POST', `/admin/specialist/guidance/${id}/unpublish`);
+}
+
+export function excluirOrientacao(token: string, id: string): Promise<{ ok: boolean }> {
+  return bancadaWrite(token, 'DELETE', `/admin/specialist/guidance/${id}`);
+}
+
+export async function fetchVersoesOrientacao(token: string, id: string): Promise<EspecialistaVersao[]> {
+  const out = await adminGet<{ versions: EspecialistaVersao[] }>(token, `/admin/specialist/guidance/${id}/versions`);
+  return out.versions;
+}
+
+export function restaurarOrientacao(token: string, id: string, versionId: string): Promise<EspecialistaOrientacao> {
+  return bancadaWrite(token, 'POST', `/admin/specialist/guidance/${id}/restore`, { versionId });
+}
+
+export function ensaiarEspecialista(
+  token: string,
+  body: { companyId: string; question: string; includeDrafts: boolean },
+): Promise<EspecialistaEnsaio> {
+  return bancadaWrite(token, 'POST', '/admin/specialist/try', body);
+}
+
+export function criarExemplo(
+  token: string,
+  body: { question: string; answer: string; originalAnswer: string | null; niche: string | null; stage: string | null },
+): Promise<{ id: string }> {
+  return bancadaWrite(token, 'POST', '/admin/specialist/examples', body);
+}
+
+export function salvarExemplo(
+  token: string,
+  id: string,
+  body: { question?: string; answer?: string; active?: boolean },
+): Promise<{ ok: boolean }> {
+  return bancadaWrite(token, 'PATCH', `/admin/specialist/examples/${id}`, body);
+}
+
+export function excluirExemplo(token: string, id: string): Promise<{ ok: boolean }> {
+  return bancadaWrite(token, 'DELETE', `/admin/specialist/examples/${id}`);
+}

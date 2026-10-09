@@ -189,6 +189,7 @@ export default function Operacao() {
         )}
 
         <View style={styles.atalhos}>
+          <Atalho icon="school-outline" label="Bancada do especialista" onPress={() => router.push('/admin/especialista' as Href)} />
           <Atalho icon="pricetags-outline" label="Planos" onPress={() => router.push('/admin/planos' as Href)} />
           <Atalho icon="megaphone-outline" label="Leads" onPress={() => router.push('/admin/leads' as Href)} />
           <Atalho icon="pie-chart-outline" label="IA e custos" onPress={() => router.push('/admin/ia' as Href)} />

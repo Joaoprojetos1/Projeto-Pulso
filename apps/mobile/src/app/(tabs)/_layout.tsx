@@ -18,11 +18,13 @@ export default function TabsLayout() {
   // direto no preço, que é o contrário do combinado). Quem já percorreu tudo cai
   // na tela de planos.
   useEffect(() => {
-    if (logado && fonte === 'servidor' && assinatura?.status === 'pendente') {
+    // operador (admin) passa sempre, como no gate do cadastro abaixo: ele não é
+    // cliente, e trancá-lo na tela de planos o tiraria da área de operação.
+    if (logado && fonte === 'servidor' && !ehAdmin && assinatura?.status === 'pendente') {
       const noMeioDaEsteira = onboardingPasso != null && onboardingPasso < 8;
       router.replace((noMeioDaEsteira ? '/onboarding' : '/assinar') as Href);
     }
-  }, [logado, fonte, assinatura?.status, onboardingPasso]);
+  }, [logado, fonte, ehAdmin, assinatura?.status, onboardingPasso]);
 
   // TRANCA DO ONBOARDING OBRIGATÓRIO (Bloco 1): sem o cadastro da empresa (CNPJ +
   // segmento) o dono não usa as abas — vai para o onboarding. Ponto único de
