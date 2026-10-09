@@ -34,6 +34,18 @@ termina num formulário de contato e num botão de WhatsApp.
 Nenhum destes itens trava o produto de funcionar, mas todos travam dizer que
 ele está calibrado.
 
+**Desde 08/10 ele tem a bancada do especialista** (app → aba Operação →
+"Bancada do especialista", ou direto em seuivo.com.br/app/admin/especialista).
+Ali ele escreve o que o Ivo deve recomendar, testa com os números de uma
+empresa e publica, sem passar por código. Isso cobre os textos da IA (item 5).
+Os itens 1 a 4 ainda dependem de código e são as próximas fatias da bancada,
+nesta ordem: limiares do diagnóstico com prévia do efeito, depois as perguntas
+do diagnóstico de gestão e as médias de mercado.
+
+Para ele usar: precisa de conta no app com papel admin (ver item 3) e do
+servidor sempre ligado. A bancada ainda não foi usada com a IA de verdade por
+ninguém; o primeiro uso dele é também o primeiro teste em produção.
+
 1. **Limiares do diagnóstico e prescrição por estágio.** As réguas de Saudável
    a UTI são premissas (`PREMISSA_V1` em `packages/core/src/diagnosis.ts`). A
    forma combinada de calibrar é uma sessão de casos: 6 a 8 empresas fictícias,
